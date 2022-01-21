@@ -1,0 +1,177 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" integrity="sha512-f8gN/IhfI+0E9Fc/LKtjVq4ywfhYAVeMGKsECzDUHcFJ5teVwvKTqizm+5a84FINhfrgdvjX8hEJbem2io1iTA==" crossorigin="anonymous" />
+
+
+<table class="table table-bordered table-hover" id="dataTable2" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Tasks</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Tasks</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+    </tfoot>
+    <tbody>
+        <tr>
+
+            {% for asset in assets %}
+            <td style="width: 3%">{{asset.id}}</td>
+            <td style="width: 17%" class="td_name" data-id="{{suffix}}{{asset.id}}" >
+                {{ asset.name }}
+            </td>
+            <td style="width: 30%"  class="td_value" data-id="{{suffix}}{{asset.id}}" >
+                {{ asset.value }}
+            </td>
+            <td style="width: 12%" >
+                {% if asset.assettype.is_file %}
+                     {% if suffix == 'c' %}
+                    <span class="text-xs"><a href="file:///{% asset_client_folder_intranet asset client %}" target="_blank">{% asset_client_folder_intranet asset client %}</a></span>
+                {% elif suffix == 'co' %}
+
+                  <span class="text-xs"><a href="file:///{% asset_company_folder_intranet asset company %}" target="_blank">{% asset_company_folder_intranet asset company %}</a></span>
+                {% endif %}
+                {% else %}
+                    {% if asset.assettype.name == 'COLOR' %}
+                        <span style="padding:10px; background-color:#{{asset.value}}">#{{asset.value}}</span>
+                    {% else %}
+                        -
+                    {% endif %}
+                {% endif %}
+            </td>
+            <td style="width: 12%">{{asset.assettype}}</td>
+            <td style="width: 10%">
+                {% if asset.assettype.is_file %}
+                {% if suffix == 'co' %}
+
+                {% company_asset_exists asset company as result %}
+                {% if result == 1 %}
+                <div class="badge badge-success">online</div>
+                {% elif result == 3 %}
+                <div class="badge badge-warning">wrong</div>
+                {% else %}
+                <div class="badge badge-danger">offline</div>
+                {% endif %}
+
+                {% else %}
+                {% client_asset_exists asset client as result %}
+                {% if result == 1 %}
+                <div class="badge badge-success">online</div>
+                {% elif result == 3 %}
+                <div class="badge badge-warning">wrong</div>
+                {% else %}
+                <div class="badge badge-danger">offline</div>
+                {% endif %}
+                {% endif %}
+                {% endif %}
+            </td>
+            <td style="width: 10%">
+                {% if asset.tasks.all %}
+                  {% for task in asset.tasks.all %}
+<p>
+                                             <a href="{% url 'FileCollector:task_detail' task.id  %}">
+                                                    <button class="btn btn-dark btn-xs ">
+                                                <i data-feather="check-circle"></i>
+                                            </button></a></p>
+                                            {% endfor %}
+
+            {% endif %}</td>
+            <td style="width: 10%">{{asset.created|date:"d-m-y (H:i)"}}</td>
+            <td style="width:  6%" >
+                <button class="btn_asset_save btn btn-teal btn-sm" type="button" data-real-id="{{ asset.id }}" data-id="{{suffix}}{{ asset.id }}" style="display: none;">SAVE</button>
+                {% if asset.client_owner is None and asset.company_owner is None %}
+                {% else %}
+                    <button class="btn_edit btn btn-datatable btn-icon btn-transparent-dark" data-id="{{suffix}}{{ asset.id }}" data-name="{{ asset.name }}" data-value="{{ asset.value }}" data-length="{{ asset.assettype.maxlength }}"><i data-feather="edit"></i></button>
+                {% endif %}
+                <button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark" data-suffix="{{suffix}}" data-id="{{ asset.id }}" data-name="{{ asset.name }}"><i data-feather="trash-2"></i></button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+<script>
+    $(".btn_edit").on('click', function(){
+        var maxLength = $(this).attr("data-length");
+        console.log(maxLength);
+        $(this).hide();
+        $(".btn_delete[data-id='" + $(this).data('id') + "']").hide();
+        $(".btn_asset_save[data-id='" + $(this).data('id') + "']").show();
+        $(".td_name[data-id='" + $(this).data('id') + "']").html('<input type="text" class="form-control" id="txt_name" value="' + $(this).data('name') + '"/>');
+        $(".td_value[data-id='" + $(this).data('id') + "']").html('<input type="text" class="form-control" id="txt_value" value="' + $(this).data('value') + '" maxlength="'+ maxLength + '"/>');
+        
+    })
+    $(".btn_asset_save").on('click', function(){
+        var asset_id = $(this).data('id');
+        var real_id = $(this).data('real-id');
+        var change_name = $("#txt_name").val();
+        var change_value = $("#txt_value").val();
+        console.log(change_name, change_value, asset_id);
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:edit_asset_ajax' %}",
+            data: {
+                "asset_id": real_id,
+                "asset_name": change_name,
+                "asset_value": change_value
+            },
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            }
+        });
+    });
+    $('.btn_delete').click(function(){
+        var asset_id = $(this).data('id');
+        var asset_name = $(this).data('name');
+        var suffix = $(this).data('suffix');
+        swal({
+                title: `Do you really want to delete asset ${asset_name}?`,
+                text: "You will not be able to recover this Asset!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:delete_asset_ajax' %}",
+                        data: {
+                            "suffix": suffix,
+                            "asset_id": asset_id,
+                            "client_id": '{{ client_id }}',
+                            "company_id": '{{ company_id}}'
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                }
+            }
+        );
+    });
+</script>

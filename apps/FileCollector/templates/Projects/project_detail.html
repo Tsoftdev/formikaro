@@ -1,0 +1,49 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+	<header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+		<div class="container-fluid">
+			<div class="page-header-content">
+				<div class="row align-items-center justify-content-between pt-3">
+					<div class="col-auto mb-3">
+						<h1 class="page-header-title">
+							<div class="page-header-icon"><i data-feather="list"></i></div>
+							Detail of project {{ project.name }}
+							[<strong>{{ project.id }}</strong>]
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+</header>
+
+<div class="container mt-n10">
+	<!-- Dashboard info widget 1-->
+	<div class="container mt-4">
+		<div class="row">
+			<div class="container">
+				{% include "Projects/project_nav.html" with menuitem="detail"  %}
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				{% include "Projects/project_info.html" with project=project %}
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+

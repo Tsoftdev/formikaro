@@ -1,0 +1,105 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}FileCollector - Dashboard {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="users"></i></div>
+                                Clients
+                            </h1>
+                            <div class="page-header-subtitle">These are the clients registered in the system</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container mt-n10">
+            <!-----------START TABLE------------------->
+            <div class="card mb-4">
+                <div class="card-header">Clients</div>
+                <div class="card-body">
+                    <div class="datatable">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <!--                                    <span>Default ordering is set to column number 4, Created, using zero based counting. -->
+                            <!--                                        To change that or If column count is changed, please supply new index-->
+                            <!--                                        in datatables-demo.js-->
+                            <!--                                    </span>-->
+
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Company</th>
+                                    <th>Total Orders</th>
+                                     <th>Failed Orders</th>
+                                    <th>Open Order</th>
+                                    <th>Completed Order</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Company</th>
+                                    <th>Total Orders</th>
+                                    <th>Failed Orders</th>
+                                    <th>Open Order</th>
+                                    <th>Completed Order</th>
+                                    <th>Created</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+
+
+                                {% if latest_clients_list %}
+                                <tr>
+
+                                    {% for client in latest_clients_list %}
+                                    <td>{{client.id}}</td>
+                                    <td><a href="{% url 'FileCollector:client_detail' client.id %}">{{ client.firstname }} {{client.lastname }} 
+                                        </td>
+
+                                    <td>
+                                       {% if client.company.name %}
+                                        <a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a>
+                                     {% else %}
+                                        -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{client.orders_count}}</td>
+                                    <td>{{client.failed_orders_count}}</td>
+                                    <td>{{client.open_orders_count}}</td>
+                                    <td>{{client.completed_orders_count}}</td>
+                                    <td>{{client.created}}</td>
+                                </tr>
+                                {% endfor %}
+
+                                {% else %}
+                                <p>No client data available.</p>
+                                {% endif %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-----------END TABLE------------------->
+
+        {% endblock %}
+    </body>
+</html>

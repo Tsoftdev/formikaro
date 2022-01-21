@@ -1,0 +1,135 @@
+{% load humanize %}
+{% load custom_tags %}
+{% for line in project.videos.all %}
+    <tr>
+        <td>{{line.id }}</td>
+        <td><a href="{% url 'FileCollector:video_detail' line.id %}">{{ line.unique_fn }}</a></td>
+        <td>{% if line.episode %}{{line.episode}}{% else %}-{%endif%}</td>
+        <td>
+            <div id="data-copy-{{ line.id }}">
+                {% if line.url %}
+                    URL: <a href="{{ line.url}}" target="_blank">{{  line.url}}</a><br>
+                    Review-URL: <a href="{{ line.url_review }}" target="_blank">{{   line.url_review}}</a><br>
+                    Passwort: {{ line.vimeo_passwd }}
+                    <!-- Download: <a href="{{ line.url_download}}" target="_blank">{{    line.url_download}}</a><br>-->
+                {% else %}
+                    - 
+                {% endif %}
+
+            </div>
+        </td>
+        <td>{% if line.version %}{{ line.version }}{% else %}-{% endif %}</td>
+        <td>{% if line.size %}{{ line.size|filesize_format }}{% else %}-{% endif %}</td>
+        <td>
+            <div class="div_proj_status">
+
+                {% if line.status != 'UPLOADING' %}
+                <span class="video-status badge {% if line.status == 'COMPLETE' %}
+                badge-teal
+                {% elif line.status == 'PENDING' %}   
+                badge-orange
+                {% elif line.status == 'READY' %}
+                badge-info      
+                {% elif line.status == 'IDLE' %}
+                badge-yellow
+                {% elif line.status == 'ACTIVE' %}
+                badge-primary
+                {% elif line.status == 'FAILED' %}
+                badge-danger
+                {% elif line.status == 'COMPLETE' %}
+                badge-success
+                {% elif line.status == 'DELIVERED' %}
+                badge-teal
+                
+                {% endif %}" style="cursor:pointer" data-id="{{ line.id }}">{{line.status}}</span>
+                {% else %}
+                <i class="fas fa-circle-notch fa-spin"></i>
+                {% endif %}
+            </div>
+        </td>
+
+        <td>{{line.created|date:"d-m-y (H:i)"}}</td>
+        <td>
+            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 js-copy" data-toggle="tooltip" data-placement="bottom" title="Copy to clipboard" data-id="{{ line.id }}">
+                <i data-feather="clipboard"></i>
+            </button>
+            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 js-trash" data-id="{{ line.id }}">
+                <i data-feather="trash-2"></i>
+            </button>
+
+        </td>
+
+    </tr>
+{% endfor %}
+<script>
+    // COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+		var copyTest = document.queryCommandSupported('copy');
+		var elOriginalText = el.attr('data-original-title');
+
+		if (copyTest === true) {
+			var copyTextArea = document.createElement("textarea");
+			copyTextArea.value = text;
+			document.body.appendChild(copyTextArea);
+			copyTextArea.select();
+			try {
+				var successful = document.execCommand('copy');
+				var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+				el.attr('data-original-title', msg).tooltip('show');
+			} catch (err) {
+				console.log('Oops, unable to copy');
+			}
+			document.body.removeChild(copyTextArea);
+			el.attr('data-original-title', elOriginalText);
+		} else {
+			// Fallback if browser doesn't support .execCommand('copy')
+			window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+		}
+	}
+    $(document).on('click', '.js-trash', function(){
+	
+		var video_id = $(this).data('id');
+		console.log("AAAA");
+		swal({
+				title: "Are you sure?",
+				text: "Neither the local nor the remote video file will be deleted",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonClass: "btn-danger",
+				confirmButtonText: "Yes, delete it!",
+				cancelButtonText: "No, cancel plx!",
+			},
+			function(isConfirm) {
+				if (isConfirm) {
+					$.ajax({
+						headers: { "X-CSRFToken": '{{csrf_token}}' },
+						url: "{% url 'FileCollector:delete-project-video' %}",
+						data: {
+							"video_id": video_id,
+							"project_id": "{{ project.id }}"
+						},
+						type: 'POST',
+						success: function (data) {
+							$("#tbody_videos").html(data);
+							feather.replace();
+						}
+					});
+				}
+			}
+		);
+	});
+    // Copy to clipboard
+    // Grab any text in the attribute 'data-copy' and pass it to the 
+    // copy function
+    $('.js-copy').click(function() {
+        var id = $(this).data('id');
+        text = $(`#data-copy-${id}`).text().trim().replace(/\t+/g,'');
+        var el = $(this);
+        copyToClipboard(text, el);
+    });
+</script>

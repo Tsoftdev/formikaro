@@ -1,0 +1,229 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+
+
+
+
+           <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                        <div class="container-fluid">
+                            <div class="page-header-content">
+                                <div class="row align-items-center justify-content-between pt-3">
+                                    <div class="col-auto mb-3">
+                                        <h1 class="page-header-title">
+                                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                                           Detail of project {{ project.name }}
+                        [<strong>{{ project.id }}</strong>]
+                                        </h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+
+</header>
+
+<div class="container mt-n10">
+
+
+    <!-- Dashboard info widget 1-->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="container">
+    {% include "Projects/project_nav.html" with menuitem="intakes"  %}
+            </div>
+        </div>
+
+ <div class="col-lg-12">
+      <div class="card mb-4">
+                <div class="card-header ">List of the Intakes associated with project {{ project.name }}</div>
+                <div class="card-body">
+
+                           {% if project_intake_list %}
+                 <div class=" table-billing-history text-sm table-borderless  mb-0 datatable">
+                        <table class="table table-responsive-sm table-hover text-xs p-0 " id="dataTable" width="100%" cellspacing="0" >
+
+                            <thead>
+                                 <tr class="border-bottom">
+                                    <th class="border-gray-200 col-sm-1" scope="col">ID</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Sender email</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Client</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Files</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Size</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Created</th>
+                                    <th class="border-gray-200 col-sm-1" scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                 <tr class="border-bottom">
+                                    {% for intake in project_intake_list %}
+                                    <td style="width: 5%"><a href="{% url 'FileCollector:intake_detail' intake.id %}"><button class="btn btn-outline-dark btn-sm" type="button">{{intake.id}}</button></a></td>
+                                    <td style="width: 17%">{{ intake.sender }}</td>
+                                    <td style="width: 17%">
+                                          <div class="row  align-items-center">
+                                               <div class="col-sm ">
+                                        {% if intake.order %}
+                                        <a href="{% url 'FileCollector:client_detail' intake.order.client.id %}">{{intake.order.client.firstname}} {{intake.order.client.lastname}}</a>
+                                        {% elif intake.client %}
+                                        <a href="{% url 'FileCollector:client_detail' intake.client.id %}">{{intake.order.client.firstname}} {{intake.client}}</a>
+                                        {% else %}
+                                        <span class="text-xs">N/A</span>
+                                        {% endif %}
+                                               </div></div>
+                                    </td>
+                                    <td style="width: 10%">{{ intake.files_count }}</td>
+                                    <td style="width: 10%">{{ intake.total_size|filesize_format }} </td>
+
+                                    <td style="width: 15%">{{intake.created|date:"d-m-y (H:i)"}}<br><span class="text-xs">{{intake.created|naturaltime}}</span></td>
+                                             <td style="width:  6%">
+
+                                        <button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ line.id }}"><i data-feather="trash-2"></i></button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+
+                            </tbody>
+                        </table>
+                         {% else %}
+                                <p>No intakes are available.</p>
+                                {% endif %}
+
+                    </div>
+                </div>
+            </div>
+
+ </div>
+        <div class="container">
+
+            <hr class="mt-2 mb-4" />
+            <!-- Knowledge base main category card 1-->
+
+
+        </div>
+        <!-- End page content -->
+        {% endblock %}
+        {% block javascript %}                 
+        <script type="text/javascript">
+
+            // change status project
+            $(".proj-status").on('click', function(){
+                var line_id = $(this).data('id');
+                var lineStatusHtml = '<select id="statusProjSelect" class="form-control p-1 mb-2" style="height: 24px; width: 110px; display: initial;">';
+                lineStatusHtml += '<option value="ESTIMATE">ESTIMATE</option>';
+                lineStatusHtml += '<option value="ACTIVE">ACTIVE</option>';
+                lineStatusHtml += '<option value="ONHOLD">ONHOLD</option>';
+                lineStatusHtml += '<option value="CLIENT">CLIENT</option>';
+                lineStatusHtml += '<option value="FAILED">FAILED</option>';
+                lineStatusHtml += '<option value="COMPLETE">COMPLETE</option>';
+                lineStatusHtml += '<option value="DELIVERED">DELIVERED</option>';
+                lineStatusHtml += '<option value="PAID">PAID</option>';
+                lineStatusHtml += '</select>';
+                lineStatusHtml += '<button id="btn_proj_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+
+                $(this).parent('.div_proj_status').html(lineStatusHtml);
+                $("#statusProjSelect").val($(this).html());
+                $(this).hide();
+                $('#btn_proj_save').click(function(){
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:change_status_project' %}",
+                        data: {
+                            "status": $("#statusProjSelect").val(),
+                            "project_id": $(this).data("id")
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            location.reload();
+
+                        }
+                    });
+                });
+            });
+
+            // change status project
+            $('#btn_change').click(function(){
+                $("#statusSelect").css('display', 'initial');
+                $("#statusSelect").val('{{project.status}}');
+                $("#btn_save").show();
+                $(this).hide();
+            });
+            $('#btn_save').click(function(){
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:change_status_project' %}",
+                    data: {
+                        "status": $("#statusSelect").val(),
+                        "project_id": "{{ project.id }}"
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+
+                    }
+                });
+            });
+            $('#testButton').click(function() {
+
+                var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), '')
+                myModal.toggle()
+            });
+
+            // COPY TO CLIPBOARD
+            // Attempts to use .execCommand('copy') on a created text field
+            // Falls back to a selectable alert if not supported
+            // Attempts to display status in Bootstrap tooltip
+            // ------------------------------------------------------------------------------
+
+            function copyToClipboard(text, el) {
+                var copyTest = document.queryCommandSupported('copy');
+                var elOriginalText = el.attr('data-original-title');
+
+                if (copyTest === true) {
+                    var copyTextArea = document.createElement("textarea");
+                    copyTextArea.value = text;
+                    document.body.appendChild(copyTextArea);
+                    copyTextArea.select();
+                    try {
+                        var successful = document.execCommand('copy');
+                        var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+                        el.attr('data-original-title', msg).tooltip('show');
+                    } catch (err) {
+                        console.log('Oops, unable to copy');
+                    }
+                    document.body.removeChild(copyTextArea);
+                    el.attr('data-original-title', elOriginalText);
+                } else {
+                    // Fallback if browser doesn't support .execCommand('copy')
+                    window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+                }
+            }
+
+            $(document).ready(function() {
+                // Initialize
+                // ---------------------------------------------------------------------
+
+                // Tooltips
+                // Requires Bootstrap 3 for functionality
+                $('.js-tooltip').tooltip();
+
+                // Copy to clipboard
+                // Grab any text in the attribute 'data-copy' and pass it to the 
+                // copy function
+                $('.js-copy').click(function() {
+                    text = $('#data-copy').text();
+                    var el = $(this);
+                    copyToClipboard(text, el);
+                });
+            });
+
+
+        </script>
+        {% endblock %}
+
+

@@ -1,0 +1,390 @@
+{% load humanize %}
+{% load custom_tags %}
+
+<!-- START VIDEO -->
+<div class="card mb-4 card-header-actions mx-auto" id="card_{{order_number}}">
+    <form id="create_video_form_{{order_number}}" class="needs-validation" novalidate>
+        <div class="card-header">
+            {% if order_number %}
+                Video #{{order_number}} specifications
+            {% else %}
+                Add project video specifications
+            {% endif %}
+            <div>
+                {% if is_editable %}
+                    <b id="btn_delete_{{order_number}}" class="btn btn-sm btn-icon"><i class="feather-icon" data-feather="trash" alt="remove this video"></i></b>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body bg-light ">
+            <div class="form-group">
+                <div class="form-row row">
+                    <div class="col-8">
+                        <div id="_divVideotitles">
+                            <label for="videotitle_{{order_number}}">Video title <span class="text-xs muted" id="videolengthindicator_{{ order_number }}">0/50</span></label>
+                            <input type="text" class="form-control title_input" name="videotitle_{{order_number}}" id="videotitle_{{order_number}}" data-id="{{order_number}}" maxlength="50" aria-label="Video title" required {% if is_editable is False %} disabled {% endif %} value="{{video.name}}">
+                            <small id="project_filename_template_{{order_number}}" data-id="{{ order_number }}" class="form-text text-muted">{{ projectvideo_filename }}</small>
+                        </div>
+                        <div id="_divEpisodetitles"></div>
+                    </div>
+                    <div class="col-2">
+                        <label for="_episodes_{{order_number}}" class="small">Episodes</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="5" id="_episodes_{{order_number}}" name="_episodes_{{order_number}}" aria-label="Episodes" aria-describedby="button-addon2" value="">
+
+                            <button class="btn dropdown-toggle bg-white border" type="button" id="dropdownEpisodesMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownEpisodesMenuButton">
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">1</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">2</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">3</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">4</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">5</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">10</a>
+                                <a class="dropdown-item _episodes_{{order_number}}" href="javascript:void(0);">20</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-2">
+                        <div id="_video_create_episodes_{{order_number}}" style="display:none">
+                            <label for="video_create_episodes_{{order_number}}" {% if edit_mode is True %}class="text-muted"{% endif %}>Create all episodes</label>
+                            <div class="input-group mb-3">
+                                <input type="checkbox" class="form-check-input" {% if edit_mode is True %} disabled  {% endif %} name="video_create_episodes_{{order_number}}" id="video_create_episodes_{{order_number}}" aria-label="Create video episodes" value="" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-row row mt-4 ">
+                    <hr>
+                    <div class="col-3">
+                        <label for="videoduration_{{order_number}}" class="small">Duration <span class="text-xs">(Seconds)</span></label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="60" id="videoduration_{{order_number}}" name="videoduration_{{order_number}}" aria-label="Video duration in seconds" aria-describedby="button-addon2" required {% if is_editable is False %} disabled {% endif %}  value="{{video.duration}}">
+                            <button class="btn dropdown-toggle bg-white border" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">10</a>
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">30</a>
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">60</a>
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">120</a>
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">180</a>
+                                <a class="dropdown-item _videoduration_{{order_number}}" href="javascript:void(0);">300</a>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <label for="feedbackloops_{{order_number}}" class="small">Feedback loops</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="60" id="feedbackloops_{{order_number}}" name="feedbackloops_{{order_number}}" aria-label="Feedback loops this video can have" aria-describedby="button-addon2" required {% if is_editable is False %} disabled {% endif %} value="{{video.feedbackloops}}">
+
+                            <button class="btn dropdown-toggle bg-white border" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _feedbackloops_{{order_number}}" href="javascript:void(0);">1</a>
+                                <a class="dropdown-item _feedbackloops_{{order_number}}" href="javascript:void(0);">2</a>
+                                <a class="dropdown-item _feedbackloops_{{order_number}}" href="javascript:void(0);">3</a>
+                                <a class="dropdown-item _feedbackloops_{{order_number}}" href="javascript:void(0);">4</a>
+                                <a class="dropdown-item _feedbackloops_{{order_number}}" href="javascript:void(0);">5</a>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="col-3">
+                        <label for="resolution_{{order_number}}" class="small">Resolution</label>
+                        <div class="input-group mb-3">
+                            <select  class="form-control"  aria-labelledby="dropdownMenuButton" name="resolution_{{order_number}}" id="resolution_{{order_number}}" aria-label="Desired resolution for this video" {% if is_editable is False %} disabled {% endif %}>
+                                {% for item in resolutions %}
+                                    <option value="{{item.id}}">{{ item.name }} ({{item.width}}:{{item.height}})</option>
+                                {% endfor %}
+                            </select>
+
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <label for="subtitles_{{order_number}}" class="small">Subtitles ({{edit_mode}})</label>
+                        <div class="input-group mb-3">
+                            <select  class="form-control" {% if edit_mode is not True %} multiple="true" {% endif %} aria-labelledby="dropdownMenuButton" name="subtitles_{{order_number}}" id="subtitles_{{order_number}}" aria-label="Desired subtitles for this video" {% if is_editable is False %} disabled {% endif %}>
+                                {% for item in languages %}
+                                    <option value="{{item.id}}" name="option{{ item.id }}">{{item.name}} ({{item.abbreviation}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- Form Group (organization name)-->
+                        <div class="form-group col-md-12">
+                            <label class="small mb-1" for="videodescription_{{order_number}}">Video description</label>
+                            <textarea class="form-control" id="videodescription_{{order_number}}" rows="10">{{video.change_log}}</textarea>
+                        </div>
+                        <!-- Form Group (location)-->
+                    </div>
+                </div>
+                <div class="row justify-content-end mt-2">
+                    <div class="col-11">
+
+                    </div>
+                    <div class="col-1">
+                        {% if is_editable %}
+                            <button id="btn_save_video_{{order_number}}" class="btn btn-sm btn-primary" type="button">Save</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="projectID_{{order_number}}" value="{{project_id}}" />
+            <input type="hidden" id="videoID_{{order_number}}" value="{{video_id}}" />
+            <input type="hidden" id="project_filename_{{order_number}}" value="{{ projectvideo_filename }}" />
+    </form>
+</div>
+<!-- END VIDEO -->
+
+<script type="text/javascript">
+    {% if video %}
+        $("#resolution_{{order_number}}").val('{{ video.resolution.id }}')
+        $("#subtitles_{{order_number}}").val('{{ video.sub_language.id }}')
+    {% endif %}
+    $('._feedbackloops_{{order_number}}').on('click', function(){
+        $("#feedbackloops_{{order_number}}").val($(this).text());
+    });
+    $('._videoduration_{{order_number}}').on('click', function(){
+        $("#videoduration_{{order_number}}").val($(this).text());
+    });
+
+
+    $('#video_create_episodes_{{order_number}}').on('click', function(){
+        episodes_count =  $('#_episodes_{{order_number}}').val();
+        if($(this).is(':checked')) {
+            if (episodes_count == 1) {
+                $('#_divEpisodetitles').html('');
+                $('#_divVideotitles').show();
+            }
+            else {
+                $('#_divVideotitles').hide();
+
+                $('#_divEpisodetitles').html('');
+                for (ep=1; ep <= episodes_count; ep++){
+
+                    newHTML = '<div class="mt-2"><label for="videotitle_{{order_number}}_EP_' + ep + '">Episode ' + ep + ' title <span class="text-xs muted" id="videolengthindicator_{{ order_number }}_EP_' + ep + '">0/50</span></label>'
+                    newHTML += '<input type="text" class="form-control title_input episode_title" name="videotitle_{{order_number}}_EP_' + ep + '" data-id="{{order_number}}_EP_' + ep +'" id="videotitle_{{order_number}}_EP_' + ep + '" data-episode-number="' + ep + '" maxlength="50" aria-label="Episode ' + ep + ' video title"></div>'
+                    newHTML += '<small id="project_filename_template_{{order_number}}_EP_' + ep + '" class="form-text text-muted"></small>'
+                    $('#_divEpisodetitles').append(newHTML)
+                }
+                $('#_divEpisodetitles').show();
+            }
+        } else {
+            $('#_divEpisodetitles').html('');
+            $('#_divVideotitles').show();
+        }
+    });
+
+    $('._episodes_{{order_number}}').on('click', function(){
+        $("#_episodes_{{order_number}}").val($(this).text());
+        episodes_count = $(this).text();
+        if (episodes_count > 1) {
+            $('#_video_create_episodes_{{order_number}}').show();
+        } else {
+            $('#_video_create_episodes_{{order_number}}').hide();
+        }
+
+    });
+
+    function serializeEpisodesOld() {
+        episodes_count = $("#_episodes_{{order_number}}").val();
+
+        var episodes = [];
+        //if we create a series of episodes..
+        if ($('#video_create_episodes_{{order_number}}').is(':checked')) {
+            for (ep=1; ep <= episodes_count; ep++){
+                episode_input = '#videotitle_{{order_number}}_EP_' + ep;
+                console.log('input ' + episode_input);
+                let newEpisode = episodes.push($(episode_input).val());
+            }
+        } else {
+            //if we just create one episode with a certain episode number
+            episode_input = '#videotitle_{{order_number}}';
+            let newEpisode = episodes.push($(episode_input).val());
+        }
+        const jsonString = JSON.stringify(Object.assign({}, episodes))
+        return jsonString;
+    };
+
+    function serializeEpisodes() {
+        episodes_count = $("#_episodes_{{order_number}}").val();
+        if (!episodes_count) {
+            episodes_count = 0
+        }
+
+        var episode_list = [];
+        //if we create a series of episodes..
+        if ($('#video_create_episodes_{{order_number}}').is(':checked')) {
+            for (ep=1; ep <= episodes_count; ep++){
+                episode_input = '#videotitle_{{order_number}}_EP_' + ep;
+
+                var episode = {
+                    "number" : ep, //debug
+                    "title" : $(episode_input).val(),
+                }
+                let newEpisode = episode_list.push(episode);
+
+            }
+        } else {
+            //if we just create one episode with a certain episode number
+            episode_input = '#videotitle_{{order_number}}';
+
+            var episode = {
+                "number" : episodes_count,
+                "title" : $(episode_input).val(),
+            }
+            let newEpisode = episode_list.push(episode);
+        }
+        const episodeJSON = JSON.stringify(Object.assign({}, episode_list))
+        return episodeJSON;
+    };
+
+    //serializing in format: index:language_id
+    function serializeSubtitleLanguages() {
+        var subtitle_languages = [];
+        $('#subtitles_{{order_number}} option').each(function(i) {
+
+            if (this.selected == true) {
+                subtitle_languages.push(this.value);
+            }
+        });
+        const jsonString = JSON.stringify(Object.assign({}, subtitle_languages))
+        return jsonString;
+    }
+
+    function changeVideoMaxlengthDisplay(input_id, episode_number=0) {
+        input_field = '#videotitle_' + input_id
+
+        length_text = $(input_field).val().length + '/50'
+        $('#videolengthindicator_' + input_id).html(length_text)
+        filename = $('#project_filename_{{ order_number}}').val()
+        filename = filename.replace('FILENAME', $(input_field).val())
+        if (episode_number > 0) {
+            filename = filename.replace('DRAFT_', 'EP_' + episode_number + '_DRAFT_')
+        }
+        $('#project_filename_template_' + input_id).html(filename)
+    }
+
+    $(document).on('keyup change', '.title_input', function(e) {
+            $(this).val( $(this).val().replace(/ /g, "-") );
+            $(this).val( $(this).val().replace(/_/g, "-") );
+            input_id = $(this).data('id');
+            episode_number = $(this).data('episode-number');
+
+            input_field = '#videotitle_' + input_id
+            //if (e.which === 32)
+            //    return false;
+            //else
+            changeVideoMaxlengthDisplay(input_id, episode_number);
+
+        }
+    );
+
+    {% if is_inline %}
+        $("#btn_delete_{{order_number}}").on('click', function(){
+            $("#card_{{order_number}}").remove();
+        });
+    {% else %}
+        $("#btn_delete_{{order_number}}").on('click', function(){
+
+            Swal.fire({
+                    title: `Do you really want to delete this video?`,
+                    text: "You will not be able to recover this video!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    customClass: {
+                        confirmButton: 'btn btn-danger me-4',
+                        cancelButton: 'btn btn-primary',
+                    },
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel plx!",
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+                        var video_id = $("#videoID_{{order_number}}").val();
+                        if (video_id != "-1"){
+                            $.ajax({
+                                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                                url: "{% url 'FileCollector:delete-projectvideo-ajax' %}",
+                                data: {
+                                    "video_id": video_id,
+                                },
+                                type: 'POST',
+                                success: function (data) {
+
+                                }
+                            });
+                        }
+                        $("#card_{{order_number}}").remove();
+                    }
+                }
+            );
+        });
+    {% endif %}
+
+    $("#btn_save_video_{{order_number}}").on('click', function(){
+        /*if (!$("#create_video_form_{{order_number}}")[0].checkValidity()) {
+            $("#create_video_form_{{order_number}}").addClass('was-validated');
+            return false;
+        }*/
+        $("#btn_save_video_{{order_number}}").html('<div class="spinner-border spinner-border-sm text-white mr-2" role="status"><span class="sr-only">Loading...</span></div>Save');
+        if($('#video_create_episodes_{{order_number}}').is(":checked"))
+        { create_episodes = true;}
+        else { create_episodes = false; }
+
+        $.ajax({
+
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:save-projectvideo-ajax' %}",
+            data: {
+                "project_id": $('#projectID_{{order_number}}').val(),
+                "video_id": $('#videoID_{{order_number}}').val(),
+                "title": $('#videotitle_{{order_number}}').val(),
+                "duration": $('#videoduration_{{order_number}}').val(),
+                "resolution": $('#resolution_{{order_number}}').val(),
+                "subtitles" : serializeSubtitleLanguages(),
+                "feedbackloops": $('#feedbackloops_{{order_number}}').val(),
+                "description": $('#videodescription_{{order_number}}').val(),
+                "episodes" :  serializeEpisodes(),
+                "create_episodes": create_episodes
+            },
+            type: 'POST',
+            success: function (data) {
+                $("#btn_save_video_{{order_number}}").html('Save');
+                if (data.status){
+                    Toastify({
+                        text: "Saved video successfully",
+                        className: "info",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    $("#videoID_{{order_number}}").val(data.video_id);
+
+                    //if the box is called via the project videos page we want to close the box after finishing
+                    {% if is_inline %}
+                        $("#card_{{order_number}}").remove();
+                        loadProjectvideos();
+                    {% endif %}
+                }else{
+                    Swal.fire({
+                        icon: "error",
+                        title: `There has been an error`,
+                        text: "ERROR: " + data.message,
+                        confirmButtonText: "Noooo....",
+                        customClass: {
+                            confirmButton: 'btn btn-danger me-4',
+                            cancelButton: 'btn btn-primary',
+                        },
+                        buttonsStyling: false
+
+                    });
+                }
+
+            },
+
+        });
+    });
+</script>

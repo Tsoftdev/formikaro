@@ -1,0 +1,153 @@
+{% load humanize %}
+{% load custom_tags %}
+<!-- START VIDEO -->
+<div id="card_crew_{{order_number}}">
+    <form id="create_crew_form_{{order_number}}" class="needs-validation" novalidate>
+        <div class="form-row row ">
+            <div class="form-group col-md-3 ">
+                <div class="form-group">
+                    <label for="person_{{order_number}}" class="small">Person</label>
+                    <div class="input-group mb-3">
+                        <select class="form-control" id="person_{{order_number}}">
+                            {% for item in persons %}
+                                <option value="{{ item.id }}">{{ item.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-md-3 ">
+                <div class="form-group">
+                    <label for="userrole_{{order_number}}" class="small">Role</label>
+                    <div class="input-group mb-3">
+                        <select class="form-control" id="userrole_{{order_number}}">
+                            {% for item in userroles %}
+                                <option value="{{ item.id }}">{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-md-4 ">
+                <div class="form-group">
+                    <label for="crewremark_{{order_number}}" class="small">Remark</label>
+                    <div class="input-group mb-6">
+                        <input type="text" class="form-control" id="crewremark_{{order_number}}" required value="{{ crew.remark }}">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group col-md-2">
+                <div class="form-group">
+                    <div class="input-group mt-4 pt-1 text-right" style="display: block;">
+                        <b id="btn_del_crew_{{order_number}}" class="btn btn-transparent-dark btn-icon" role="button" aria-expanded="false" aria-controls="">
+                            <i data-feather="trash"></i>
+                        </b>
+                        <b id="btn_save_crew_{{order_number}}" class="btn btn-transparent-dark btn-icon">
+                            <i data-feather="save"></i>
+                        </b>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input type="hidden" id="crewID_{{order_number}}" value="{{ crew_id }}" />
+        <input type="hidden" id="shootID_{{order_number}}" value="{{ shoot_id }}" />
+        <input type="hidden" id="settingsID_{{order_number}}" value="{{ setting_ids }}" />
+    </form>
+</div>
+<!-- END VIDEO -->
+<script type="text/javascript">
+    {% if crew %}
+        $("#person_{{order_number}}").val('{{ crew.person.id }}');
+        $("#userrole_{{order_number}}").val('{{ crew.role.id }}');
+    {% endif %}
+    
+    $("#btn_del_crew_{{order_number}}").on('click', function(){
+        
+        swal({
+                title: `Do you really want to delete this Crew?`,
+                text: "You will not be able to recover this Crew!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    var crew_id = $("#crewID_{{order_number}}").val();
+                    if (crew_id != "-1"){
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-shootcrew-ajax' %}",
+                            data: {
+                                "crew_id": crew_id,
+                                "shoot_id": $('#shootID_{{order_number}}').val()
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                $("#_divCameraList").html("");
+                                var setting_ids = $("#settingsID_{{order_number}}").val().toString().split(',').filter(function(e) { return e !== '' });
+                                currentCameraOrder = 1;
+                                for (var camera_id of setting_ids){
+                                    appendCamera(camera_id, $("#shootID_{{order_number}}").val(), currentCameraOrder);
+                                    currentCameraOrder++;
+                                }
+                            }
+                        });
+                    }
+                    $("#card_crew_{{order_number}}").remove();
+                }
+            }
+        );
+    });
+    $("#btn_save_crew_{{order_number}}").on('click', function(){
+        if (!$("#create_crew_form_{{order_number}}")[0].checkValidity()) {
+            $("#create_crew_form_{{order_number}}").addClass('was-validated');
+            return false;
+        }
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:save-shootcrew-ajax' %}",
+            data: {
+                "crew_id": $("#crewID_{{order_number}}").val(),
+                "shoot_id": $('#shootID_{{order_number}}').val(),
+                "person_id": $('#person_{{order_number}}').val(),
+                "role_id": $('#userrole_{{order_number}}').val(),
+                "remark": $('#crewremark_{{order_number}}').val()
+            },
+            type: 'POST',
+            success: function (data) {
+                if (data.status){
+                    Toastify({
+                        text: "Saved crew successfully",
+                        className: "info",
+                        style: {
+                          background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    
+                    if ($("#crewID_{{order_number}}").val() == "-1"){
+                        $("#btn_add_camera").show();
+                    }
+                    $("#crewID_{{order_number}}").val(data.crew_id);
+                    $("#_divCameraList").html("");
+                    var setting_ids = $("#settingsID_{{order_number}}").val().toString().split(',').filter(function(e) { return e !== '' });
+                    currentCameraOrder = 1;
+                    for (var camera_id of setting_ids){
+                        appendCamera(camera_id, $("#shootID_{{order_number}}").val(), currentCameraOrder);
+                        currentCameraOrder++;
+                    }
+                }else{
+                    swal({
+                        icon: "waring",
+                            title: `There has been an error`,
+                            text: "ERROR: " + data.message,
+                            confirmButtonClass: "btn-danger",
+                        });
+                }
+                
+            },
+
+        });
+    });
+</script>

@@ -1,0 +1,372 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Video Detailed View {% endblock %}
+{% block content %}
+
+
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="arrow-right-circle"></i></div>
+                        Wizard
+                    </h1>
+                    <div class="page-header-subtitle">Create a new client/company/project</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+<div class="container mt-n10">
+    <!-- Wizard card example with navigation-->
+    <div class="card">
+        <div class="card-header border-bottom">
+            <!-- Wizard navigation-->
+            <div class="nav nav-pills nav-justified flex-column flex-xl-row nav-wizard" id="cardTab" role="tablist">
+                <!-- Wizard navigation item 1-->
+                <a class="nav-item nav-link active" id="wizard1-tab" href="#wizard1" data-toggle="tab" role="tab" aria-controls="wizard1" aria-selected="true">
+                    <div class="wizard-step-icon">1</div>
+                    <div class="wizard-step-text">
+                        <div class="wizard-step-text-name">Company Setup</div>
+                        <div class="wizard-step-text-details">Company information</div>
+                    </div>
+                </a>
+                <!-- Wizard navigation item 2-->
+                <a class="nav-item nav-link" id="wizard2-tab" href="#wizard2" data-toggle="tab" role="tab" aria-controls="wizard2" aria-selected="true">
+                    <div class="wizard-step-icon">2</div>
+                    <div class="wizard-step-text">
+                        <div class="wizard-step-text-name">Client's Details</div>
+                        <div class="wizard-step-text-details">Detail client info</div>
+                    </div>
+                </a>
+                <!-- Wizard navigation item 3-->
+                <a class="nav-item nav-link" id="wizard3-tab" href="#wizard3" data-toggle="tab" role="tab" aria-controls="wizard3" aria-selected="true">
+                    <div class="wizard-step-icon">3</div>
+                    <div class="wizard-step-text">
+                        <div class="wizard-step-text-name">Project Details</div>
+                        <div class="wizard-step-text-details">Notification and account options</div>
+                    </div>
+                </a>
+                <!-- Wizard navigation item 4-->
+                <a class="nav-item nav-link" id="wizard4-tab" href="#wizard4" data-toggle="tab" role="tab" aria-controls="wizard4" aria-selected="true">
+                    <div class="wizard-step-icon">4</div>
+                    <div class="wizard-step-text">
+                        <div class="wizard-step-text-name">Review &amp; Submit</div>
+                        <div class="wizard-step-text-details">Review and submit changes</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="cardTabContent">
+                <!-- Wizard tab pane item 1-->
+                <div class="tab-pane py-5 py-xl-10 fade show active" id="wizard1" role="tabpanel" aria-labelledby="wizard1-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-xxl-6 col-xl-8">
+                            <h3 class="text-primary">Step 1</h3>
+                            <h5 class="card-title">Does the company already exist in the system?</h5>
+                            If yes just choose the right one and continue:
+                            <form>
+                                <div class="form-group">
+                                    <select class="form-control" name="companySelect" id="companySelect">
+                                        <option>---</option>
+                                        {% for company in companies %}
+                                        <option value="{{company.id}}">{{company.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+                            <h5 class="card-title mt-5">If not just enter the information here:</h5>
+                            <form>
+                                <div class="form-group">
+                                    <label class="small mb-1 " for="companyname">Company name</label>
+                                    <input class="form-control" id="companyname" type="text" placeholder="Enter company name" value="companyname" />
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-8">
+                                        <label class="small mb-1" for="companystreet">Street</label>
+                                        <input class="form-control" id="companystreet" type="text" placeholder="Enter company street address" value="Street" />
+                                    </div>
+
+                                    <div class="form-group col-md-4">
+                                        <label class="small mb-1" for="companystreetnumber">Street number</label>
+                                        <input class="form-control" id="companystreetnumber" type="text" placeholder="Enter company street number" value="1,2,.." />
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label class="small mb-1" for="companyzip">ZIP</label>
+                                        <input class="form-control" id="companyzip" type="text" placeholder="Enter company zip code" value="1010" />
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label class="small mb-1" for="inputLocation">City</label>
+                                        <input class="form-control" id="inputLocation" type="text" placeholder="Enter your location" value="Wien" />
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label class="small mb-1" for="companycountry">Country</label>
+                                        <select class="form-control" id="companycountry" type="text" name="vat" placeholder="Enter company country" value="" >
+                                            {% for country in countries %}
+                                            <option value="{{country.id}}">{{country.name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row mt-1">
+                                    <div class="form-group col-md-4 mb-md-0">
+                                        <label class="small mb-1" for="companyemailaddress">Email address</label>
+                                        <input class="form-control" id="companyemailaddress" type="email" placeholder="Enter company email address" value="name@example.com" />
+                                    </div>
+
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="companywebsite">Website</label>
+                                        <input class="form-control" id="companywebsite" type="text" name="vat" placeholder="Enter company web site" value="www.testsite.com" />
+                                    </div>
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="companywebsite">Main language</label>
+                                        <select class="form-control" id="companywebsite" type="text" name="vat" placeholder="Enter company main language" value="" >
+                                            {% for language in languages %}
+                                            <option value="{{language.id}}">{{language.name}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row mt-2">
+                                    <div class="form-group col-md-4 mb-md-0">
+                                        <label class="small mb-1" for="companyabbreviation">Abbreviation</label>
+                                        <input class="form-control" id="companyabbreviation" type="text" placeholder="Enter company abbreviation" value="CTM" />
+                                    </div>
+                                    <div class="form-group col-md-4 mb-md-0">
+                                        <label class="small mb-1" for="companyphonenumber">Phone number</label>
+                                        <input class="form-control" id="companyphonenumber" type="tel" placeholder="Enter company phone number" value="01 23232323" />
+                                    </div>
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="companyvat">VAT</label>
+                                        <input class="form-control" id="companyvat" type="text" name="vat" placeholder="Enter company vat number" value="ATU123123" />
+                                    </div>
+                                </div>
+
+
+                                <div class="form-row mt-2">
+                                    <div class="form-group col-md-12 mb-md-0">
+                                        <label class="small mb-1" for="companydescription">Description</label>
+                                        <textarea class="form-control" id="companydescription" rows="3"></textarea>
+                                    </div>
+                                </div>
+
+                                <hr class="my-4" />
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-light disabled" type="button" disabled>Previous</button>
+                                    <button class="btn btn-primary" type="button">Next</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Wizard tab pane item 2-->
+                <div class="tab-pane py-5 py-xl-10 fade" id="wizard2" role="tabpanel" aria-labelledby="wizard2-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-xxl-6 col-xl-8">
+                            <h3 class="text-primary">Step 2</h3>
+                            <h5 class="card-title">Does the client already exist in the system?</h5>
+                            If yes just choose the right one and continue:
+                            <form>
+                                <div class="form-group">
+                                    <select class="form-control" name="clientSelect" id="clientSelect">
+                                        <option>---</option>
+                                        {% for client in clients %}
+                                        <option value="{{client.id}}">{{client.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </form>
+
+                            <h5 class="card-title mt-5">If not just enter the information here:</h5>
+                            <form>
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label class="small mb-1" for="clientfirstname">First name</label>
+                                        <input class="form-control" id="clientfirstname" type="text" placeholder="Enter client first name" value="Xania" />
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="small mb-1" for="clientsecondname">Second name</label>
+                                        <input class="form-control" id="clientsecondname" type="text" placeholder="Enter client second name" value="Musterfrau" />
+                                    </div>
+                                </div>
+
+                                <div class="form-row mt-2">
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="clientphone">Phone number</label>
+                                        <input class="form-control" id="clientphone" type="phone" placeholder="Enter client abbreviation" value="01123231" />
+                                    </div>
+                                    <div class="form-group col-md-4 mb-md-0">
+                                        <label class="small mb-1" for="clientemailaddress">Email address</label>
+                                        <input class="form-control" id="clientemailaddress" type="email" placeholder="Enter client email address" value="name@example.com" />
+                                    </div>
+
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="companywebsite">Main language</label>
+                                        <select class="form-control" id="companywebsite" type="text" name="vat" placeholder="Enter company main language" value="" >
+                                            {% for language in languages %}
+                                            <option value="{{language.id}}">{{language.name}}</option>
+                                            {% endfor %}
+
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row mt-2">
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="companyabbreviation">Abbreviation</label>
+                                        <input class="form-control" id="companyabbreviation" type="text" placeholder="Enter company abbreviation" value="CLT" />
+                                    </div>
+                                    <div class="form-group col-md-4 mb-md-0">
+                                        <label class="small mb-1" for="clientshop_customer_id">Shop customer id</label>
+                                        <input class="form-control" id="clientshop_customer_id" type="text" placeholder="Enter client shop id" value="1" />
+                                    </div>
+
+
+                                    <div class="form-group col-md-4 mb-0">
+                                        <label class="small mb-1" for="client_shop_username">Shop username</label>
+                                        <input class="form-control" id="client_shop_username" type="text" placeholder="Enter client shop user name" value="fancyshopper" />
+                                    </div>
+                                </div>
+
+
+                                <hr class="my-4" />
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-light" type="button">Previous</button>
+                                    <button class="btn btn-primary" type="button">Next</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Wizard tab pane item 3-->
+                <div class="tab-pane py-5 py-xl-10 fade" id="wizard3" role="tabpanel" aria-labelledby="wizard3-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-xxl-6 col-xl-8">
+                            <h3 class="text-primary">Step 3</h3>
+                            <h5 class="card-title">Define project name and specs</h5>
+                            <form>
+                              <!-- start project create -->
+                                <div class="form-group  input-group-lg">
+                                <label class="small mb-1" for="inputProject">Project name (will be used accross the system to identify this project)</label>
+                                <input class="form-control" id="inputProject" type="text" placeholder="My project" value="project name" />
+                            </div>
+                            <!-- Form Row-->
+                            <div class="form-row">
+                                <!-- Form Group (abbreviation)-->
+                                <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="inputFirstName">Abbreviation</label>
+                                    <input class="form-control" id="inputFirstName" type="text" aria-label="this will mark all output files of this project" placeholder="Enter the project abbreviation" value="ABR" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="inputshootingdays">Shooting days</label>
+                                     <div class="input-group mb-3">
+                                   <input class="form-control" id="inputshootingdays" type="text" placeholder="Enter number of shooting days" value="1" />
+                                     <div class="dropdown">
+                                        <button class="btn dropdown-toggle" id="dropdownShootingDaysPreset" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#!">0.5</a>
+                                            <a class="dropdown-item" href="#!">1</a>
+                                            <a class="dropdown-item" href="#!">1.5</a>
+                                            <a class="dropdown-item" href="#!">2</a>
+                                            <a class="dropdown-item" href="#!">2.5</a>
+                                            <a class="dropdown-item" href="#!">3</a>
+                                        </div>
+                                     </div></div>
+                                </div>
+                                  <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="reportrange">Deadline</label>
+                                    <button class="btn btn-light btn-sm line-height-normal p-3 form-control" id="reportrange">
+                                        <i class="mr-2 text-primary" data-feather="calendar"></i>
+                                        <span></span>
+                                        <i class="ml-1" data-feather="chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <!-- Form Row        -->
+                            <div class="form-row">
+                                <!-- Form Group (organization name)-->
+                                <div class="form-group col-md-12">
+                                    <label class="small mb-1" for="inputOrgName">Project description</label>
+                                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="10"></textarea>
+                                </div>
+                                <!-- Form Group (location)-->
+
+                            </div>
+
+
+                                <!-- end project create -->
+                                <hr class="my-4" />
+                                <div class="d-flex justify-content-between">
+                                    <button class="btn btn-light" type="button">Previous</button>
+                                    <button class="btn btn-primary" type="button">Next</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- Wizard tab pane item 4-->
+                <div class="tab-pane py-5 py-xl-10 fade" id="wizard4" role="tabpanel" aria-labelledby="wizard4-tab">
+                    <div class="row justify-content-center">
+                        <div class="col-xxl-6 col-xl-8">
+                            <h3 class="text-primary">Step 4</h3>
+                            <h5 class="card-title">Review the following information and submit</h5>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Username:</em></div>
+                                <div class="col">username</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Name:</em></div>
+                                <div class="col">Valerie Luna</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Organization Name:</em></div>
+                                <div class="col">Start Bootstrap</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Location:</em></div>
+                                <div class="col">San Francisco, CA</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Email Address:</em></div>
+                                <div class="col">name@example.com</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Phone Number:</em></div>
+                                <div class="col">555-123-4567</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Birthday:</em></div>
+                                <div class="col">06/10/1988</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Credit Card Number:</em></div>
+                                <div class="col">**** **** **** 1111</div>
+                            </div>
+                            <div class="row small text-muted">
+                                <div class="col-sm-3 text-truncate"><em>Credit Card Expiration:</em></div>
+                                <div class="col">06/2024</div>
+                            </div>
+                            <hr class="my-4" />
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-light" type="button">Previous</button>
+                                <button class="btn btn-primary" type="button">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,520 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% block title %}Create Asset {% endblock %}
+{% block style_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" integrity="sha512-f8gN/IhfI+0E9Fc/LKtjVq4ywfhYAVeMGKsECzDUHcFJ5teVwvKTqizm+5a84FINhfrgdvjX8hEJbem2io1iTA==" crossorigin="anonymous" />
+{% endblock %}
+{% block content %}
+    <main>
+        <header class="page-header page-header-light bg-light mb-0">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="file-plus"></i></div>
+                                Create Asset
+                            </h1>
+                            <div class="page-header-subtitle">Here you can create an asset to the Formikaro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container-md">
+            <div class="card">
+                <form id="create_asset_form" class="needs-validation" novalidate>
+                    <!-- action="{% url 'FileCollector:create_asset'  %}"  method="post"> -->
+                    {% csrf_token %}
+                    <div class="card-header">Create asset 
+                        <span id="sp_client_company">
+                            {% if client %}
+                                for client <a href="{% url 'FileCollector:client_assets'  client.id %}">{{client}}</a>
+                            {% elif company %}
+                                for company <a href="{% url 'FileCollector:company_assets'  company.id %}">{{company}}</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="alert alert-success" role="alert" id="result_go"></div>
+                                        <div class="alert alert-danger" role="alert" id="result_error"></div>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <div class="form-group">
+
+                                            <input type="hidden" name="company_id" id="company_id" value="{{company.id}}">
+                                            <input type="hidden" name="client_id" id="client_id" value="{{client.id}}">
+                                            <input type="hidden" name="project_id" id="client_id" value="{{project.id}}">
+                                            <input type="hidden" name="product_id" id="product_id" value="{{product.id}}">
+
+                                            <div class="row">
+                                                <div class="col-4 text-center">
+                                                    <label for="selectClient" class="bg-dark text-gray-100 w-100 p-2">Preset</label></div>
+                                                <div class="col-8" id="assetsContainer">
+                                                    <select class="form-control text-xs" name="typeSelectAssetPreset" id="typeSelectAssetPreset">
+                                                        {% if asset_presets %}
+
+                                                        {% for assset_preset in asset_presets %}
+                                                        <option value="{{assset_preset.id}}">{{assset_preset.name}} <span class="text-xs"> ({{assset_preset.title}})</span></option>
+
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                    </select>
+                                                </div></div></div></div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-auto">
+                                        <div class="form-group"><label for="assetName" class="text-dark">Name</label><input class="form-control" id="assetName" name="assetName" type="text" placeholder="assets name" required>
+                                            <div class="invalid-feedback">
+                                                Please give the asset a name (iE COLOR_1)
+                                            </div>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+
+                                        <div class="form-group" id="assetTypeGroup">
+                                            <label for="selectCompany" class="text-dark">Asset Type</label>
+                                            <select class="form-control" name="assetType" id="assetType">
+                                                {% for asset_type in asset_types %}
+                                                <option value="{{asset_type.id}}">{{asset_type.title}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-auto">
+                                        <div class="form-group has-validation" id="valueGroup">
+
+                                            <label for="assetValue" class="text-dark">Value <span id="maxCharacters" class="text-xs"></span></label>
+                                            <input class="form-control" id="assetValue"  name="assetValue"  type="text" placeholder="value" >
+                                            <div class="invalid-feedback">
+                                                Please set a value 
+                                            </div>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-auto">
+                                        <div class="form-group" id="fileGroup">
+                                            <label for="asset_filename" class="text-dark">Filename</label>
+                                            <div class="input-group mb-3">
+
+                                                <input type="text" class="form-control" id="asset_filename"  name="assetFilename" aria-label="" required>
+                                                <span class="input-group-text" id="asset_extension">x</span>
+
+                                            </div>
+                                            <div class="valid-feedback">
+                                                Looks good!
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="assetJSON">
+
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="jsonCheck" type="checkbox">
+                                        <label class="custom-control-label text-dark" for="jsonCheck">JSON needed</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="assetJSONGroup">
+                                    <label for="exampleFormControlTextarea1" class="text-dark" >JSON</label>
+                                    <textarea class="form-control" id="assetJSON" name="assetJSON" rows="3"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="assetSource" class="text-dark">Source</label><select class="form-control" id="assetSource" name="assetSource">
+                                    <option value="EXAU">External Auto</option>
+                                    <option value="EXMA">External Manual</option>
+                                    <option value="INAU">Internal Auto</option>
+                                    <option value="INMA">Internal Manual</option>
+
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="companyOwned">
+
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="checkCompany" name="checkCompany" type="checkbox">
+                                        <label class="custom-control-label" for="checkCompany" class="text-dark">Company owned?</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="selectCompanyGroup">
+                                    <label for="selectCompany" class="text-dark">Company</label>
+                                    <select class="form-control" name="selectCompany" id="selectCompany" name="selectCompany">
+                                        <option>---</option>
+                                        {% for company in companies %}
+                                        <option value="{{company.id}}">{{company.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="form-group" id="clientOwned">
+
+                                    <div class="custom-control custom-checkbox">
+                                        <input class="custom-control-input" id="checkClient" name="checkClient" type="checkbox">
+                                        <label class="custom-control-label" for="checkClient">Client owned?</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="selectClientGroup">
+                                    <label for="selectClient">Client</label>
+                                    <select class="form-control" name="selectClient" id="selectClient">
+                                        {% for client in clients %}
+                                        <option value="{{client.id}}">{{client}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <b class="btn btn-dark" id="createAssetbutton">Create Asset</b>
+                                <b class="btn btn-dark" id="createAssetAnotherbutton">Create Asset & create another</b>
+                                <b class="btn btn-light" id="createPrestbutton">Create Preset</b>
+
+                            
+                            </div>
+                            <div class="col-6 ">
+                                <div class="mb-4">
+                                    <strong>General information:</strong><br>
+                                    <br>
+                                    An asset is a data value or file that is needed for the production of a product.<br>
+                                    It is either owned by a Company or Client (later also projects) and lives in the companies/clients folder.<br>
+                                </div>
+                                <div class="form-group" id="assetDescriptionGroup">
+                                    <label for="assetDescription" class="text-dark" >Description</label>
+                                    <textarea class="form-control" id="assetDescription" name="assetDescription" rows="10"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- End page content -->
+    </main>
+{% endblock %}
+{% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+    <script type="text/javascript">
+
+        $('#assetJSON').change(function() {
+            $('#assetJSONGroup').toggle()
+        });
+
+        $('#checkCompany').change(function() {
+            if ($(this).is(':checked')) 
+            {
+                $('#selectCompanyGroup').show();
+                console.log($("#selectCompany").val());
+                if ($("#selectCompany").val() && $("#selectCompany").val() != "---"){
+                    var url = "{% url 'FileCollector:company_assets' 123 %}";
+                    $("#sp_client_company").html(`for company <a href="${url.replace("123", $("#selectCompany").val())}">${$("#selectCompany option:selected").text()}</a>`);
+                }
+            }
+            else {
+                $('#selectCompanyGroup').hide()
+                $("#sp_client_company").html("");
+            }
+        });
+
+        $('#checkClient').change(function() {
+            if ($(this).is(':checked')) 
+            {
+                $('#selectClientGroup').show();
+                if ($('#selectClient').val()){
+                    var url = "{% url 'FileCollector:client_assets' 123 %}";
+                    $("#sp_client_company").html(`for client <a href="${url.replace("123", $('#selectClient').val())}">${$("#selectClient option:selected").text()}</a>`);
+                }
+            } else {
+                $('#selectClientGroup').hide();
+                $("#sp_client_company").html("");
+            }
+        });
+        
+        // load asset type settings
+        $('#assetType').change(function(){
+            $.ajax({
+                type:"GET",
+                dataType: 'json',
+                url: "/getAssetType",
+                data:{
+                    asset_type_id: assetType.value
+                },
+
+                success: function( data ) 
+                { 
+                    console.log("got data") 
+                    console.log(data);
+
+                    var array = data;
+                    //$('#assetName').val(data[1])
+                    //$('#assetValue').val(data[2])
+
+                    //if it's a file
+                    if (data[3]) {
+                        $('#fileGroup').show()
+                        $('#valueGroup').hide()
+                        $('#asset_extension').html('.' + data[2])
+                        $('#asset_value').prop('required',false);
+                        $('#asset_filename').prop('required',true);
+                        // $('#asset_filename').val(data[2])
+
+                    } else {
+                        $('#fileGroup').hide()
+                        $('#valueGroup').show()
+                        $('#asset_value').prop('required',true);
+                        $('#asset_filename').prop('required',false);
+
+                    }
+                    // $('#assetSource').val(data[6])
+
+                    if (data[4]) {
+
+                        $('#assetValue').attr('maxlength', data[4])
+                        $('#maxCharacters').html('(max ' + data[4] + ' characters)') // set max length of value
+
+                    } else {
+                        $('#assetValue').removeAttr('maxlength')
+                        $('#maxCharacters').html('');
+                    }
+                }
+            })
+        });
+        // CHANGE ASSET PRESET
+        $('#typeSelectAssetPreset').change(function(){
+            changeTypeSelectAssetPreset();
+        });
+        changeTypeSelectAssetPreset();
+        function changeTypeSelectAssetPreset(){
+            $.ajax({
+                type:"GET",
+                dataType: 'json',
+                url: "/getAssetPreset",
+                data:{
+                    asset_preset_id: typeSelectAssetPreset.value
+                },
+                success: function( data ){ 
+                    var array = data;
+                    $('#assetName').val(data[1])
+                    $('#assetValue').val(data[2])
+                    if (data[3]) {
+                        $('#fileGroup').show()
+                        $('#valueGroup').hide()
+                        $('#asset_extension').html('.' + data[4])
+                        $('#asset_filename').val(data[2])
+                    } else {
+                        $('#fileGroup').hide()
+                        $('#valueGroup').show()
+                    }
+                    $('#assetSource').val(data[6])
+                    if (data[5]) {
+                        $('#assetValue').attr('maxlength', data[5])
+                        $('#maxCharacters').html('(max ' + data[5] + ' characters)') // set max length of value
+                    } else {
+                        $('#assetValue').removeAttr('maxlength')
+                        $('#maxCharacters').html('');
+                    }
+                    $('#assetType').val(data[7])
+                }
+            })
+        }
+        // CHANGE COMPANY
+        $('#selectCompany').change(function(){
+            var url = "{% url 'FileCollector:company_assets' 123 %}";
+            $("#sp_client_company").html(`for company <a href="${url.replace("123", selectCompany.value)}">${$("#selectCompany option:selected").text()}</a>`);
+            function removeOptions(selectElement) {
+                var i, L = selectElement.options.length - 1;
+                for(i = L; i >= 0; i--) {
+                    selectElement.remove(i);
+                }
+            }
+
+            $.ajax({
+                type:"GET",
+                dataType: 'json',
+                url: "/selectclients",
+                data:{
+                    company_id: selectCompany.value
+                },
+
+                success: function( data ) 
+                { 
+                    console.log("got data") 
+                    console.log(data);
+                    removeOptions(document.getElementById('selectClient'));
+                    //$( '#like' ).text(data);
+                    var array = data.clients;
+                    if (array != '')
+                    {
+                        for (i in array) {                        
+                            $("#selectClient").append("<option value=\"" + array[i]["id"] +"\">"+ array[i]["name"] + "</option>");
+                        }
+                        if($('#checkClient').is(':checked')){
+                            var url = "{% url 'FileCollector:client_assets' 123 %}";
+                            $("#sp_client_company").html(`for client <a href="${url.replace("123", $('#selectClient').val())}">${$("#selectClient option:selected").text()}</a>`);
+                        }
+                    }
+                }
+            })
+        });
+
+        $('#selectClient').change(function(){
+            var url = "{% url 'FileCollector:client_assets' 123 %}";
+            $("#sp_client_company").html(`for client <a href="${url.replace("123", $('#selectClient').val())}">${$("#selectClient option:selected").text()}</a>`);
+        });
+        $(document).ready(function(){
+            var isNewAnother = false;
+            var isNewPreset = false;
+            var presetName = "";
+            $('#result_go').hide()
+            $('#result_error').hide()
+            $('#selectCompanyGroup').hide()
+            $('#selectClientGroup').hide()
+            $('#assetJSONGroup').hide()
+            $('#fileGroup').hide()
+            $('#asset_value').prop('required',true);
+            $('#asset_filename').prop('required',false);
+
+            if($('#company_id').val()) {
+                $('#checkCompany').prop('checked',true);
+
+                $('#selectCompanyGroup').show()
+                $('#selectCompany').val($('#company_id').val())
+                $('#selectCompany').change()
+            }
+
+            if($('#client_id').val()) {
+                $('#checkClient').prop('checked',true);
+                $('#selectCompany').change()
+                $('#selectClientGroup').show()
+                $('#selectClient').val($('#client_id').val())
+                $('#selectClient').change()
+            }
+            $("#createAssetbutton").on('click', function(){
+                isNewAnother = false;
+                isNewPreset = false;
+                // $("form").submit();
+                form_submit();
+            });
+            $("#createAssetAnotherbutton").on('click', function(){
+                isNewAnother = true;
+                isNewPreset = false;
+                form_submit();
+            });
+            $('#createPrestbutton').click(function() {
+                $('#checkCompany').prop('checked', false);
+                $('#selectCompanyGroup').hide();
+                $('#checkClient').prop('checked', false);
+                $('#selectClientGroup').hide();
+                
+                swal({
+                    title: `Please give preset name:`,
+                    text: "preset name:",
+                    type: "input",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Save",
+                    cancelButtonText: "Cancel",
+                },
+                function(inputValue){
+                    if (inputValue === null || inputValue === "") return false;
+                    if (inputValue){
+                        console.log(inputValue);
+                        isNewPreset = true;
+                        presetName = inputValue;
+                        form_submit();
+                    }
+                    
+                });
+            });
+            function form_submit(){
+                if (!$("#create_asset_form")[0].checkValidity()) {
+                    $("#create_asset_form").addClass('was-validated');
+                    return false;
+                }
+                $('#createAssetbutton').prop('disabled', true);
+                $('#result_go').hide()
+                $('#result_error').hide()
+                
+                if (isNewPreset){
+                    console.log("BBBBB");
+                    var formValues= $("#create_asset_form").serialize();
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:create_presetasset_ajax' %}",
+                        data: formValues + "&preset_name=" + presetName,
+                        type: 'POST',
+                        success: function (data) {
+                            console.log(data);
+                            var data = JSON.parse(data);
+                            if (data[0] == true) {
+                                location.reload();
+                            }else{
+                                $('#result_error').html(data[1]);
+                                $('#result_error').show();
+                                $('#result_error').fadeIn();
+                                $('body,html').animate({
+                                    scrollTop: 0
+                                }, 400);
+                            }
+                            
+                        }
+                    });
+                }else{
+                    console.log("AAAAA");
+                    var formValues= $("#create_asset_form").serialize();
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:create_asset_ajax' %}",
+                        data: formValues,
+                        type: 'POST',
+                        success: function (data) {
+                            var data = JSON.parse(data);
+                            if (data[0] == true) {
+                                $('#result_go').html(data[1]);
+                                $('#result_go').show();
+                                $('#result_go').fadeIn();
+                                //if successfull we clear the form
+                                if (isNewAnother == false){
+                                    $( '#create_asset_form' ).each(function(){
+                                        this.reset();
+                                    });
+                                }else{
+                                    $("#assetName").val("");
+                                    $("#valueGroup").val("");
+                                    $("#assetValue").val("");
+                                    $("#create_asset_form").removeClass('was-validated');
+                                }
+                            } else {
+                                $('#result_error').html(data[1]);
+                                $('#result_error').show();
+                                $('#result_error').fadeIn();    
+                            }
+                            $('#createAssetbutton').prop('disabled', false);
+                            $('body,html').animate({
+                                scrollTop: 0
+                            }, 400);
+                            console.log("got response from post") 
+                            console.log(data);
+                        }
+                    });
+                   
+                }
+            }
+        });
+    </script>
+{% endblock %}        

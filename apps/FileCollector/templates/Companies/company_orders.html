@@ -1,0 +1,74 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Company Detailed View {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <!-- Begin Page Content -->
+        <!--                <div class="container-fluid">-->
+
+        <!-- Page Heading -->
+        <main>
+            <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                <div class="container-fluid">
+                    <div class="page-header-content">
+                        <div class="row align-items-center justify-content-between pt-3">
+                            <div class="col-auto mb-3">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="globe"></i></div>
+                                    Detail of company&nbsp;<strong>{{ company }}</strong>
+                                </h1>
+                                <div class="page-header-subtitle text-xs ">This company is in the system since {{ company.created }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- Main page content-->
+            <div class="container mt-4">
+                <!-- Account page navigation-->
+                <nav class="nav nav-borders">
+                    <a class="nav-link" href="{% url 'FileCollector:company_detail' company.id %}">Profile</a>
+                    <a class="nav-link" href="{% url 'FileCollector:company_assets' company.id %}">Assets</a>
+                    <a class="nav-link active ml-0" href="{% url 'FileCollector:company_orders' company.id %}">Orders</a>
+                    <a class="nav-link" href="{% url 'FileCollector:company_billing' company.id %}">Billing</a>
+                </nav>
+                <hr class="mt-0 mb-4" />
+
+                <div class="card mb-4">
+                    <div class="card-header">Orders of {{ company.name }}</div>
+                    <div class="card-body">
+                        <div class="datatable">
+
+
+{% if company_order_list %}
+
+                            <span class="text-xs">
+                            </span>
+                            {% include "Orders/order_template.html" with orders=company_order_list suffix='index'  %}
+                        {% else %}
+                             <p>No orders are available.</p>
+                        {% endif %}
+
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </main>
+        <!-- Donut Chart -->
+
+
+
+
+
+        <!--                </div>-->
+        <!-- End page content -->
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,54 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}FileCollector - Dashboard {% endblock %}</title>
+</head>
+<body>
+{% block content %}
+          <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+                        <div class="container">
+                            <div class="page-header-content pt-4">
+                                <div class="row align-items-center justify-content-between">
+                                    <div class="col-auto mt-4">
+                                        <h1 class="page-header-title">
+                                            <div class="page-header-icon"><i data-feather="layout"></i></div>
+                                            Orders
+                                        </h1>
+                          
+                                    </div>
+                                </div>
+                                <ol class="breadcrumb mb-0 mt-4">
+                                    <li class="breadcrumb-item"><a href="{% url 'FileCollector:orders'%}">Orders</a></li>
+                                    <li class="breadcrumb-item active">{{ status }}</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </header>
+ <!-- Main page content-->
+                    <div class="container mt-n10">
+                         <!-----------START TABLE------------------->
+                           <div class="card mb-4">
+                            <div class="card-header">Order by status [{{ status }}]</div>
+                            <div class="card-body">
+                                <div class="datatable">
+                                 {% if status_orders_list  %}
+
+                            <span class="text-xs">
+                            </span>
+                            {% include "Orders/order_template.html" with orders=status_orders_list  suffix='index'  %}
+                        {% else %}
+                          <p>No orders are available.</p>
+                        {% endif %}
+  </div>
+         </div>
+                        </div>
+    </div>
+                         <!-----------END TABLE------------------->
+
+{% endblock %}
+</body>
+</html>

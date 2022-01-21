@@ -1,0 +1,163 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}FileCollector - Dashboard {% endblock %}</title>
+</head>
+<body>
+{% block content %}
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="check-circle"></i></div>
+                        {% if task %}
+                        Task:&nbsp;<i>{{ task.name }}</i>&nbsp;[{{task.id}}]
+                        {% else %}
+                        wrong Task ID
+                        {% endif %}
+                    </h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+
+<div class="container mt-n10 text-xs">
+    <!-----------START TABLE------------------->
+    {% if task %}
+    <div class="row row-cols-1">
+        <div class="col">
+            <div class="card card-icon  mb-4">
+
+                <div class="row no-gutters">
+
+                    <div class="col-auto card-icon-aside bg-secondary"><i class="text-white-50" data-feather="clock"></i></div>
+                    <div class="col">
+                        <div class="card-body py-4">
+                            <h3>Timing information:</h3>
+                                                        <div class="row">
+                                <div class="col-2"><strong>Task created:</strong></div>
+                                <div class="col-10">{{task.created}} ({{task.created|naturaltime}})</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Start time:</strong></div>
+                                <div class="col-10">{{task.starttime}} ({{task.starttime|naturaltime}})</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Deadline:</strong></div>
+                                <div class="col-10">{{task.deadline}} ({{task.deadline|naturaltime}})</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>End time:</strong></div>
+                                <div class="col-10"> {{task.endtime}} ({{task.endtime|naturaltime}})</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Runtime:</strong></div>
+                                <div class="col-10">{{task.get_formated_runtime}} ({{task.runtime}})</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>In time:</strong></div>
+                                <div class="col-10"> -</div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <!-- general info -->
+            <div class="card card-icon  mb-4">
+                <div class="row no-gutters">
+                    <div class="col-auto card-icon-aside bg-primary"><i class="text-white-50" data-feather="share-2"></i></div>
+                    <div class="col">
+                        <div class="card-body py-4">
+                            <h3>General information:</h3>
+                            <div class="row">
+                                <div class="col-2"><strong>Name</strong></div>
+                                <div class="col">{{task.name}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Description</strong></div>
+                                <div class="col">{{task.description}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Project</strong></div>
+                                <div class="col">{% if project %} <a href="{% url 'FileCollector:project_dashboard' project.id %}" >{{project}}</a>
+                                {% else %} -
+                                {% endif %}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Creator:</strong></div>
+                                <div class="col"> {{task.creator}}  </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>User:</strong></div>
+                                <div class="col"> {{task.user}}  </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <!-- tech info -->
+            <div class="card card-icon  mb-4">
+                <div class="row no-gutters">
+                    <div class="col-auto card-icon-aside bg-green"><i class="text-white-50" data-feather="settings"></i></div>
+                    <div class="col">
+                        <div class="card-body py-4">
+                            <h3>Tech information:</h3>
+                            <div class="row">
+                                <div class="col-2"><strong>ID</strong></div>
+                                <div class="col">{{task.id}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Status</strong></div>
+                                <div class="col">{{task.get_status_display}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Mode:</strong></div>
+                                <div class="col"> {{task.get_mode_display}}  </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Unit price:</strong></div>
+                                <div class="col"> {{task.unitprice}}  </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Priority</strong></div>
+                                <div class="col"><div class="badge justify-content-center align-items-center {{ task.get_priority_val }} pl-3 pr-3 pt-1 pb-1">{{ task.priority }}</div></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'FileCollector:mytasks' %}" class="btn btn-primary">back to my tasks</a>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card mb-4 card-header-actions">
+    <div class="card-body">
+
+        <p>No task under ID [{{task_id}}].</p>
+        <a class="btn btn-primary" href="{% url 'FileCollector:mytasks' %}">back to my tasks</a>
+        {% endif %}
+    </div>
+</div>
+
+</div>
+<!-----------END TABLE------------------->
+
+{% endblock %}
+</body>
+</html>

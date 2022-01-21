@@ -1,0 +1,67 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% load static %}
+
+
+{% block style_css %}
+<style>
+        
+        .del-asset:hover{
+            color: #FF0000;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<!-- start page content-->
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="list"></i></div>
+                        Add a task
+                    </h1>
+                    <div class="page-header-subtitle">Here you can add a task manually</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="container mt-n10">
+
+    <div class="container mt-n10 mb-3">
+        <div class="row">
+            <div class="col-sm-8">
+                {% include "Tasks/add_task_template.html" with project_list=project_list preset_tasks=preset_tasks project=project task_types=task_types %}
+            </div>
+            <div class="col-sm-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tasks</h5>
+                    <p class="card-text">Here you can create a task or a task preset. Task presets can be used for recurring tasks and are a chill way to speed up your workflow.
+                        <br><br>
+
+                        <b>Type</b> what kind of work does your task involve most?<br><br>
+                        <b>Start time</b> if you set a start time the user will be reminded (in the future, not yet working) that he/she should start this task. If it's left empty the user can start whenever they want.<br><br>
+                        <b>Deadline</b> if you set a start time the user will be reminded (in the future, not yet working) that he/she a task should be finished at this deadline. The priority will increase as well. If it's left empty the user can finish whenever they want.<br><br>
+                        <b>Description</b> Let the user - or whoever reads this - know what this task was about. Something peticular the client wanted? Or maybe just an info to the other persons involved in this project.<br><br>
+                        <b>Mode</b> you can ignore for now.<br><br>
+
+                    </p>
+                    <a href="{% url 'FileCollector:mytasks' %}" class="btn btn-primary">Go to my tasks</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+    </div>
+</div>
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+
+{% endblock %}

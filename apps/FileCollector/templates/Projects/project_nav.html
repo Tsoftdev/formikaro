@@ -1,0 +1,46 @@
+<nav class="nav nav-borders">
+    {% if menuitem == 'dashboard' or menuitem == '' %}
+    <a class="nav-link active">Dashboard</a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_dashboard' project.id %}">Dashboard</a>
+    {% endif %}
+
+    {% if menuitem == 'detail' %}
+    <a class="nav-link active">Details <span class="badge bg-primary-soft text-primary ms-auto">new</span></a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_detail' project.id %}">Details <span class="badge bg-primary-soft text-primary ms-auto">new</span></a>
+
+    {% endif %}
+
+    {% if menuitem == 'intakes' %}
+    <a class="nav-link active">Intakes</a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_intakes' project.id %}">Intakes</a>
+    {% endif %}
+
+    {% if menuitem == 'videos' %}
+    <a class="nav-link active">Videos</a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_videos' project.id %}">Videos</a>
+    {% endif %}
+
+    {% if menuitem == 'shoots' %}
+    <a class="nav-link active">Shoots <span class="badge bg-primary-soft text-primary ms-auto">new</span></a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_shoots' project.id %}">Shoots <span class="badge bg-primary-soft text-primary ms-auto">new</span></a>
+    {% endif %}
+    {% if is_editable is True %}
+        {% if menuitem == 'billing' %}
+            <a class="nav-link active">Billing <span class="badge bg-primary-soft text-primary ms-auto">alpha</span></a>
+        {% else %}
+            <a class="nav-link" href="{% url 'FileCollector:project_billing' project.id %}">Billing <span class="badge bg-primary-soft text-primary ms-auto">alpha</span></a>
+        {% endif %}
+    {% endif %}
+
+    {% if menuitem == 'tasks' %}
+    <a class="nav-link active">Tasks</a>
+    {% else %}
+    <a class="nav-link" href="{% url 'FileCollector:project_tasks' project.id %}">Tasks</a>
+    {% endif %}
+</nav>
+<hr class="mt-0 mb-4" />

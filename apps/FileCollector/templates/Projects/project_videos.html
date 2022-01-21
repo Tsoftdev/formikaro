@@ -1,0 +1,337 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <header class="page-header page-header-light bg-white bg-shadow pb-10">
+
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+            <div class="container-fluid">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="list"></i></div>
+                                Detail of project {{ project.name }}
+                                [<strong>{{ project.id }}</strong>]
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </header>
+
+    <div class="container mt-n10">
+    <!-- Dashboard info widget 1-->
+    <div class="container mt-4">
+    <div class="row">
+        <div class="container">
+            {% include "Projects/project_nav.html" with menuitem="videos"  %}
+        </div>
+
+        <div class="col-lg-12">
+            <div class="card mb-4 bg-gray-300 card-header-actions mx-auto ">
+                <div class="card-header ">List of the expected project videos
+                    <button class="btn btn-sm text-white bg-primary" type="button" id="btn_add_project_video" aria-expanded="false" aria-controls="collapseAddProjectVideo">Add</button>
+                    <!--<button class="btn btn-transparent-dark btn-icon " type="button"  data-bs-toggle="collapse" data-bs-target="#collapseProjectVideos" aria-expanded="false" aria-controls="collapseProjectVideos"><i class="feather-icon" data-feather="minimize-2" alt="Add another video"></i></button>-->
+                </div>
+
+                <div class="card-body" id="collapseProjectVideos">
+                    <div id="_divVideoList">
+                    </div>
+                    <div id="_divLoadVideoProjectTemplate">
+             <div class="placeholder-glow">
+            <div>
+                <span class="placeholder col-2"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-4"></span>
+                <span class="placeholder col-1"></span>
+                 <span class="placeholder col-1"></span>
+
+            </div>
+        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4 card-header-actions">
+                <div class="card-header">List of the videos associated with project {{ project.name }}
+                    <button id="btn_consolidate" class="btn btn-sm text-white bg-primary">
+                        Consolidate</button>
+                </div>
+                <div class="card-body">
+                    {% if project.videos.all %}
+                        {% include "Videos/video_template.html" with videos=project.videos.all %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+
+        <hr class="mt-2 mb-4" />
+        <!-- Knowledge base main category card 1-->
+
+
+    </div>
+    <!-- End page content -->
+{% endblock %}
+{% block javascript %}
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="text/javascript">
+        var currentVideoCount = 0;
+
+        function loadProjectvideos() {
+            $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:load-project-videos-ajax' %}",
+                    data: {
+                        "project_id": {{ project.id }},
+                        "is_editable": '{% if is_editable %}1{% else %}0{% endif %}',
+
+                    },
+                    type: 'POST',
+                    success: function (data) {
+
+                       $('#_divLoadVideoProjectTemplate').html(data)
+                        feather.replace();
+                    }
+
+        })}
+
+        $(document).ready( function() {
+            loadProjectvideos();
+        });
+        $(document).on('click', '.btn_abort_assign_videos', function(){
+            var project_video_id = $(this).data('projectvideoid');
+            $('#sel_videos_' + project_video_id).hide();
+            $('.btn_assign_videos_' + project_video_id).hide();
+            $(this).hide();
+
+        });
+
+        $(document).on('click', '.btn_assign_video', function(){
+
+            var project_video_id = $(this).data('projectvideoid');
+            var video_id = $("#sel_videos_" + project_video_id).val();
+            video_select = '#sel_videos_' + project_video_id;
+
+            if($(video_select).is(":visible")) {
+
+                //wenn sel schon angezeigt:
+                //*)speichere via ajax das ausgewählte video
+                //*) zeige spinner
+                //*) setze alles wieder zurück
+                console.log(project_video_id + " " + video_id)
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:save-select-project-video-ajax' %}",
+                    data: {
+                        "project_video_id": project_video_id,
+                        "video_id": video_id,
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        //location.reload();
+                        Toastify({
+                            text: data['message'],
+                            className: "info text-xs",
+                            duration: 5000,
+                            style: {
+                                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            }
+                        }).showToast();
+                        $('#sel_videos_' + project_video_id).hide();
+                        $('.btn_abort_assign_videos').hide();
+                        $(this).hide();
+                        video_link = '{% url 'FileCollector:video_detail' 0 %}'.replace('0', data['video_id'] );
+                        video_link =  "<div id=\"lnk-remove-project-video-" + data['video_id'] + "\" ><a href=\"" + video_link + "\" >" + data['video_unique_fn'] + "</a><button class=\"btn btn-datatable btn-icon btn-transparent-dark mr-2 btn-remove-project-video\" data-id=\"" + data['video_id'] + "\" data-projectvideoid=\"" + data['project_video_id'] + "\"><i data-feather=\"x\"></i></button></div>"
+
+                        console.log(data)
+                        $('#assigned_videos_' + data['project_video_id']).prepend(video_link)
+                        feather.replace();
+
+
+
+                    }
+                });
+
+            } else {
+                // *) lade mögliche videos in select und dann zeige es erst, wenn lange dauert verwende spinner
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:get-select-video-ajax' %}",
+                    data: {
+                        "project_video_id": project_video_id,
+                        "project_id" : {{ project.id }}
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        //console.log(data)
+                        $(video_select).html("");
+                        //company_assets = JSON.parse(data["company_assets"]);
+                        video_data = data["video_data"];
+                        if (video_data != '')
+                        {
+                            video_data.forEach(function(video){
+                                $(video_select).append("<option value=\"" + video["id"] +"\">"+ video["unique_fn"] + "</option>");
+                            });
+                        }
+                    }});
+
+                $(video_select).show();
+                $('#btn_abort_assign_videos_' + project_video_id).show();
+            }
+
+        });
+
+        //the html for this function is found in video_project_template
+        $(document).on('click', '.btn-remove-project-video', function(){
+            var video_id = $(this).data('id');
+            var project_video_id = $(this).data('projectvideoid');
+            $('#lnk-remove-project-video-'+video_id).hide();
+            //console.log(video_id + ' - ' + project_video_id);
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:remove-linked-project-video-ajax' %}",
+                data: {
+                    "project_video_id": project_video_id,
+                    "video_id" : video_id,
+                },
+                type: 'POST',
+                success: function (data) {
+                    //console.log(data)
+                    Toastify({
+                        text: data,
+                        className: "info text-xs",
+                        duration: 5000,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    //location.reload();
+                    //console.log($(this))
+
+                }});
+        });
+
+        $("#btn_consolidate").on('click', function() {
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:consolidate-project-videos-ajax' %}",
+                data: {
+                    "project_id": {{project.id }}
+
+                },
+                type: 'POST',
+                success: function (data) {
+                    console.log(data)
+                    Toastify({
+                        text: data,
+                        className: "info text-xs",
+                        duration: 10000,
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    loadProjectvideos();
+                }
+            });
+        });
+        // change status project
+        $(".proj-status").on('click', function(){
+            var line_id = $(this).data('id');
+            var lineStatusHtml = '<select id="statusProjSelect" class="form-control p-1 mb-2" style="height: 24px; width: 110px; display: initial;">';
+            lineStatusHtml += '<option value="ESTIMATE">ESTIMATE</option>';
+            lineStatusHtml += '<option value="ACTIVE">ACTIVE</option>';
+            lineStatusHtml += '<option value="ONHOLD">ONHOLD</option>';
+            lineStatusHtml += '<option value="CLIENT">CLIENT</option>';
+            lineStatusHtml += '<option value="FAILED">FAILED</option>';
+            lineStatusHtml += '<option value="COMPLETE">COMPLETE</option>';
+            lineStatusHtml += '<option value="DELIVERED">DELIVERED</option>';
+            lineStatusHtml += '<option value="PAID">PAID</option>';
+            lineStatusHtml += '</select>';
+            lineStatusHtml += '<button id="btn_proj_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+
+            $(this).parent('.div_proj_status').html(lineStatusHtml);
+            $("#statusProjSelect").val($(this).html());
+            $(this).hide();
+            $('#btn_proj_save').click(function(){
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:change_status_project' %}",
+                    data: {
+                        "status": $("#statusProjSelect").val(),
+                        "project_id": $(this).data("id")
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+
+                    }
+                });
+            });
+        });
+
+        // change status project
+        $('#btn_change').click(function(){
+            $("#statusSelect").css('display', 'initial');
+            $("#statusSelect").val('{{project.status}}');
+            $("#btn_save").show();
+            $(this).hide();
+        });
+        $('#btn_save').click(function(){
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:change_status_project' %}",
+                data: {
+                    "status": $("#statusSelect").val(),
+                    "project_id": "{{ project.id }}"
+                },
+                type: 'POST',
+                success: function (data) {
+
+                    location.reload();
+
+                }
+            });
+        });
+        $('#testButton').click(function() {
+            var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), '')
+            myModal.toggle()
+        });
+
+        $('#btn_add_project_video').on('click', function(){
+            currentVideoCount ++ ;
+            appendVideo(-1, currentVideoCount);
+        });
+
+        function appendVideo(video_id, order_number){
+
+            $.ajax({
+                type:"POST",
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:get-add-video-template' %}",
+                data:{
+                    order_number: order_number,
+                    project_id: '{% if project %}{{ project.id }}{% else %}-1{% endif %}',
+                    video_id: video_id,
+                    is_editable: '{% if is_editable %}1{% else %}0{% endif %}',
+                    is_inline: 1,
+
+                },
+                success: function (data) {
+                    //console.log(data);
+                    $("#_divVideoList").prepend(data);
+                    feather.replace();
+                }
+            });
+        }
+
+
+
+    </script>
+{% endblock %}

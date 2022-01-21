@@ -1,0 +1,237 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% block title %}Intake Detailed View {% endblock %}
+{% block content %}
+
+<!-- Begin Page Content -->
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="layout"></i></div>
+                        Detail of intake
+                        [<strong>{{ intake.id }}</strong>]
+                    </h1>
+                    <div class="page-header-subtitle">This intake was recieved from {{intake.client}} on the {{intake.created|date:"D d.m.y"}} and it contains {{ intake_files_count }} files.
+                        {% if intake.shop_order_id %} We found a shop_order_id: {{ intake.shop_order_id }}
+                        {% else %}
+                        {% if intake.project %}<br>Part of project <a href="{% url 'FileCollector:project_detail' intake.project.id %}">{{ intake.project }}</a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<div class="container mt-n10">
+    <div class="card mb-4 card-header-actions">
+        <div class="card-header">
+            Intake Files
+        </div>
+        <div class="card-body">
+            <div class=" table-billing-history text-sm table-borderless  mb-0 datatable">
+                <table class="table table-responsive-sm table-hover text-xs p-0 " id="dataTable" width="100%" cellspacing="0" id="intakeDataTable">
+
+                    <thead>
+                    <tr class="border-bottom">
+                        <th class="border-gray-200 col-sm-1"  scope="col">ID</th>
+                        <th class="border-gray-200 col-3" scope="col">Name</th>
+                        <th class="border-gray-200 col-4" scope="col">Remark</th>
+                        <th class="border-gray-200 col-1" scope="col">Size</th>
+                        <th class="border-gray-200 col-1" scope="col">Type</th>
+                        <th class="border-gray-200 col-1" scope="col">Created</th>
+                        <th class="border-gray-200 col-1" scope="col">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for file in intake_files %}
+                    <tr class="border-top">
+                        <td>{{file.id}}</td>
+                        <td>
+                            <span alt="test" class="fw-600">{{file.filename}}.{{file.filetype}}</span>
+                            <br>{{file.filepath}}
+                        </td>
+                        <td>
+                            <div class="input-group">
+                                <input type="text" class="form-control txtRemark" data-id="{{ file.id }}" value="{{file.remark}}">
+                                <button class="btn dropdown-toggle bg-light" type="button" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item _txtRemark" data-id="{{ file.id }}" href="javascript:void(0);">Establishing shot</a>
+                                    <a class="dropdown-item _txtRemark" data-id="{{ file.id }}" href="javascript:void(0);">Detail shot</a>
+                                    <a class="dropdown-item _txtRemark" data-id="{{ file.id }}" href="javascript:void(0);">Interview</a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{file.size|filesize_format}}</td>
+                        <td>{{file.filetype}}</td>
+                        <td>{{file.created|date:"d.m.y"}}</td>
+                        <td>
+                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 js-copy" data-path="{{ file.get_path }}" data-bs-toggle="tooltip" data-placement="bottom"  title="Copy link to clipboard">
+                                <i data-feather="clipboard" ></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <td colspan="7">No files linked to this intake</td>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+            </div>
+        </div>
+    </div>
+    <!-- Order Details -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Order information</h6>
+        </div>
+        <div class="card-body">
+            {% if order_products %}
+            <div class="table-responsive table-billing-history">
+                <table class="table table-bordered" id="dataTableOFFLINE" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>FSIN</th>
+                        <th>Product Name</th>
+                        <th>Product Title</th>
+                        <th>Status</th>
+                        <th>Created at</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for line in order_products %}
+                    <tr>
+                        <td><a href="{% url 'FileCollector:product_detail' line.product.id %}">{{line.product.fsin }}</a></td>
+                        <td>{{line.product.base.name}}</td>
+                        <td>{% product_text_title line.product.id 'de' %}</td>
+                        <td>{{line.status}}</td>
+                        <td>{{intake.order.created}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <hr>
+                These are all the items/products connected to this order
+            </div>
+            {% else %}
+            No order linked to this ingest
+            {% endif %}
+        </div>
+    </div>
+    <!-- Client base main category card 2-->
+    <div class="card card-icon  mb-4">
+        <div class="row no-gutters">
+            <div class="col-auto card-icon-aside bg-secondary"><i class="text-white-50" data-feather="users"></i></div>
+            <div class="col">
+                <div class="card-body py-4">
+                    {% if intake.client %}
+                    <h5 class="card-title text-secondary mb-2"><strong>{{intake.client.company.name}}</strong></h5>
+                    <p class="card-text mb-1">
+                    <div class="row">
+                        <div class="col-sm"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">{{intake.client.firstname}} {{intake.client.lastname}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">{{intake.client.email}}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">{{intake.client.description}}</div>
+                    </div>
+                    <hr>
+                    <div class="small text-muted">{% client_total_products intake.client_id %} products bought in total</div>
+                    {% else %}
+                    <span>No Client Data</span>
+                    {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card card-icon  mb-4">
+        <div class="row no-gutters">
+            <div class="col-auto card-icon-aside bg-primary"><i class="text-white-50" data-feather="book-open"></i></div>
+            <div class="col">
+                <div class="card-body py-4">
+                    {% if intake.change_log %}
+                    <h5 class="card-title text-secondary mb-2"><strong>Change Log</strong></h5>
+                    <p class="card-text mb-1">
+                    <div class="row text-xs">
+                        <div class="col-sm">{{ intake.change_log|format_log }}</div>
+                    </div>
+                    {% else %}
+                    <span>No change log data</span>
+                    {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+<script>
+        $('#intakeDataTable').dataTable({
+            "pageLength": 50
+        });
+        $('._txtRemark').on('click', function(){
+            var file_id = $(this).data('id');
+            var remark = $(this).text();
+            $('.txtRemark[data-id="' + file_id + '"]').val(remark);
+            saveRemark(file_id, remark);
+        });
+        $('.txtRemark').on('change', function(e){
+            var file_id = $(this).data('id');
+            var remark = $(this).val();
+            saveRemark(file_id, remark);
+        });
+        $('.js-copy').click(function() {
+            var filepath = $(this).data('path');
+            var el = $(this);
+            copyToClipboard(filepath, el);
+		});
+
+        function saveRemark(file_id, remark) {
+            $.ajax({
+                type:"POST",
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:change-intake-remark' %}",
+                data:{
+                    file_id: file_id,
+                    remark: remark
+                },
+                success: function (data) {
+                }
+            });
+        }
+        function copyToClipboard(text, el) {
+            var copyTest = document.queryCommandSupported('copy');
+            var elOriginalText = el.attr('data-original-title');
+
+            if (copyTest === true) {
+                var copyTextArea = document.createElement("textarea");
+                copyTextArea.value = text;
+                document.body.appendChild(copyTextArea);
+                copyTextArea.select();
+                try {
+                    var successful = document.execCommand('copy');
+                    var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+                    el.attr('data-original-title', msg).tooltip('show');
+                } catch (err) {
+                    console.log('Oops, unable to copy');
+                }
+                document.body.removeChild(copyTextArea);
+                el.attr('data-original-title', elOriginalText);
+            } else {
+                // Fallback if browser doesn't support .execCommand('copy')
+                window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+            }
+        }
+
+    </script>
+{% endblock %}

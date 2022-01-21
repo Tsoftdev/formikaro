@@ -1,0 +1,65 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Company Detailed View {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <!-- Begin Page Content -->
+        <!--                <div class="container-fluid">-->
+
+        <!-- Page Heading -->
+        <main>
+            <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                <div class="container-fluid">
+                    <div class="page-header-content">
+                        <div class="row align-items-center justify-content-between pt-3">
+                            <div class="col-auto mb-3">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="user"></i></div>
+                                    Detail of client&nbsp;<strong>{{ client }}</strong>
+                                </h1>
+                                <div class="page-header-subtitle text-xs ">is a employee at <a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a> and in the system since {{client.created}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- Main page content-->
+            <div class="container mt-4">
+                <!-- Account page navigation-->
+                <nav class="nav nav-borders">
+                    <a class="nav-link" href="{% url 'FileCollector:client_detail' client.id %}">Profile</a>
+                    <a class="nav-link active" href="{% url 'FileCollector:client_billing' client.id %}">Billing</a>
+                    <a class="nav-link" href="{% url 'FileCollector:client_orders' client.id %}">Orders</a>
+                    <a class="nav-link" href="{% url 'FileCollector:client_assets' client.id %}">Assets</a>
+                    <a class="nav-link" href="{% url 'FileCollector:client_videos' client.id %}">Videos</a>
+                </nav>
+                <hr class="mt-0 mb-4" />
+                <div class="row">
+
+                    <div class="col-xl-8">
+                        Here will be the billing information
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+                </main>
+            <!-- Donut Chart -->
+
+
+
+
+
+            <!--                </div>-->
+            <!-- End page content -->
+            {% endblock %}
+            </body>
+        </html>

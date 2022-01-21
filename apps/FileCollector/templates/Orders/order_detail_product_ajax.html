@@ -1,0 +1,123 @@
+{% load humanize %}
+{% load custom_tags %}
+{% for line in order_products %}
+    <tr>
+        <td>{{line.id }}</td>
+        <td><a href="{% url 'FileCollector:product_detail' line.product.id %}">{{line.product.fsin }}</a></td>
+        <td>{% product_text_title line.product.id 'en' %}</td>
+        <td>{{line.product.runtime}} sec</td>
+        <td>
+            <div class="div_prod_status" >
+                <span class="prod-status badge {% if line.status == 'COMPLETE' %}
+                                badge-teal
+                                {% elif line.status == 'PENDING' %}   
+                                badge-orange
+                                {% elif line.status == 'READY' %}
+                                badge-info      
+                                {% elif line.status == 'IDLE' %}
+                                badge-yellow
+                                {% elif line.status == 'ACTIVE' %}
+                                badge-primary
+                                {% elif line.status == 'FAILED' %}
+                                badge-danger
+                                {% elif line.status == 'COMPLETE' %}
+                                badge-success
+                                {% elif line.status == 'DELIVERED' %}
+                                badge-teal
+                                {% endif %}" style="cursor:pointer" data-id="{{ line.id }}">{{line.status}}</span>
+            </div>
+        </td>
+        <td>
+            <span class="text-xs">
+                {% if line.product.base.assets.all or line.product.base.needs_intake %}
+                {%  for asset in line.product.base.assets.all %}
+                    {{ asset.name }}<br>
+                {% endfor %}
+                {% if line.product.base.needs_intake %}
+                    <div class="badge badge-dark">Intake</div>
+                {% endif %}
+                {% else %}
+                No assets needed
+                {% endif %}
+            </span>
+        </td>
+        <td>
+            <span class="text-xs">
+                {% if line.product.base.assets.all or line.product.base.needs_intake %}
+                    {% for asset in line.assets.all %}
+                        <strong>{{ asset.name }}</strong>: {{ asset.value }}<br>
+                    {% endfor %}
+                
+                {% else %}
+                No assets received
+                {% endif %}
+            </span>
+        </td>
+
+        <!--<td>{{line.order.created}}</td>-->
+        <td>
+            {% if line.order_folder_created %}
+                <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"><i data-feather="folder-minus"></i></button>
+            {% else %}
+                <button class="btn_create_order_prod_folder btn btn-datatable btn-icon btn-transparent-dark mr-2" data-id="{{ line.id }}"><i data-feather="folder-plus" alt="Folder not yet created"></i></button>
+            {% endif %}
+            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"><i data-feather="cpu" ></i></button>
+            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"><i data-feather="upload"></i></button>
+            {% if line.json %}
+                <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2" data-trigger="focus" title="JSON" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ line.json }}" data-original-title="Popover Title"><i data-feather="list"></i></button>
+            {% endif %}
+            <button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark mr-2" data-id="{{ line.id }}"><i data-feather="trash-2"></i></button>
+        </td>
+    </tr>
+{% endfor %}
+<script>
+    $('.btn_delete').click(function(){
+        var order_product_id = $(this).data('id');
+        swal({
+                title: "Are you sure?",
+                text: "You will not be able to recover this OrderProduct!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:delete-order-product' %}",
+                        data: {
+                            "order_product_id": order_product_id,
+                            "order_id": $("#order_id").val()
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            $("#tbody_order_product").html(data);
+                            feather.replace();
+                        }
+                    });
+                }
+            }
+        );
+    });
+    $('.btn_create_order_prod_folder').click(function(){
+        var order_product_id = $(this).data('id');
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:create-order-product-folder' %}",
+            data: {
+                order_product_id: order_product_id,
+                create_flag: true,
+                order_id: $("#order_id").val()
+            },
+            type: 'POST',
+            success: function (data) {
+                $("#processOutputModalText").html(`<pre>${data.response}</pre`);
+                $("#processOutputModal").modal('show');
+                $("#tbody_order_product").html(data.html);
+                feather.replace();
+            }
+        });
+    });
+</script>

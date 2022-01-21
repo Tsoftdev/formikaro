@@ -1,0 +1,516 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load static %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+    <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+        <div class="container-fluid">
+            <div class="page-header-content">
+                <div class="row align-items-center justify-content-between pt-3">
+                    <div class="col-auto mb-3">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Shoots of project {{ project.name }}
+                            [<strong>{{ project.id }}</strong>]
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+</header>
+
+<div class="container mt-n10">
+    <div class="container mt-4">
+        <div class="row">
+            <div class="container">
+                {% include "Projects/project_nav.html" with menuitem="shoots"  %}
+            </div>
+        </div>
+        <div class="row mt-4 collapse collapse-horizontal" id="collapseNewShootReport">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-lg-3 mt-4">
+                        <span class="text-xl">Project info</span>
+                    </div>
+                    <div class="col-lg-9">
+                        <!-- line items -->
+                        <!--- START CREATE NEW LINE ITEM -->
+                        <div class="card mb-4 card-header-actions mx-auto " >
+                            <div class="card-header">
+                                <span id="sp_title">Create new shoot report for this project</span>
+                                <button class="btn btn-icon text-muted btn_collapse"  type="button"><i class="feather-icon" data-feather="x-circle" alt="Cancel" ></i></button>
+
+                            </div>
+                            <div class="card-body">
+                                <div>
+                                    <form id="create_shoot_form" class="needs-validation" novalidate>
+                                        <!-- Form Group (Add line item name)-->
+                                        <div class="form-group input-group-lg">
+                                            <div class="form-row row mt-1">
+                                                <div class="form-group col-md-9 ">
+                                                    <div class="row ">
+                                                        <div class="col-12">
+                                                            <label class="mb-1" for="shootinglocation">Shooting location</label>
+                                                            <div class="input-group mb-3">
+                                                                <input type="text" class="form-control" placeholder="shooting location 1, shooting location 2,..." id="shootinglocation" name="shootinglocation" aria-label="shooting location" aria-describedby="button-addon2" required>
+                                                                <button class="btn dropdown-toggle bg-light" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                    <a class="dropdown-item _shootinglocation" href="javascript:void(0);">1</a>
+                                                                    <a class="dropdown-item _shootinglocation" href="javascript:void(0);">2</a>
+                                                                    <a class="dropdown-item _shootinglocation" href="javascript:void(0);">3</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group col-md-6 ">
+                                                            <div class="form-group">
+                                                                <label for="startime" class="small">Start time</label>
+                                                                <div class="input-group mb-3">
+                                                                    <input type="text" class="form-control dateTime" name="startime" id="startime" required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="form-group col-md-6 ">
+                                                            <div class="form-group">
+                                                                <label for="endtime" class="small">End time</label>
+                                                                <div class="input-group mb-3">
+                                                                    <input type="text" class="form-control dateTime" name="endtime" id="endtime" required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group col pl-3 ">
+                                                    <div class="form-group">
+                                                        <label for="shootvideos" class="small">Video(s)</label>
+                                                        <div class="input-group mb-3">
+                                                            <select class="form-control" id="shootvideos" multiple="" size="5" required>
+                                                                {% for item in project.project_videos.all %}
+                                                                <option value="{{item.id}}">{{ item.name }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Form Row -->
+                                            <div class="form-row row mt-2">
+                                                <!-- Form Group (organization name)-->
+                                                <div class="form-group col-md-12">
+                                                    <label class="small mb-1" for="damages">Lost or damaged Equipment</label>
+                                                    <textarea class="form-control" id="damages" rows="4"></textarea>
+                                                </div>
+
+                                            </div>
+                                            <div class="form-row row mt-2">
+                                                <!-- Form Group (organization name)-->
+                                                <div class="form-group col-md-12">
+                                                    <label class="small mb-1" for="remarks">General remarks</label>
+                                                    <textarea class="form-control" id="remarks" rows="4"></textarea>
+                                                </div>
+                                            </div>
+                                            <!-- Form Group (email address)-->
+                                            <div class="form-row row mt-2">
+                                                <!-- Form Row-->
+                                                <div class="form-group col-md-8">
+                                                </div>
+                                                <div class="form-group col-md-4">
+                                                    <!-- Save changes button-->
+                                                    <input type="hidden" id="shoot_id" value="-1" />
+                                                    <b id="btn_save_shoot" class="btn btn-primary" type="button" style="float:right">Create</b>
+                                                    <b class="btn_collapse btn btn-grey" type="button" style="float:right">Cancel</b>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-3 mt-4">
+                        <span class="text-xl">Crew</span>
+                    </div>
+                    <div class="col-lg-9 mt-4">
+                        <div class="card mb-4 card-header-actions mx-auto " >
+                            <div class="card-header">
+                                Crew
+
+                                <button id="btn_add_crew" class="btn btn-primary btn-sm" style="display:none;">Add</button>
+
+                            </div>
+                            <div id="_divCrewList" class="card-body">
+
+                            </div>
+                        </div>
+                        <!-- CREW END -->
+                    </div></div>
+                <div class="row">
+                    <div class="col-lg-3 mt-4">
+                        <span class="text-xl">Cameras</span>
+                    </div>
+                    <div class="col-lg-9 mt-4">
+                        <!-- CAMERA START -->
+                        <div class="card mb-4 card-header-actions mx-auto " >
+                            <div class="card-header">
+                                Cameras
+
+                                <button id="btn_add_camera" class="btn btn-primary btn-sm" style="display:none;">Add</button>
+
+                            </div>
+                            <div id="_divCameraList" class="card-body">
+
+                            </div>
+                        </div>
+                        <!-- CAMERA END -->
+                    </div></div>
+                <!--- END CREATE NEW SHOOT REPORT -->
+            </div>
+        </div>
+        <!--- END COLLAPSE -->
+        <div class="row">
+            <div class="col-lg-12">
+                <!-- shoot report -->
+                <div class="card mb-4 card-header-actions mx-auto">
+                    <div class="card-header">
+                        Shoot reports {{ project.name }}
+                        <div>
+
+                            {% if is_editable %}
+                            <button class="btn btn-primary btn-sm" id="btn_new_shoot">Add</button>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Billing history table-->
+                        {% if project.project_shoots.all %}
+
+                        <div class="table-responsive table-billing-history text-sm table-borderless mb-0 datatable">
+                            <table class="table table-hover text-xs p-0" id="dataTable" width="100%" cellspacing="0" >
+                                <thead>
+                                <tr class="border-bottom">
+                                    <th class="border-gray-200 col-1" scope="col">ID</th>
+                                    <th class="border-gray-200 col-2" scope="col">Date</th>
+                                    <th class="border-gray-200 col-4" scope="col">Location</th>
+                                    <th class="border-gray-200 col-2" scope="col">Projectmanager</th>
+                                    <th class="border-gray-200 col-3" scope="col">Action</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for shoot in project.project_shoots.all %}
+
+                                <tr class="border-top" >
+                                    <td>#{{ shoot.id }}</td>
+                                    <td>{{ shoot.starttime|date:"d.m.y" }}</td>
+                                    <td>{{ shoot.location }}</td>
+                                    <td>{{ shoot.creator }}</td>
+                                    <td>
+                                        <button class="btn btn-transparent-dark btn-icon" type="button" data-bs-toggle="collapse" href="#collapseItem{{ shoot.id }}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                            <i data-feather="more-vertical"></i>
+                                        </button>
+                                        {% if is_editable %}
+                                        <button class="btn_edit_shoot btn btn-transparent-dark btn-icon" data-id="{{ shoot.id }}" data-starttime="{{ shoot.starttime|date:"d.m.Y H:i" }}" data-location="{{ shoot.location }}" data-remark="{{ shoot.remark }}" data-damages="{{ shoot.damages }}"  data-endtime="{{ shoot.endtime|date:"d.m.Y H:i" }}" data-video-ids="{{ shoot.get_video_ids_str }}" data-crew-ids="{{ shoot.get_crew_ids_str }}" data-settings-ids="{{ shoot.get_settings_ids_str }}">
+                                        <i data-feather="edit"></i>
+                                        </button>
+                                        {% endif %}
+
+                                        <a href="#" class="btn btn-transparent-dark btn-icon" data-id="" data-desc-short="" data-desc-long="" data-lang="1"  data-title="">
+                                            <i data-feather="download"></i>
+                                        </a>
+                                        {% if is_editable %}
+                                        <button class="btn_delete_shoot btn btn-transparent-dark btn-icon" data-id="{{ shoot.id }}" type="button" data-bs-toggle="collapse"  role="button" aria-expanded="false" aria-controls="">
+                                            <i data-feather="trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr class="collapse" id="collapseItem{{ shoot.id }}">
+                                    <td colspan="3">
+                                        <strong>General remark:</strong><br>
+                                        {% if shoot.remark %}{{ shoot.remark }}{% else %}
+                                        is empty{% endif %}<br><br>
+
+                                        <strong>Damage/lost equipment:</strong><br>
+                                        {% if shoot.damages %}{{ shoot.damages }}{% else %}
+                                        is empty{% endif %}<br><br>
+
+                                        <strong>Crew settings:</strong><br>
+                                        {% if shoot.crew %}
+                                        {% for crewmember in shoot.crew.all %}
+                                        {{ crewmember.get_full_name }} ({{crewmember.role.name}})<br>
+                                        {% endfor %}
+                                        {% else %}
+                                        is empty{% endif %}<br>
+
+                                        <strong>Camera settings:</strong><br>
+                                        {% if shoot.settings %}
+                                        {% for setting in shoot.settings.all %}
+                                        <div class="row">
+                                            <div class="col-2">Name:</div>
+                                            <div class="col-6">{{ setting.name }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">Operator:</div>
+                                            <div class="col-6">{{ setting.operator }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">Camera:</div>
+                                            <div class="col-6">{{ setting.camera }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">White balance:</div>
+                                            <div class="col-6">{{ setting.whitebalance }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">Framerate:</div>
+                                            <div class="col-6">{{ setting.framerate }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">Color profile:</div>
+                                            <div class="col-6">{{ setting.colorprofile }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-2">Video format:</div>
+                                            <div class="col-6">{{ setting.videoformat }}</div>
+                                        </div><hr>
+
+                                        {% endfor %}
+                                        {% else %}
+                                        is empty{% endif %}
+
+                                        <strong>Changelog:</strong><br>
+                                        {% if shoot.changelog %}{{ shoot.changelog }}{% else %}
+                                        is empty{% endif %}<br><br>
+                                    </td>
+
+                                    <td colspan="2">
+                                        <div class="row">
+                                            <div class="col">Created by</div>
+                                            <div class="col">{{ shoot.creator }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Timestamp</div>
+                                            <div class="col">{{ shoot.created|date:"d.m.y (H:i)"}}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Last update:</div>
+                                            <div class="col">{{ shoot.updated|date:"d.m.y (H:i)"}}</div>
+                                        </div>
+                                    </td>
+
+
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>No shoot reports defined yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr class="mt-2 mb-4" />
+        <!-- Knowledge base main category card 1-->
+    </div>
+</div>
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="{% static '/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript">
+    var currentCrewOrder = 1;
+    var currentCameraOrder = 1;
+    $('.dateTime').datetimepicker({
+        format: 'DD.MM.YYYY HH:mm',
+        icons: {
+            time: 'fa fa-clock',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+    $('._shootinglocation').on('click', function(){
+        $("#shootinglocation").val($(this).text());
+    });
+    $('#btn_new_shoot').on('click', function(){
+        $("#collapseNewShootReport").addClass('show');
+        $("#shoot_id").val('-1');
+    });
+    $('.btn_collapse').on('click', function(){
+        location.reload();
+    });
+    $('#btn_save_shoot').on('click', function(){
+        console.log($('#shootvideos').val());
+        if (!$("#create_shoot_form")[0].checkValidity()) {
+            $("#create_shoot_form").addClass('was-validated');
+            return false;
+        }
+        
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:save-project-shoot-ajax' %}",
+            data: {
+                "shoot_id": $('#shoot_id').val(),
+                "project_id": '{{ project.id }}',
+                "shootvideos": $('#shootvideos').val().join(','),
+                "shootinglocation": $('#shootinglocation').val(),
+                "startime": $('#startime').val(),
+                "endtime": $('#endtime').val(),
+                "damages": $('#damages').val(),
+                "remarks": $('#remarks').val(),
+            },
+            type: 'POST',
+            success: function (data) {
+                if (data.status){
+                    Toastify({
+                        text: "Saved shoot successfully",
+                        className: "info",
+                        style: {
+                          background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    if ($("#shoot_id").val() == "-1"){
+                        $("#shoot_id").val(data.shoot_id);
+                        appendCrew(-1, data.shoot_id, currentCrewOrder);
+                        currentCrewOrder++;
+                        $("#btn_add_crew").show();
+                    }
+                    $("#sp_title").html('Edit shoot report for this project');
+                    $("#btn_save_shoot").html('Save');
+                }else{
+                    swal({
+                        icon: "waring",
+                        title: `There has been an error`,
+                        text: "ERROR: " + data.message,
+                        confirmButtonClass: "btn-danger",
+                    });
+                }
+            },
+       });
+    });
+    $('.btn_delete_shoot').on('click', function(){
+        var shoot_id = $(this).data('id');
+        swal({
+                title: `Do you really want to delete this Shoot?`,
+                text: "You will not be able to recover this Shoot!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:delete-projectshoot-ajax' %}",
+                        data: {
+                            "shoot_id": shoot_id,
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                }
+            }
+        );
+    });
+    
+    $('.btn_edit_shoot').on('click', function(){
+        $('#shoot_id').val($(this).data('id'));
+        var video_ids = $(this).data('video-ids').toString();
+        $('#shootvideos').val(video_ids.split(','));
+        $('#shootinglocation').val($(this).data('location'));
+        $('#startime').val($(this).data('starttime'));
+        $('#endtime').val($(this).data('endtime'));
+        $('#damages').val($(this).data('damages'));
+        $('#remarks').val($(this).data('remark'));
+
+        var shoot_id = $(this).data('id');
+        var crew_ids = $(this).data('crew-ids').toString().split(',').filter(function(e) { return e !== '' });
+        var setting_ids = $(this).data('settings-ids').toString().split(',').filter(function(e) { return e !== '' });
+        for (var crew_id of crew_ids){
+            appendCrew(crew_id, shoot_id, currentCrewOrder);
+            currentCrewOrder++;
+        }
+        for (var camera_id of setting_ids){
+            appendCamera(camera_id, shoot_id, currentCameraOrder);
+            currentCameraOrder++;
+        }
+        $("#collapseNewShootReport").addClass('show');
+        $("#sp_title").html('Edit shoot report for this project');
+        $("#btn_save_shoot").html('Save');
+        $("#btn_add_crew").show();
+        $("#btn_add_camera").show();
+    });
+
+    $("#btn_add_crew").on('click', function(){
+        appendCrew(-1, $("#shoot_id").val(), currentCrewOrder);
+        currentCrewOrder++;
+    })
+    $("#btn_add_camera").on('click', function(){
+        appendCamera(-1, $("#shoot_id").val(), currentCameraOrder);
+        currentCameraOrder++;
+    })
+    
+    function appendCrew(crew_id, shoot_id, order_number){
+        $.ajax({
+            type:"POST",
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:get-add-crew-template' %}",
+            data:{
+                order_number: order_number,
+                shoot_id: shoot_id,
+                crew_id: crew_id,
+                is_editable: '{% if project and is_editable is True %}1{% else %}0{% endif %}'
+            },
+            success: function (data) {
+                $("#_divCrewList").prepend(data);
+                feather.replace();
+            }
+        })
+    }
+
+    function appendCamera(camera_id, shoot_id, order_number){
+        $.ajax({
+            type:"POST",
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:get-add-camera-template' %}",
+            data:{
+                order_number: order_number,
+                shoot_id: shoot_id,
+                camera_id: camera_id,
+                is_editable: '{% if project and is_editable is True %}1{% else %}0{% endif %}'
+            },
+            success: function (data) {
+                $("#_divCameraList").prepend(data);
+                feather.replace();
+            }
+        })
+    }
+</script>
+{% endblock %}
+
+

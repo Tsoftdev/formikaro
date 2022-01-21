@@ -1,0 +1,99 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% block title %}Formikaro - Products {% endblock %}
+
+{% block content %}
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="youtube"></i></div>
+                        Products
+                    </h1>
+                    <div class="page-header-subtitle">These are the products in the system</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+<div class="container mt-n10">
+    <!-----------START TABLE------------------->
+    <div class="card mb-4">
+        <div class="card-header">Products
+            <div style="float:right;" class="div_check_status">
+                <b id="btn_check_status"class="btn btn-primary btn-sm mr-3">check status</b>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive table-billing-history text-xs table-borderless mb-0 datatable">
+                <table class="table table-hover text-xs " id="dataTableOFFLINE" width="100%" cellspacing="0">
+                    <thead>
+                    <tr class="border-bottom">
+
+                        <th class="border-gray-200 col-1" scope="col">ID</th>
+                        <th class="border-gray-200 col-1" scope="col">FSIN</th>
+                        <th class="border-gray-200 col-2" scope="col">Productbase</th>
+                        <th class="border-gray-200 col-1" scope="col">Res.</th>
+                        <th class="border-gray-200 col-1" scope="col">Runtime</th>
+                        <th class="border-gray-200 col-1" scope="col">Status</th>
+                        <th class="border-gray-200 col-1" scope="col">Price</th>
+                        <th class="border-gray-200 col-2" scope="col" >Created</th>
+                        <th class="border-gray-200 col-2" scope="col">Updated</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% if latest_products_list %}
+                    <tr>
+                        {% for product in latest_products_list %}
+                        <td>{{product.id}}</td>
+                        <td><a href="{% url 'FileCollector:product_detail' product.id %}">{{product.fsin }}</a></td>
+                        <td><a href="{% url 'FileCollector:productbase_detail' product.base.id %}">{{product.base.name}}</a> ({{product.base.id}})</td>
+                        <td>{{product.resolution}}</td>
+                        <td>{{product.runtime}}</td>
+                        <td>
+                            {% if product.is_active %}
+                            <div class="badge  badge-success">ACTIVE</div>
+                            {% elif not product.is_active %}
+                            <div class="badge  badge-warning">NOT ACTIVE</div>
+
+                            {% endif %}
+                        </td>
+                        <td>{{ product.price }}</td>
+                        <td>{{product.created|date:"d-m-y (H:i)"}}</td>
+                        <td>{{product.updated |naturaltime}}</td>
+                    </tr>
+                    {% endfor %}
+
+                    {% else %}
+                    <p>No products are available.</p>
+                    {% endif %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+        $("#btn_check_status").on('click', function(){
+            $(".div_check_status").html('<b id="btn_check_status" class="btn btn-primary btn-sm mr-3"><div class="spinner-border spinner-border-sm text-white mr-2" role="status"><span class="sr-only">Loading...</span></div>check status</b>');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:check_status_product' %}",
+                data: {},
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    location.reload();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+

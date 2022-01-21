@@ -1,0 +1,843 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% load static %}
+{% load humanize %}
+{% block title %}Formikaro - Dashboard {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="activity"></i></div>
+                        Formikaro - Dashboard
+                    </h1>
+                    <div class="page-header-subtitle">...the video backend</div>
+                </div>
+                <div class="col-12 col-xl-auto mt-4">
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+<div class="container mt-n10">
+
+    <!-- WORKER STATUS START -->
+    <div class="container align-content-center">
+        <div class="row justify-content-md-center mt-2 mb-5">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="#">System Status</a>
+                    {% for task in periodic_tasks %}
+                    <div class="dropdown nav-item ms-2 ">
+                        <button class="btn {% if task.enabled == True %}btn-teal{% else %}btn-red{% endif %} dropdown-toggle" type="button" id="dropdownFileDelivery" data-bs-toggle="dropdown" aria-expanded="false">
+                            {{task.name}}
+                        </button>
+                        <ul class="dropdown-menu text-center text-xs" aria-labelledby="dropdownFileDelivery">
+                            <li><a class="dropdown-item" href="#">{{task.schedule}}</a></li>
+                            <li><a class="dropdown-item" href="#">{{task.last_run_at| naturaltime}}</a></li>
+                            {% if task.enabled == True %}
+                            <li><button class="btn-sm ms-4 btn-red" type="button">Deactivate</button></li>
+                            {% else %}
+                            <li><button class="btn-sm ms-4 btn-teal" type="button">Activate</button></li>
+                            {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                    {% endfor %}
+                </div>
+            </nav>
+        </div>
+
+    </div>
+    <!-- WORKER STATUS END -->
+
+
+
+
+    <div class="row">
+        <div class="col-md-12 col-xl-6 mb-4">
+            <div class="card">
+                <div class="card-header">Latest uploaded Videos</div>
+                <div class="card-body p-0 pb-2">
+                    <div class="container text-xs pt-2">
+                        {% if latest_videos_list %}
+                        {% for video in latest_videos_list %}
+                        <div class="row justify-content-md-center mt-1">
+
+                            <div id="data-copy-{{video.id}}" style="display:none" >{{ video.unique_fn }}<br>
+{% if video.url %}URL: <a href="{{ video.url}}" target="_blank">{{ video.url}}</a><br>
+Review-URL: <a href="{{ video.url_review }}" target="_blank">{{ video.url_review}}</a><br>
+Passwort: {{ video.vimeo_passwd }}{% else %} - {% endif %}</div>
+
+                            <div class="col ml-3 align-middle px-0 ">
+
+                                <span class="">{% if video.id %}<a href="{% url 'FileCollector:video_detail' video.id %}" class="fw-600">{{ video.unique_fn }}</a>{% else %}{{ video.unique_fn }}{% endif %}</span>
+
+                                <span class="pr-2">
+                                {% if video.status == 'PENDING' %}
+                                <span class="badge badge-warning"  data-bs-toggle="tooltip" data-html="true" title="<em>Status: {{video.status}}</em><br> video is pending">wait</span>
+                                {% elif video.status == 'UPLOADING' %}
+                                <div class="spinner-border text-green" role="status" style="width:10px; height:10px;"  data-bs-toggle="tooltip" data-html="true" title="<em>Status: {{video.status}}</em><br> video is currently uploading">
+                                    <span class="visually-hidden" style="display:none">Loading...</span>
+                                </div>
+                                {% elif video.status == 'FAILED' or video.status == 'RENDERING FAILED' %}
+                                <span class="badge badge-danger"  data-bs-toggle="tooltip" data-html="true" title="<em>Status: {{video.status}}</em><br> video has failed. Either rendering or upload">&nbsp;!&nbsp;</span>
+                                {% elif video.status == 'RENDERING' %}
+                                <div class="spinner-border text-primary" role="status" style="width:10px; height:10px;"  data-bs-toggle="tooltip" data-html="true" title="<em>Status: {{video.status}}</em><br> video is currently rendering">
+                                    <span class="visually-hidden" style="display:none">Loading...</span>
+                                </div>
+                                {% else %}
+                                <span class="badge badge-green"  data-bs-toggle="tooltip" data-html="true" title="<em>Status: {{video.status}}</em> video has been uploaded">ok</span>
+                                    {% endif %}</span>
+                                <!--<button class="badge btn_edit_priority btn justify-content-center align-items-center bg-green pl-3 pr-3 pt-1 pb-1" data-id="{{ video.id }}">X</button>-->
+                                <br>
+                                {% if video.project.id %}<a href="{% url 'FileCollector:project_dashboard' video.project.id %}">{{ video.project.name }}</a>{% endif %}
+                                {% if video.project.company %}<a href="{% url 'FileCollector:company_detail' video.project.company.id %}" class="fw-300 text-body">{{ video.project.company }}</a>{% endif %}
+
+                                <span class="pl-2"> ({{ video.size|filesize_format }})</span>
+                            </div>
+                            <div class="col-3 px-0 align-middle">{{ video.updated|naturaltime}}</div>
+                            <div class="col-1 px-0 align-right" >
+                                {% if video.status == 'COMPLETE' %}
+                                <button class="btn btn-xs js-copy" data-bs-toggle="tooltip" data-placement="bottom" data-id="{{video.id}}" title="Copy to clipboard">
+                                    <i data-feather="clipboard" ></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No videos are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-xl-6 mb-4">
+            <div class="card">
+                <div class="card-header"><a href="{% url 'FileCollector:projects'  %}">Latest Projects</a></div>
+
+                <div class="card-body p-0 pb-2">
+                    <div class="container text-xs pt-2">
+                        {% if latest_projects_list %}
+                        {% for project in latest_projects_list %}
+                        <div class="row justify-content-md-left mt-1">
+                            <div class="col-3 ml-3 align-left px-0  ">
+                                {% if project.id %}<a href="{% url 'FileCollector:project_dashboard' project.id %}" class="fw-600">{{ project.name }}
+
+                                  </a>{% else %}{{ project.name }}{% endif %}
+
+                            </div>
+<div class="col-auto">
+                             {% if project.status == 'ESTIMATE' %}
+                            <span class="badge bg-yellow rounded-circle ms-2">
+                            {% elif project.status == 'CLIENT' %}
+                            <span class="badge bg-pink rounded-circle ms-2">
+                                {% elif project.status == 'ONHOLD' %}
+                            <span class="badge bg-orange rounded-circle ms-2">
+                                {% elif project.status == 'FAILED' %}
+                            <span class="badge bg-red rounded-circle ms-2">
+                                {% elif project.status == 'ACTIVE' %}
+                            <span class="badge bg-primary rounded-circle ms-2" >
+                                {% elif project.status == 'COMPLETE' %}
+                            <span class="badge bg-cyan rounded-circle ms-2">
+                                {% elif project.status == 'DELIVERED' %}
+                            <span class="badge bg-teal rounded-circle ms-2">
+                                {% elif project.status == 'PAID' %}
+                            <span class="badge bg-green rounded-circle ms-2">
+                                {% else %}
+                                <span>
+                                {% endif %}
+&nbsp;
+                              </span>
+                        </div>
+                            <div class="col-5 px-0 align-left">
+                                {% if project.company %}<a href="{% url 'FileCollector:company_detail' project.company.id %}" class="fw-300 text-body">{{ project.company }}</a>{% endif %}
+                            </div>
+                            <!--                            <div class="col-2 px-0 align-middle">{{ project.status }}</div>-->
+
+                            <div class="col-3 px-0 align-middle">{{ project.updated|naturaltime}}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No projects are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-end mb-4">
+
+        <div class="d-flex flex-row-reverse bd-highlight">
+            <div class="p-2 bd-highlight">
+                <button class="btn btn-outline-info mr-2" type="button">Report range:</button>
+                <button class="btn btn-white p-3" id="reportrange">
+                    <i class="mr-2 text-primary" data-feather="calendar"></i>
+                    <span></span>
+                    <i class="ml-10" data-feather="list"></i>
+                </button>
+                <form id="search_form" method="POST" action="{% url 'FileCollector:index' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="start_date" name="start_date" />
+                    <input type="hidden" id="end_date" name="end_date" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <!--
+        <div class="col-xxl-12 col-xl-12 mb-4">
+            <div class="card h-100">
+                <div class="card-body h-100 d-flex flex-column justify-content-center py-5 py-xl-4">
+                    <div class="row align-items-center">
+                        <div class="col-xl-8 col-xxl-12">
+                            <div class="text-center text-xl-left text-xxl-center px-4 mb-4 mb-xl-0 mb-xxl-4">
+                                <h1 class="text-primary">Welcome - Willkommen - Bienvenidos - Benvenuto!</h1>
+                                <p class="text-gray-700 mb-0">This is the Filmagio tool for all video services. Get your
+                                    information about orders, create products and oversee production from the top of the
+                                    anthill</p>
+                            </div>
+                        </div>
+                        <div class="col-xl-4 col-xxl-12 text-center">
+                            <img class="img-fluid" src="{% static 'assets/img/illustrations/at-work.svg' %}" style="max-width: 26rem"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
+        <!--
+                   <div class="col-xxl-4 col-xl-6 mb-4">
+                       <div class="card card-header-actions h-100">
+                           <div class="card-header">
+                               Recent Activity
+
+                               <div class="dropdown no-caret">
+                                   <button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                       <i class="text-gray-500" data-feather="more-vertical"></i>
+                                   </button>
+                                   <div class="dropdown-menu dropdown-menu-right animated--fade-in-up"
+                                       aria-labelledby="dropdownMenuButton">
+                                       <h6 class="dropdown-header">Filter Activity:</h6>
+                                       <a class="dropdown-item" href="#!"><span class="badge badge-green-soft text-green my-1">Commerce</span></a>
+                                       <a class="dropdown-item" href="#!"><span class="badge badge-blue-soft text-blue my-1">Reporting</span></a>
+                                       <a class="dropdown-item" href="#!"><span class="badge badge-yellow-soft text-yellow my-1">Server</span></a>
+                                       <a class="dropdown-item" href="#!"><span class="badge badge-purple-soft text-purple my-1">Users</span></a>
+                                   </div>
+                               </div>
+                           </div>
+                           <div class="card-body">
+                               <div class="timeline timeline-xs">
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">27 min</div>
+                                           <div class="timeline-item-marker-indicator bg-green"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           New order placed!
+                                           <a class="font-weight-bold text-dark" href="#!">Order #2912</a>
+                                           has been successfully placed.
+                                       </div>
+                                   </div>
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">58 min</div>
+                                           <div class="timeline-item-marker-indicator bg-blue"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           Your
+                                           <a class="font-weight-bold text-dark" href="#!">weekly report</a>
+                                           has been generated and is ready to view.
+                                       </div>
+                                   </div>
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">2 hrs</div>
+                                           <div class="timeline-item-marker-indicator bg-purple"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           New user
+                                           <a class="font-weight-bold text-dark" href="#!">Valerie Luna</a>
+                                           has registered
+                                       </div>
+                                   </div>
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">1 day</div>
+                                           <div class="timeline-item-marker-indicator bg-yellow"></div>
+                                       </div>
+                                       <div class="timeline-item-content">Server activity monitor alert</div>
+                                   </div>
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">1 day</div>
+                                           <div class="timeline-item-marker-indicator bg-green"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           New order placed!
+                                           <a class="font-weight-bold text-dark" href="#!">Order #2911</a>
+                                           has been successfully placed.
+                                       </div>
+                                   </div>
+
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">1 day</div>
+                                           <div class="timeline-item-marker-indicator bg-purple"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           Details for
+                                           <a class="font-weight-bold text-dark" href="#!">Marketing and Planning Meeting</a>
+                                           have been updated.
+                                       </div>
+                                   </div>
+                                   <!-- Timeline Item 7--
+                                   <div class="timeline-item">
+                                       <div class="timeline-item-marker">
+                                           <div class="timeline-item-marker-text">2 days</div>
+                                           <div class="timeline-item-marker-indicator bg-green"></div>
+                                       </div>
+                                       <div class="timeline-item-content">
+                                           New order placed!
+                                           <a class="font-weight-bold text-dark" href="#!">Order #2910</a>
+                                           has been successfully placed.
+                                       </div>
+                                   </div>
+                               </div>
+                           </div>
+
+                       </div>
+                   </div> -->
+
+        <!-- PROJECT OVERVIEW -->
+        <div class="col-xxl-6 col-md-12 mb-4">
+            <div class="card card-header-actions h-100">
+                <div class="card-header">
+                    <div >Upload overview <span class="text-muted">({{ upload_total }})</span></div>
+                    <div class="dropdown no-caret">
+                        <button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="text-gray-500" data-feather="more-vertical"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right animated--fade-in-up"
+                             aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="list"></i></div>
+                                Manage Tasks
+                            </a>
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="plus-circle"></i></div>
+                                Add New Task
+                            </a>
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="minus-circle"></i></div>
+                                Delete Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h4 class="small">
+                        Draft_1 <span class="text-muted">({{ upload_draft_1 }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_draft_1_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-secondary" role="progressbar" style="width: {{ upload_draft_1_percent }}%" aria-valuenow="{{ upload_draft_1_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        Draft_2 <span class="text-muted">({{ upload_draft_2 }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_draft_2_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar   bg-secondary" role="progressbar" style="width: {{ upload_draft_2_percent }}%" aria-valuenow="{{ upload_draft_2_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        > Draft 2 <span class="text-muted">({{ upload_draft_3plus }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_draft_3plus_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-secondary" role="progressbar" style="width: {{ upload_draft_3plus_percent }}%" aria-valuenow="{{ upload_draft_3plus_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        Finals <span class="text-muted">({{ upload_draft_final }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_draft_final_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-primary" role="progressbar" style="width: {{ upload_draft_final_percent }}%" aria-valuenow="{{ upload_draft_final_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        Successful uploads <span class="text-muted">({{ upload_success }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_success_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-teal" role="progressbar" style="width: {{ upload_success_percent }}%" aria-valuenow="{{ upload_success_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        Upload errors <span class="text-muted">({{ upload_errors }})</span>
+                        <span class="float-right font-weight-bold">{{ upload_errors_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: {{ upload_errors_percent }}%" aria-valuenow="{{ upload_errors_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+
+
+
+                </div>
+                <a class="card-footer" href="{% url 'FileCollector:projects' %}">
+                    <div class="d-flex align-items-center justify-content-between small text-body">
+                        View Projects
+                        <i data-feather="arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- END PROJECT OVERVIEW -->
+
+        <div class="col-xxl-6 col-md-12 mb-4">
+            <div class="card card-header-actions h-100">
+                <div class="card-header">
+                    Order Overview
+                    <div class="dropdown no-caret">
+                        <button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="text-gray-500" data-feather="more-vertical"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right animated--fade-in-up"
+                             aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="list"></i></div>
+                                Manage Tasks
+                            </a>
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="plus-circle"></i></div>
+                                Add New Task
+                            </a>
+                            <a class="dropdown-item" href="#!">
+                                <div class="dropdown-item-icon"><i class="text-gray-500" data-feather="minus-circle"></i></div>
+                                Delete Tasks
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'pending' %}">Pending</a>
+                        <span class="float-right font-weight-bold">{{ orders_pending_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-dark" role="progressbar" style="width: {{ orders_pending_percent }}%" aria-valuenow="{{ orders_pending_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'ready' %}">Ready</a>
+                        <span class="float-right font-weight-bold">{{ orders_ready_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-yellow" role="progressbar" style="width: {{ orders_ready_percent }}%" aria-valuenow="{{ orders_ready_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'active' %}">Active</a>
+                        <span class="float-right font-weight-bold">{{ orders_active_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-indigo" role="progressbar" style="width: {{ orders_active_percent }}%" aria-valuenow="{{ orders_active_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'failed' %}">Failed</a>
+                        <span class="float-right font-weight-bold">{{ orders_failed_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar  bg-red" role="progressbar" style="width: {{ orders_failed_percent }}%" aria-valuenow="{{ orders_failed_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'complete' %}">Complete</a>
+                        <span class="float-right font-weight-bold">{{ orders_complete_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-cyan" role="progressbar" style="width: {{ orders_complete_percent }}%" aria-valuenow="{{ orders_complete_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <h4 class="small">
+                        <a href="{% url 'FileCollector:orders_by_status' 'delivered' %}">Delivered</a>
+                        <span class="float-right font-weight-bold">{{ orders_delivered_percent }}%</span>
+                    </h4>
+                    <div class="progress mb-4">
+                        <div class="progress-bar   bg-teal" role="progressbar" style="width: {{ orders_delivered_percent }}%" aria-valuenow="{{ orders_delivered_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+
+                </div>
+                <a class="card-footer" href="{% url 'FileCollector:orders' %}">
+                    <div class="d-flex align-items-center justify-content-between small text-body">
+                        View Orders
+                        <i data-feather="arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!--  DATA CARDS START -->
+    <div class="row">
+        <div class="col-xl-3 col-lg-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-3">
+                            <div class="text-white-75 small">Total Orders</div>
+                            <div class="text-lg font-weight-bold">{{ orders_total }}/{{ products_total }}</div>
+                            <span class="text-xs">orders/products</span>
+                        </div>
+                        <i class="feather-xl text-white-50" data-feather="film"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'FileCollector:orders' %}">View Order list</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-3">
+                            <div class="text-white-75 small">Failed</div>
+                            <div class="text-lg font-weight-bold">{{ orders_failed }}/{{ products_failed }}</div>
+                            <span class="text-xs">orders/products</span>
+                        </div>
+                        <i class="feather-xl text-white-50" data-feather="alert-triangle"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'FileCollector:orders_by_status' 'failed' %}">View failed Orders</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-3">
+                            <div class="text-white-75 small">Open Orders</div>
+                            <div class="text-lg font-weight-bold">{{ orders_ready }} ({{ products_ready }}/{{ products_active }}/{{ products_idle }})</div>
+                            <span class="text-xs">orders (ready/active/idle)</span>
+                        </div>
+                        <i class="feather-xl text-white-50" data-feather="cloud-lightning"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'FileCollector:orders_by_status' 'open' %}">View open Orders</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="mr-3">
+                            <div class="text-white-75 small">Completed</div>
+                            <div class="text-lg font-weight-bold">{{ orders_complete}} ({{ products_complete }}/{{ products_delivered }})</div>
+                            <span class="text-xs">orders (complete/delivered)</span>
+                        </div>
+                        <i class="feather-xl text-white-50" data-feather="check-square"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="{% url 'FileCollector:orders_by_status' 'done' %}">View complete orders</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- START ORDER/INTAKE -->
+    <div class="row mb-2">
+        <div class="col-sm-1" style="min-width: 100px;">
+            <i class="feather-icon" data-feather="download"></i>
+        </div>
+        <div class="col-sm">
+            <div class="card">
+                <div class="card-header"><a href="{% url 'FileCollector:orders_by_status' 'pending' %}">Latest incoming Orders (5)</a></div>
+                <div class="card-body p-0 pb-2">
+                    <div class="container  ">
+                        {% if orders_incoming_latest %}
+                        {% for order in orders_incoming_latest %}
+                        <div class="row justify-content-md-center mt-2 text-xs ">
+                            <div class="col-1 px-0">
+                                <a href="{% url 'FileCollector:orders_detail' order.id %}">
+                                    <button class="btn btn-outline-teal btn-sm" type="button">{{order.id}}</button>
+                                </a>
+                            </div>
+                            <div class="col-4 px-4 align-middle ">
+                                <a href="{% url 'FileCollector:client_detail' order.client.id %}">{{order.client }}</a><br>
+                                <a href="{% url 'FileCollector:company_detail' order.client.company.id %}">({{ order.client.company }})</a>
+                            </div>
+                            <div class="col-3 align-middle">{{order.products_count}} products</div>
+                            <div class="col-3 align-middle">
+                                {% if order.placed %}
+                                {{order.placed | naturaltime}}
+                                {% else %}
+                                -
+                                {% endif %}</div>
+                            <div class="col-1 align-middle">
+                                {% if order.origin == 'FSP' %}
+                                <div class="badge badge-primary">{{order.origin}}</div>
+                                {% else %}
+                                <div class="badge badge-dark">{{order.origin}}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No orders are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-header"><a href="{% url 'FileCollector:intakes' %}">Latest incoming Intakes (5)</a></div>
+                <div class="card-body p-0 pb-2">
+                    <div class="container  ">
+                        {% if latest_intakes_list %}
+                        {% for intake in latest_intakes_list %}
+                        <div class="row justify-content-md-center mt-2 text-xs ">
+                            <div class="col-2 px-0">
+                                <a href="{% url 'FileCollector:intake_detail' intake.id %}">
+                                    <button class="btn btn-outline-dark btn-sm" type="button">{{intake.id}}</button>
+                                </a>
+                            </div>
+                            <div class="col-4 align-middle ml-0 px-0">
+                                {% if intake.order %}
+                                <a href="{% url 'FileCollector:client_detail' intake.order.client.id %}">{{intake.order.client.firstname}} {{intake.order.client.lastname}}</a>
+                                {% elif intake.client %}
+                                <a href="{% url 'FileCollector:client_detail' intake.client.id %}">{{intake.order.client.firstname}} {{intake.client}}</a>
+                                {% else %}
+                                <span class="text-xs">N/A</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-3 px-0 align-middle">{{ intake.files_count }}/{{ intake.total_size|filesize_format }}</div>
+                            <div class="col-3 px-0 align-middle">{{intake.created|naturaltime}}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No intakes are available.</p>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+    <!--- END ORDER/INTAKE --->
+
+
+    <!-- START ORDER/DELIVERY -->
+    <div class="row mb-4">
+        <div class="col-sm-1" style="min-width: 100px;">
+            <i class="feather-icon" data-feather="download-cloud"></i>
+        </div>
+        <div class="col">
+            <div class="card">
+                <div class="card-header"><a href="{% url 'FileCollector:orders_by_status' 'complete' %}">Latest finished Orders</a></div>
+                <div class="card-body p-0 pb-2">
+                    <div class="container  ">
+
+                        {% if orders_complete_latest %}
+                        {% for order in orders_complete_latest %}
+                        <div class="row justify-content-md-center mt-2 text-xs ">
+
+                            <div class="col-1 px-0">
+                                <a href="{% url 'FileCollector:orders_detail' order.id %}">
+                                    <button class="btn btn-outline-teal btn-sm" type="button">{{order.id}}</button>
+                                </a>
+                            </div>
+                            <div class="col-4 px-4 align-middle ">
+                                <a href="{% url 'FileCollector:client_detail' order.client.id %}">{{order.client }}</a><br>
+                                <a href="{% url 'FileCollector:company_detail' order.client.company.id %}">({{ order.client.company }})</a>
+                            </div>
+                            <div class="col-3 align-middle">{{order.products_count}} products</div>
+                            <div class="col-3 align-middle">
+                                {% if order.placed %}
+                                {{order.placed | naturaltime}}
+                                {% else %}
+                                -
+                                {% endif %}</div>
+                            <div class="col-1 align-middle">
+                                {% if order.origin == 'FSP' %}
+                                <div class="badge badge-primary">{{order.origin}}</div>
+                                {% else %}
+                                <div class="badge badge-dark">{{order.origin}}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No orders are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--
+        <div class="col">
+            <div class="card">
+                <div class="card-header">Latest uploaded Videos</div>
+                <div class="card-body p-0 pb-2">
+                    <div class="container  ">
+                        {% if latest_videos_list %}
+                        {% for video in latest_videos_list %}
+                        <div class="row justify-content-md-center mt-2 text-xs ">
+                            <div class="col-1 px-0">
+                                <a href="{% url 'FileCollector:video_detail' video.id %}">
+                                    <button class="btn btn-outline-teal btn-sm" type="button">{{ video.id }}</button>
+                                </a>
+                            </div>
+                            <div class="col ml-3 align-middle px-0  " style="font-size:10px">
+                                {% if video.project.id %}<a href="{% url 'FileCollector:project_detail' video.project.id %}">{{ video.unique_fn }}</a>{% else %}{{ video.unique_fn }}{% endif %}
+                            </div>
+                            <div class="col-2 px-0 align-middle">{{ video.size|filesize_format }}</div>
+                            <div class="col-3 px-0 align-middle">{{ video.updated|naturaltime}}</div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <p>No videos are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>-->
+
+
+    </div>
+    <!--- END ORDER/DELIVERY --->
+
+    <!-- DATA CARDS END -->
+
+
+
+</div>
+<!-----------END TABLE------------------->
+<button id="testme">BUTTON (this is a test for Sweet Alert - and it's not working yet</button>
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+
+$("#testme").on('click',function(){
+console.log("button clicked");
+Swal.fire({
+  title: 'Are you sure?',
+  text: "You won't be able to revert this!",
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonColor: '#3085d6',
+  cancelButtonColor: '#d33',
+  confirmButtonText: 'Yes, delete it!'
+}).then((result) => {
+  if (result.isConfirmed) {
+    Swal.fire(
+      'Deleted!',
+      'Your file has been deleted.',
+      'success'
+    )
+  }
+})
+});
+
+        // Date Range Picker Example
+        $(function () {
+
+            var start = moment().subtract(29, "days");
+            var end = moment();
+            {% if start_date %}
+                console.log('{{start_date}}')
+                start = moment('{{start_date}}');
+            {% endif %}
+            {% if end_date %}
+                end = moment('{{end_date}}');
+            {% endif %}
+
+            var firstLoading = true;
+            cb(start, end);
+            function cb(start, end) {
+                console.log(start)
+                $("#start_date").val(start.toISOString());
+                $("#end_date").val(end.toISOString());
+                $("#reportrange span").html(
+                    start.format("MMMM D, YYYY") + " - " + end.format("MMMM D, YYYY")
+                );
+                if(!firstLoading){
+                    $("#search_form").submit();
+                    
+                }else{
+                    firstLoading = false;
+                }
+            }
+            
+            $("#reportrange").daterangepicker(
+                {
+                    startDate: start,
+                    endDate: end,
+                    ranges: {
+                        Today: [moment(), moment()],
+                        Yesterday: [
+                            moment().subtract(1, "days"),
+                            moment().subtract(1, "days"),
+                        ],
+                        "Last 7 Days": [moment().subtract(6, "days"), moment()],
+                        "Last 30 Days": [moment().subtract(29, "days"), moment()],
+                        "This year": [
+                        moment().startOf("year"),
+                        moment(),
+                        ],
+                        "This Month": [
+                            moment().startOf("month"),
+                            moment().endOf("month"),
+                        ],
+                        "Last Month": [
+                            moment().subtract(1, "month").startOf("month"),
+                            moment().subtract(1, "month").endOf("month"),
+                        ],
+                    },
+                },
+                cb
+            );
+            
+        });
+
+
+</script>
+{% endblock %}

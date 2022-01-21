@@ -1,0 +1,415 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Video Detailed View {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+
+    <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+        <div class="container-fluid">
+            <div class="page-header-content">
+                <div class="row align-items-center justify-content-between pt-3">
+                    <div class="col-auto mb-3">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Detail of video {{ video.name }}
+                            [<strong>{{ video.id }}</strong>]
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+</header>
+
+<div class="container mt-n10">
+    <!-- Dashboard info widget 1-->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="container">
+                <nav class="nav nav-borders">
+
+                </nav>
+                <hr class="mt-0 mb-4"/>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <!-- Change password card-->
+                        <div class="card card-header-actions mb-4">
+                            <div class="card-header">Video Info {{ video.id }}
+                                <div style="float:right">
+
+                                </div>
+
+
+                            </div>
+                            <div class="card-body text-xs">
+
+                                <div class="row">
+
+                                    <div class="col-xl">
+                                        {% if video.vimeo_id %}
+
+                                        <iframe src="https://player.vimeo.com/video/{{ video.vimeo_id }}" width="640"
+                                                height="360" frameborder="0" allow="autoplay; fullscreen"
+                                                allowfullscreen></iframe>
+
+                                        {% else %}
+                                        <div class="text-xs text-center ">
+                                            <br><br><br>
+                                            no video preview available.<br>
+                                            Maybe it hasn't been uploaded yet?
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="container">
+                                            {% if video.project %}
+                                            <div class="row">
+                                                <div class="col-sm-3">Project</div>
+                                                <div class="col">{% if video.project %}
+                                                    <a href="{% url 'FileCollector:project_dashboard' video.project.id  %}">
+                                                        {{ video.project }}</a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if video.order_product %}
+                                            <div class="row">
+                                                <div class="col-sm-3">Product</div>
+                                                <div class="col"> {% if video.order_product %}
+                                                    <a href="{% url 'FileCollector:product_detail' video.order_product.product.id %} ">
+                                                        {{ video.order_product.product.fsin }}</a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Order</div>
+                                                <div class="col"> {% if video.order_product.order.id %}
+                                                    <a href="{% url 'FileCollector:orders_detail' video.order_product.order.id %} ">
+                                                        {{ video.order_product.order.id }}</a> by client
+                                                    <a href="{% url 'FileCollector:client_detail' video.order_product.order.client.id %} ">
+                                                        {{ video.order_product.order.client }}</a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Client</div>
+                                                <div class="col"> {% if  video.order_product.order.client.id %}
+                                                    <a href="{% url 'FileCollector:orders_detail' video.order_product.order.id %} ">
+                                                        <a href="{% url 'FileCollector:client_detail' video.order_product.order.client.id %} ">
+                                                            {{ video.order_product.order.client }}</a> (<a href="{% url 'FileCollector:company_detail' video.order_product.order.client.company.id %} ">{{ video.order_product.order.client.company }}</a>)
+                                                        {% else %}
+                                                        -
+                                                        {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-sm-3">Order Status</div>
+                                                <div class="col"> {% if video.order_product.order.status %}
+                                                    {{ video.order_product.order.status }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Video duration</div>
+                                                <div class="col"> {% if video.order_product.product.duration %}
+                                                    {{ video.order_product.product.duration}} sec
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="row">
+                                                <div class="col-sm-3">Status</div>
+                                                <div class="col"> {% if video.status %}
+                                                    {{ video.status }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Version</div>
+                                                <div class="col">
+                                                    {% if video.version %}
+                                                    {{ video.version }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Episode</div>
+                                                <div class="col">
+                                                    {% if video.episode %}
+                                                    {{ video.episode }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Language</div>
+                                                <div class="col">
+                                                    {% if video.language %}
+                                                    {{ video.language }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Subtitle</div>
+                                                <div class="col">
+                                                    {% if video.sub_language  %}
+                                                    {{ video.sub_language.name  }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-sm-3">Description</div>
+                                                <div class="col">
+                                                    {% if video.description %}
+                                                    {{ video.description }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="row">
+                                                <div class="col-sm-3">VIMEO ID</div>
+                                                <div class="col">
+                                                    {% if video.vimeo_id %}
+                                                    {{ video.vimeo_id }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">URL</div>
+                                                <div class="col">
+                                                    {% if video.url %}
+                                                    <a href="{{ video.url }}">{{ video.url }}</a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Review-URL</div>
+                                                <div class="col">
+                                                    {% if video.url_review %}
+                                                    <a href="{{ video.url }}">{{ video.url_review }}</a>
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Password</div>
+                                                <div class="col"> {% if video.vimeo_passwd %}
+                                                    {{ video.vimeo_passwd }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <hr>
+                                              <div class="row">
+                                                <div class="col-sm-3">Duration</div>
+                                                <div class="col"> {% if video.duration %}
+                                                    {{ video.duration }} seconds
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Resolution</div>
+                                                <div class="col"> {% if video.resolution %}
+                                                    {{ video.resolution }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+              <div class="row">
+                                                <div class="col-sm-3">FPS</div>
+                                                <div class="col"> {% if video.fps %}
+                                                    {{ video.fps }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Bitrate</div>
+                                                <div class="col"> {% if video.bitrate %}
+                                                    {{  video.bitrate|bitrate_format }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Code name</div>
+                                                <div class="col"> {% if video.codec_name %}
+                                                    {{ video.codec_name }} ({{video.codec_long_name}})
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Picture format</div>
+                                                <div class="col"> {% if video.pix_fmt %}
+                                                    {{ video.pix_fmt }} ({{video.pix_fmt}})
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            <hr>
+                                            <div class="row">
+                                                <div class="col-sm-3">Rendertime</div>
+                                                <div class="col"> {% if video.rendering_time %}
+                                                    {{ video.rendering_time }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">File size</div>
+                                                <div class="col"> {% if video.size %}
+                                                    {{ video.size|filesize_format }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Unique Filename</div>
+                                                <div class="col"> {% if video.unique_fn %}
+                                                    {{ video.unique_fn }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">FFProbe result</div>
+                                                <div class="col"> {% if video.ffprobe_result %}
+                                                    {{ video.ffprobe_result }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Created</div>
+                                                <div class="col"> {% if video.created %}
+                                                    {{ video.created }}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-sm-3">Updated</div>
+                                                <div class="col"> {% if video.updated %}
+                                                    {{ video.updated | naturaltime}}
+                                                    {% else %}
+                                                    -
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+
+                            <!-- CHANGELOG MODAL -->
+                            <div class="modal fade" id="changelogModal" tabindex="-1" role="dialog"
+                                 aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+                                <div class="modal-dialog modal-xl" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalScrollableTitle">Log</h5>
+                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h4>Project Log</h4>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" type="button" data-dismiss="modal">Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- END CHANGELOG MODAL -->
+                            <!-- START PROCESS OUTPUT MODAL -->
+
+                            <div class="modal fade" id="processOutputModal" tabindex="-1" role="dialog"
+                                 aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+                                <div class="modal-dialog modal-xl" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="processOutputModalTitle">Log</h5>
+                                            <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">×</span></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h4>Command output</h4>
+                                            <span class="text-xs" id="processOutputModalText">
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button class="btn btn-primary" type="button" data-dismiss="modal">Close
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="container">
+
+                            <hr class="mt-2 mb-4"/>
+                            <!-- Knowledge base main category card 1-->
+
+
+                        </div>
+                        <!-- End page content -->
+                        {% endblock %}
+                        {% block javascript %}
+                        <script type="text/javascript">
+
+
+                        </script>
+                        {% endblock %}
+
+

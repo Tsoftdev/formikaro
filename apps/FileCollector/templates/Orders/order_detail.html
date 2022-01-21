@@ -1,0 +1,888 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Order Detailed View {% endblock %}
+{% block style_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" integrity="sha512-f8gN/IhfI+0E9Fc/LKtjVq4ywfhYAVeMGKsECzDUHcFJ5teVwvKTqizm+5a84FINhfrgdvjX8hEJbem2io1iTA==" crossorigin="anonymous" />
+{% endblock %}
+{% block content %}
+
+    <header class="page-header page-header-light bg-white bg-shadow pb-10">
+        <div class="container">
+            <div class="page-header-content pt-4">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-auto mt-4">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Detail of order 
+                            [<strong>{{ order.id }}</strong>]
+                        </h1>
+                        <div class="page-header-subtitle">This order was recieved from <a href="{% url 'FileCollector:client_detail' order.client.id %}"><strong> {{order.client.get_fullname }}</strong></a> (<a href="{% url 'FileCollector:company_detail' order.client.company.id %}">{{order.client.company}}</a>) on the {{order.created}} via {{order.origin}} and it contains <strong>{{ order.products_count }} products </strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-n10">
+        <!-- Dashboard info widget 1-->
+        <div class="container mt-n10 mb-3">
+            <div class="row">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <!-- START STATUS TRACKER -->
+                        <div class="col-3" >
+                            <div class="card-deck" style="height:182px">
+                                <div class="card bg-primary text-white 
+                                            {% if order.status == 'PENDING' %}
+                                            bg-dark
+                                            {% elif order.status == 'READY'  %}
+                                            bg-yellow
+                                            {% elif order.status == 'FAILED'  %}
+                                            bg-red
+                                            {% elif order.status == 'ACTIVE'  %}
+                                            bg-indigo
+                                            {% elif order.status == 'COMPLETE'  %}
+                                            bg-cyan
+                                            {% elif order.status == 'DELIVERED'  %}
+                                            bg-teal
+                                            {% else %}
+                                            bg-dark
+                                            {% endif %}
+                                            ">
+                                    <div class="card-body pb-2">
+                                        <h5 class="text-white-50">STATUS</h5>
+                                        <div>
+                                            <span class="display-4 ">{{order.status}}</span><br>
+                                            <span class="text-xs">(set {{order.updated|naturaltime}})</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer p-1 text-right">
+                                        <button id="btn_change" class="btn btn-black rounded-pill btn-sm pl-2 pr-2 pt-1 pb-1" type="button">Change</button>
+                                        <button id="btn_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" style="display:none" type="button">Save</button>
+                                        <select id="statusSelect" class="form-control p-1" style="height: 24px; width: 105px; display: none;">
+                                            <option value="PENDING">PENDING</option>
+                                            <option value="READY">READY</option>
+                                            <option value="FAILED">FAILED</option>
+                                            <option value="ACTIVE">ACTIVE</option>
+                                            <option value="COMPLETE">COMPLETE</option>
+                                            <option value="DELIVERED">DELIVERED</option>
+                                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- END STATUS TRACKER -->
+
+                        <!-- START OPERATIONAL TRACKER -->
+                        <div class="col-3 mb-2" >
+                            <div class="card-deck" style="height:182px">
+                                <div class="card bg-white text-dark">
+                                    <div class="card-body ">
+                                        <h5 class="">Operational</h5>
+                                        <div class="mb-4">
+                                            <span class="display-4">{{order.products_count}}</span>
+                                            <span class=""><br/>({{order.completed_products_count}} complete)</span>
+                                        </div>
+
+                                        <div class="progress" style="height: 0.8rem">
+                                            <div class="progress-bar bg-primary"
+                                                style="width: {% widthratio order.completed_products_count order.products_count 100 %}%"
+                                                role="progressbar"
+                                                aria-valuenow="{% widthratio order.completed_products_count order.products_count 100 %}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                <span>
+                                                    {% widthratio order.completed_products_count order.products_count 100 %}%
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END OPERATIONAL TRACKER -->
+
+                        <!-- START  SCOPE TRACKER -->
+
+                        <div class="col-3 mb-2" >
+                            <div class="card-deck mb-2" style="height:182px">
+                                <div class="card bg-white text-dark">
+                                    <div class="card-body ">
+                                        <h5 class="text-dark-50">Scope</h5>
+                                        <div class="mb-4">
+                                            <span class="display-4 text-dark">{{order.total_running_time|seconds_to_clock}}</span>
+                                            <span class="text-dark-50"><br />(total running time)</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                            </div>
+                        </div>
+                        <!-- END SCOPE TRACKER -->
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDIT ASSET MODAL-->
+            <div class="modal fade" id="editAssetsModal" tabindex="-1" role="dialog" aria-labelledby="editAssetModal" style="display: none;" aria-hidden="true">
+
+                <div class="modal-dialog   modal-lg modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalCenterTitle">Edit Order's assets</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="container" id="div_edit_asset">
+                                
+                            </div>
+                            <input type="hidden" id="order_prod_id" />
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
+                            <button id="btn_save_asset_edit" class="btn btn-primary" type="button">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- CHANGELOG MODAL -->
+            <div class="modal fade" id="changelogModal" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-xl" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalScrollableTitle">Log</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <h4>Order Log</h4>
+                            <span class="text-xs"> {{order.change_log|format_log}}</span>
+                            <br>
+                            {% for line in order_products %}
+                            <br>
+                            <h4>Product Log for {{ line.product.fsin}}</h4>
+                            {% if line.change_log %}
+                            <span class="text-xs">{{ line.change_log|format_log }}</span>
+                            {% else %}
+                            <span class="text-xs">No log available</span><br>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="modal-footer"><button class="btn btn-primary" type="button" data-dismiss="modal">Close</button></div>
+                    </div>
+                </div>
+            </div>
+            <!-- END CHANGELOG MODAL -->
+            <!-- START PROCESS OUTPUT MODAL -->
+            <div class="modal fade" id="processOutputModal" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+                <div class="modal-dialog modal-xl" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="processOutputModalTitle">Log</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <h4>Command output</h4>
+                            <span class="text-xs" id="processOutputModalText">
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="button" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- END PROCESS OUTPUT MODAL -->
+        </div>
+        
+        <div class="card mb-4 card-header-actions ">
+            <div class="card-header">List of ordered products
+                <div class="d-flex bd-highlight" >
+                    <div class="p-2 bd-highlight">
+                        <button class="btn btn-primary btn-sm mr-2" type="button" data-toggle="modal" data-target="#changelogModal">View Log</button>
+                    </div>
+                    <div class="p-2 bd-highlight">
+
+                        <div class="dropdown">
+                            <button class="btn btn-pink  btn-sm dropdown-toggle" id="dropdownOrderMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Order</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item" href="#!" id="checkOrder">Check</a>
+                                <a class="dropdown-item" href="#!" id="prepareOrder">Prepare</a>
+                                <a class="dropdown-item" href="#!"  id="createOrder">Create</a>
+                            </div>
+                        </div>
+                    </div>
+                    <!--
+                    <div class="p-2 bd-highlight" id="orderCreated">
+                        <button class="btn btn-success btn-sm mr-2" type="button">CREATED</button>
+                    </div>-->
+                    <div class="p-2 bd-highlight">
+                        {% if is_attached_video %}
+                            <button id="btn_upload" class="btn btn-secondary btn-sm mr-2" type="button" >Upload</button>
+                        {% endif %}
+                    </div>
+                </div>
+                <input type="hidden" id="order_id" name="order_id" value="{{ order.id }}">
+            </div>
+            <div class="card-body">
+                <div class="datatable">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%">ID</th>
+                                <th style="width: 5%">O.ItemId</th>
+                                <th style="width: 8%">FSIN</th>
+                                <th style="width: 15%">Product name</th>
+                                <th style="width: 5%">Runtime</th>
+                                <th style="width: 5%">Status</th>
+                                <th style="width: 20%">Assets needed</th>
+                                <th style="width: 23%">Assets received</th>
+                                <th style="width: 14%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_order_product">
+                            {% for line in order_products %}
+                                <tr>
+                                    <td>{{line.id }}</td>
+                                    <td>{{line.orderItemId }}</td>
+                                    <td><a href="{% url 'FileCollector:product_detail' line.product.id %}">{{line.product.fsin }}</a></td>
+                                    <td>{% product_text_title line.product.id 'en' %}</td>
+                                    <td>{{line.product.runtime}} sec</td>
+                                    <td>
+                                        <div class="div_prod_status" id="product-{{line.id}}-status">
+                                            {% if line.status == 'RENDER' %}
+                                            <div class="fa-2x"><i class="fas fa-cog fa-spin"></i></div>
+                                            {% else %}
+
+                                            <span class="prod-status badge {% if line.status == 'COMPLETE' %}
+                                                            badge-teal
+                                                            {% elif line.status == 'PENDING' %}   
+                                                            badge-dark
+                                                            {% elif line.status == 'READY' %}
+                                                            badge-yellow
+                                                            {% elif line.status == 'IDLE' %}
+                                                            badge-orange
+                                                            {% elif line.status == 'ACTIVE' %}
+                                                            badge-indigo
+                                                            {% elif line.status == 'FAILED' %}
+                                                            badge-red
+                                                            {% elif line.status == 'COMPLETE' %}
+                                                            badge-cyan
+                                                            {% elif line.status == 'DELIVERED' %}
+                                                            badge-teal
+                                                            {% endif %}" style="cursor:pointer" data-id="{{ line.id }}">
+                                                {{line.status}}</span>
+                                            {% endif %}
+
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">
+                                            {% if line.product.base.assets.all or line.product.base.needs_intake %}
+                                            {%  for asset in line.product.base.assets.all %}
+                                                {{ asset.name }} ({{asset.id}})<br>
+                                            {% endfor %}
+                                            {% if line.product.base.needs_intake %}
+                                                <div class="badge badge-dark">Intake</div>
+                                            {% endif %}
+                                            {% else %}
+                                            No assets needed
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="text-xs">
+
+                                            {% if line.product.base.assets.all or line.product.base.needs_intake %}
+                                                {% for asset in line.assets.all %}
+                                                    <strong>{{ asset.name }} ({{asset.id}})</strong>: {{ asset.value }}
+                                                {% if asset.tasks.all %}
+                                            {% for task in asset.tasks.all %}
+
+                                             <a href="{% url 'FileCollector:task_detail' task.id  %}">
+                                                {% if task.status == 'CM' %}
+                                                    <button class="btn btn-success btn-xs ">
+                                                {% elif task.status == 'FD' %}
+                                                    <button class="btn btn-danger btn-xs ">
+                                                {% else %}
+                                                    <button class="btn btn-orange btn-xs ">
+                                                {% endif %}
+                                               <i data-feather="check-circle"></i>
+                                            </button></a>
+                                            {% endfor %}
+                                            {% endif %}
+                                            <br>
+                                                {% endfor %}
+                                                {% if intake %}
+                                                    <a href="{% url 'FileCollector:intake_detail' intake.id %}"> <div class="badge badge-dark">Intake</div></a>
+                                                {% endif %}
+
+                                            {% else %}
+                                                No assets received
+                                            {% endif %}
+                                        </span>
+                                        <hr>
+                                        <button class="editAssets btn btn-sm btn-teal btn-icon" type="button" data-id="{{ line.id }}"><i data-feather="edit" ></i></button>
+
+                                    </td>
+                        
+                                    <!--<td>{{line.order.created}}</td>-->
+                                    <td>
+                                        <div id="product-{{line.id}}-actions">
+                                            {% with product_videos=videos_currently_rendering|get_dict_item:line.id %}
+                                        {% if not product_videos %}
+                                        <div  id="actions">
+                                        {% if line.order_folder_created %}
+                                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr"><i data-feather="folder-minus"></i></button>
+                                        {% else %}
+                                            <button class="btn_create_order_prod_folder btn btn-datatable btn-icon btn-transparent-dark mr" data-id="{{ line.id }}"><i data-feather="folder-plus" alt="Folder not yet created"></i></button>
+                                        {% endif %}
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark mr" data-id="{{ line.id }}" id="renderOrderProduct"><i data-feather="cpu" ></i></button>
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark mr" data-id="{{ line.id }}"><i data-feather="upload"></i></button>
+
+                                        {% if line.json %}
+                                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr"
+                                                    data-trigger="focus" title="JSON" data-container="body"
+                                                    data-toggle="popover" data-placement="top"
+                                                    data-content="{{ line.json }}" data-original-title="Popover Title">
+                                                <i data-feather="list"></i>
+                                            </button>
+                                        {% endif %}
+                                        <button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark mr" data-id="{{ line.id }}"><i data-feather="trash-2"></i></button>
+                                        </div>
+                                        {% endif %}
+                                        {% if product_videos %}
+                                        <div id="render-progress-bars">
+                                        {% for video in product_videos %}
+                                            {% if video.progress <= 0 %}
+                                            <span class="prod-status badge badge-yellow">
+                                                VIDEO ID: {{video.video_id}} IN RENDER QUEUE</span>
+                                            {% endif %}
+                                            {% if video.progress > 0 %}
+                                            <div class="progress mt-2">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                                     role="progressbar" aria-valuenow="{{video.progress}}"
+                                                     aria-valuemin="0" aria-valuemax="100"
+                                                     style="width: {{video.progress}}%">
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                        {% endwith %}
+
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <hr>
+                    -
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <hr class="mt-2 mb-4" />
+            <!-- Knowledge base main category card 1-->
+            <div class="card card-icon  mb-4">
+                <div class="row no-gutters">
+                    <div class="col-auto card-icon-aside bg-primary"><i class="text-white-50" data-feather="share-2"></i></div>
+                    <div class="col">
+                        <div class="card-body py-4">
+                            <h3>Technical information:</h3>
+                            <div class="row">
+                                <div class="col-3"><strong>ORDER_ID</strong></div>
+                                <div class="col-5">{{order.id}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>SHOP ORDER ID:</strong></div>
+                                <div class="col-5">{{order.shop_order_id}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>SHOP ORDER TOKEN:</strong></div>
+                                <div class="col-5">
+                                    {% if order.shop_unique_token %}
+                                    {{order.shop_unique_token}}
+                                    {% else %}
+                                    None
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>Payment reference:</strong></div>
+                                <div class="col-5">{{order.payment_reference_number}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>Order created:</strong></div>
+                                <div class="col-5">{{order.created}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>Order updated:</strong></div>
+                                <div class="col-5">{{order.updated}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><strong>Order Changelog:</strong></div>
+                                <div class="col-8">{{order.change_log|format_log}}</div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Client base main category card 2-->
+            <div class="card card-icon  mb-4">
+                <div class="row no-gutters">
+                    <div class="col-auto card-icon-aside bg-secondary"><i class="text-white-50" data-feather="users"></i></div>
+                    <div class="col">
+                        <div class="card-body py-4">
+                            {% if order.client %}
+                                <h5 class="card-title text-secondary mb-2"><strong>{{order.client.company.name}}</strong></h5>
+                                <p class="card-text mb-1">
+                                    <div class="row">
+                                        <div class="col-sm"></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm">{{order.client.firstname}} {{order.client.lastname}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm">{{order.client.email}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm">{{order.client.phone_number}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm">{{order.client.description}}</div>
+                                    </div>
+                                    <hr>
+                                    <div class="small text-muted">{% client_total_products order.client_id %} products bought in total</div>
+                                </p>
+                            {% else %}
+                                <span>No Client Data</span>
+                            {% endif %}
+                        </div>    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+    <script type="text/javascript">
+        var poll_for_videos = '{{poll_for_videos|safe}}';
+        var progressChecker = setInterval(checkRenderProgress, 10000);
+
+        function checkRenderProgress(){
+        if (poll_for_videos === 'true'){
+            $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:check-render-progress' %}",
+                    data: {
+                        "order_id": '{{order.id}}'
+                    },
+                    type: 'POST',
+                    success: function (response) {
+
+                    var orderProductRecords = JSON.parse(response.data);
+
+                    orderProductRecords.forEach(function(data) {
+                        var order_prod_id = data.order_prod_id
+                        var newActionsHtml = '';
+                        var newStatusHtml = '';
+                        var orderProdStatusId ="product-"+order_prod_id+"-status";
+                        var orderProdActionsId = "product-"+order_prod_id+"-actions";
+                        var orderProductHasVideosRendering = true;
+                        const orderProdVideos = data.rendering_videos;
+                        if (orderProdVideos.length == 0){
+                            orderProductHasVideosRendering = false;
+                        }
+                        var newOrderProdStatus = data.order_product_status;
+
+                        if (newOrderProdStatus === 'RENDER'){
+                            newStatusHtml = '<div class="fa-2x"><i class="fas fa-cog fa-spin"></i></div>';
+                        }
+                        if (newOrderProdStatus === 'COMPLETE'){
+                            newStatusHtml = '<span class="prod-status badge badge-teal" style="cursor:pointer"' +
+                            '"data-id="' +order_prod_id+ '">'+newOrderProdStatus+'</span>';
+                        } else if (newOrderProdStatus === 'FAILED'){
+                                newStatusHtml = '<span class="prod-status badge badge-red" style="cursor:pointer"' +
+                                '"data-id="' +order_prod_id+ '">'+newOrderProdStatus+'</span>';
+                        }
+                        newActionsHtml = '';
+                        orderProdVideos.forEach(function(video_data) {
+                            var progressBarValue = video_data.progress;
+
+                            newActionsHtml = newActionsHtml + '<div class="progress mt-2">'+
+                                                '<div class="progress-bar progress-bar-striped progress-bar-animated"' +
+                                                'role="progressbar" aria-valuenow="'+progressBarValue+
+                                                '"aria-valuemin="0" aria-valuemax="100"'+
+                                                'style="width: '+ progressBarValue + '%"></div></div>';
+                        }); //end for
+
+
+
+                        if (orderProductHasVideosRendering === false){
+                            newActionsHtml = '<div>';
+                            if (data.order_folder_created === true){
+                                newActionsHtml = newActionsHtml + '<button ' +
+                                'class="btn btn-datatable btn-icon btn-transparent-dark mr">' +
+                                '<i data-feather="folder-minus"></i></button>';
+                            } else {
+                                newActionsHtml = newActionsHtml + '<button ' +
+                                'class="btn_create_order_prod_folder btn btn-datatable btn-icon btn-transparent-dark mr"' +
+                                'data-id="'+ order_prod_id + '"><i data-feather="folder-plus"' +
+                                'alt="Folder not yet created"></i></button>';
+                            }
+                            newActionsHtml = newActionsHtml + '<button '+
+                            'class="btn btn-datatable btn-icon btn-transparent-dark mr"><i data-feather="cpu" >'+
+                            '</i></button><button class="btn btn-datatable btn-icon btn-transparent-dark mr">'+
+                            '<i data-feather="upload"></i></button>';
+
+                             if (data.json){
+                                newActionsHtml = newActionsHtml + '<button '+
+                                'class="btn btn-datatable btn-icon btn-transparent-dark mr" data-trigger="focus"'+
+                                ' title="JSON" data-container="body" data-toggle="popover" data-placement="top"'+
+                                ' data-content="'+JSON.stringify(data.json)+'" data-original-title="Popover Title">'+
+                                '<i data-feather="list"></i></button>';
+                             }
+                             newActionsHtml = newActionsHtml + '<button '+
+                             'class="btn_delete btn btn-datatable btn-icon btn-transparent-dark mr"'+
+                             ' data-id="'+order_prod_id+'"><i data-feather="trash-2"></i></button>'+
+                             '</div>';
+                        }
+                        if (newOrderProdStatus === 'RENDER'){
+                            $('#'+orderProdStatusId).empty();
+                            $('#'+orderProdStatusId).html(newStatusHtml);
+                        }
+                        if (newOrderProdStatus === 'COMPLETE' || newOrderProdStatus == 'FAILED'){
+                            location.reload();
+                        }
+
+
+                        $('#'+orderProdActionsId).empty();
+                        $('#'+orderProdActionsId).html(newActionsHtml);
+                        feather.replace();
+
+                    }); // end for
+                    } // end success function
+
+                }); // end ajax
+            }
+        }
+
+        var isUploaded = false;
+        // change status orderproduct
+        $(document).on('click', '.prod-status', function(){
+            var line_id = $(this).data('id');
+            var lineStatusHtml = '<select id="statusProdSelect" class="form-control p-1 mb-2" style="height: 24px; width: 110px; display: initial;">';
+            lineStatusHtml += '<option value="PENDING">PENDING</option>';
+            lineStatusHtml += '<option value="READY">READY</option>';
+            lineStatusHtml += '<option value="IDLE">IDLE</option>';
+            lineStatusHtml += '<option value="ACTIVE">ACTIVE</option>';
+            lineStatusHtml += '<option value="FAILED">FAILED</option>';
+            lineStatusHtml += '<option value="COMPLETE">COMPLETE</option>';
+            lineStatusHtml += '<option value="DELIVERED">DELIVERED</option>';
+            lineStatusHtml += '</select>';
+            lineStatusHtml += '<button id="btn_prod_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+
+            $(this).parent('.div_prod_status').html(lineStatusHtml);
+            $("#statusProdSelect").val($(this).html());
+            $(this).hide();
+            $('#btn_prod_save').click(function(){
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:change_status_order_product' %}",
+                    data: {
+                        "status": $("#statusProdSelect").val(),
+                        "order_prod_id": $(this).data("id")
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+
+                    }
+                });
+            });
+        });
+
+        // change status order
+        $('#btn_change').click(function(){
+            $("#statusSelect").css('display', 'initial');
+            $("#statusSelect").val('{{order.status}}');
+            $("#btn_save").show();
+            $(this).hide();
+        });
+        $('#btn_save').click(function(){
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:change_status_order' %}",
+                data: {
+                    "status": $("#statusSelect").val(),
+                    "order_id": "{{ order.id }}"
+                },
+                type: 'POST',
+                success: function (data) {
+                    location.reload();
+
+                }
+            });
+        });
+
+        $('.editAssets').click(function() {
+            var order_prod_id = $(this).data('id');
+            $("#order_prod_id").val(order_prod_id);
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:get-assets-from-order-id' %}",
+                data: {
+                    order_prod_id: order_prod_id
+                },
+                type: 'POST',
+                success: function (data) {
+                    $("#div_edit_asset").html(data);
+                    feather.replace();
+                }
+            });
+            $("#editAssetsModal").modal();
+        });
+        $("#btn_save_asset_edit").on('click', function(){
+            console.log(removeable_assets);
+            changed_assets = [];
+            $( ".div_asset" ).each(function( index ) {
+                var asset_id = $(this).data('id');
+                if( $( this ).data('global') == "0"){
+                    console.log(asset_id);
+                    asset_value = $(this).find("input").val();
+                    changed_assets.push({
+                        "asset_id": asset_id,
+                        "asset_value": asset_value
+                    });
+                }
+            });
+            var data = {
+                order_prod_id: $("#order_prod_id").val(),
+                order_id: $("#order_id").val(),
+                removeable_assets: removeable_assets,
+                changed_assets: changed_assets
+            }
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:change-assets-from-orderprod-id' %}",
+                data: {data: JSON.stringify(data)},
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    location.reload();
+                }
+            });
+            console.log(changed_assets);
+        });
+
+        $('#testButton').click(function() {
+
+            var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), '')
+            myModal.toggle()
+        });
+        $(document).on('click', '.btn_delete', function(){
+            var order_product_id = $(this).data('id');
+            swal({
+                    title: "Are you sure?",
+                    text: "You will not be able to recover this OrderProduct!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel plx!",
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-order-product' %}",
+                            data: {
+                                "order_product_id": order_product_id,
+                                "order_id": $("#order_id").val()
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                $("#tbody_order_product").html(data);
+                                feather.replace();
+                            }
+                        });
+                    }
+                }
+            );
+        });
+        $(document).on('click', '.btn_create_order_prod_folder', function(){
+            var order_product_id = $(this).data('id');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:create-order-product-folder' %}",
+                data: {
+                    order_product_id: order_product_id,
+                    create_flag: true,
+                    order_id: $("#order_id").val()
+                },
+                type: 'POST',
+                success: function (data) {
+                    $("#processOutputModalText").html(`<pre>${data.response}</pre`);
+                    $("#processOutputModal").modal('show');
+                    $("#tbody_order_product").html(data.html);
+                    feather.replace();
+                }
+            });
+        });
+        $("#btn_upload").on('click', function(){
+            $("#btn_upload").html('<div class="spinner-border spinner-border-sm text-white mr-2" role="status"><span class="sr-only">Loading...</span></div>Upload');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:upload-orders' %}",
+                data: {
+                    "order_id": "{{ order.id }}"
+                },
+                type: 'POST',
+                success: function (data) {
+                    $("#btn_upload").html('Upload');
+                    $("#processOutputModalText").html(`<pre>${data}</pre`);
+                    $("#processOutputModal").modal('show');
+                    isUploaded = true;
+                }
+            });
+        });
+
+        $('#createOrder').click(function(){
+            console.log("select is working ID: " + order_id.value) // sanity check
+            document.getElementById('dropdownOrderMenuButton').textContent = ' processing '
+            document.getElementById('dropdownOrderMenuButton').classList.add('bg-dark');
+            $.ajax({
+                type:"GET",
+                dataType: 'text',
+                url: "/createorder",
+                data:{
+                    order_id: order_id.value,
+                    create_flag: true
+                },
+
+                success: function( data ) 
+                { 
+                    //console.log("got data") 
+                    //console.log(data);
+                    document.getElementById('processOutputModalText').innerHTML = '<pre>' + data + '</pre>'
+                    $('#orderCreated').show(); //show order created
+                    $('#createOrder').hide();
+                    var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), {
+                        keyboard: false
+                    })
+                    myModal.show()
+
+                    document.getElementById('dropdownOrderMenuButton').classList.remove('bg-dark');
+                    document.getElementById('dropdownOrderMenuButton').textContent = 'Order '
+
+                }
+            })
+        })
+
+        $('#checkOrder').click(function(){
+            console.log("select is working ID: " + order_id.value) // sanity check
+            document.getElementById('dropdownOrderMenuButton').textContent = ' processing '
+            document.getElementById('dropdownOrderMenuButton').classList.add('bg-dark');
+            $.ajax({
+                type:"GET",
+                dataType: 'text',
+                url: "/createorder",
+                data:{
+                    order_id: order_id.value,
+                    create_flag: false
+                },
+
+                success: function( data ) 
+                { 
+                    document.getElementById('processOutputModalText').innerHTML = '<pre>' + data + '</pre>'
+                    //document.getElementById('processOutputModalText').show()
+                    var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), {
+                        keyboard: false
+                    })
+                    myModal.show()
+                    document.getElementById('dropdownOrderMenuButton').classList.remove('bg-dark');
+                    document.getElementById('dropdownOrderMenuButton').textContent = 'Order '
+
+                }
+            })
+        });
+
+        $('#prepareOrder').click(function(){
+            console.log("select is working ID: " + order_id.value) // sanity check
+            document.getElementById('dropdownOrderMenuButton').textContent = ' processing '
+            document.getElementById('dropdownOrderMenuButton').classList.add('bg-dark');
+            $.ajax({
+                type:"GET",
+                dataType: 'text',
+                url: "/createorder",
+                data:{
+                    order_id: order_id.value,
+                    create_flag: false,
+                    prepare_flag: true,
+                },
+
+                success: function( data )
+                {
+                    document.getElementById('processOutputModalText').innerHTML = '<pre>' + data + '</pre>'
+                    //document.getElementById('processOutputModalText').show()
+                    var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), {
+                        keyboard: false
+                    })
+                    myModal.show()
+                    document.getElementById('dropdownOrderMenuButton').classList.remove('bg-dark');
+                    document.getElementById('dropdownOrderMenuButton').textContent = 'Order '
+
+                }
+            })
+        });
+
+         $('#renderOrderProduct').click(function(){
+            var this_order_product_id = $(this).attr("data-id");
+            console.log("select is working ID: " + this_order_product_id) // sanity check
+            $.ajax({
+                type:"GET",
+                dataType: 'text',
+                url: "/render-order-product",
+                data:{
+                    order_product_id: this_order_product_id
+                },
+
+                success: function( data )
+                {
+                    document.getElementById('processOutputModalText').innerHTML = '<pre>' + data + '</pre>'
+                    //document.getElementById('processOutputModalText').show()
+                    var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), {
+                        keyboard: false
+                    })
+                    myModal.show()
+                    document.getElementById('dropdownOrderMenuButton').classList.remove('bg-dark');
+                    document.getElementById('dropdownOrderMenuButton').textContent = 'Order '
+
+                }
+            })
+        });
+
+
+        $('#processOutputModal').on('hidden.bs.modal', function () {
+            if(isUploaded){
+                location.reload();
+            }
+        })
+    </script>
+{% endblock %}
+
+

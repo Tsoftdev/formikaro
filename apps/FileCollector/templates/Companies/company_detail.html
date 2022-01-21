@@ -1,0 +1,333 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Company Detailed View {% endblock %}</title>
+</head>
+<body>
+{% block content %}
+<!-- Begin Page Content -->
+<!--                <div class="container-fluid">-->
+
+<!-- Page Heading -->
+
+
+<main>
+    <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+        <div class="container-fluid">
+            <div class="page-header-content">
+                <div class="row align-items-center justify-content-between pt-3">
+                    <div class="col-auto mb-3">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="globe"></i></div>
+                            Detail of company&nbsp;<strong>{{ company }}</strong>
+                        </h1>
+                        <div class="page-header-subtitle text-xs ">This company is in the system since {{ company.created }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main page content-->
+    <div class="container mt-4">
+
+
+
+
+
+        <!-- Account page navigation-->
+        <nav class="nav nav-borders">
+            <a class="nav-link active ml-0" href="{% url 'FileCollector:company_detail' company.id %}">Profile</a>
+            <a class="nav-link" href="{% url 'FileCollector:company_assets' company.id %}">Assets</a>
+            <a class="nav-link" href="{% url 'FileCollector:company_orders' company.id %}">Orders</a>
+            <a class="nav-link" href="{% url 'FileCollector:company_billing' company.id %}">Billing</a>
+        </nav>
+        <hr class="mt-0 mb-4" />
+        <div class="row">
+            <!--
+            <div class="col-xl-5">
+                <div class="card">
+                    <div class="card-header">Clients</div>
+                    <div class="card-body text-center">
+                        {% if company_clients %}
+
+                        <div class="container text-xs">
+                            <div class="row font-weight-800">
+                                <div class="col-xs ">ID</div>
+                                <div class="col-4 ">Name</div>
+                                <div class="col">Orders</div>
+                                <div class="col">Err.</div>
+                                <div class="col">Op.</div>
+                                <div class="col">Comp.</div>
+                            </div>
+                            {% for client in company_clients %}
+
+                            <div class="row">
+
+                                <div class="col-xs">{{client.id}}</div>
+                                <div class="col-4"><a href="{% url 'FileCollector:client_detail' client.id %}">{{ client.firstname }} {{client.lastname }} </a>
+                                </div>
+
+
+                                <div class="col">{{client.orders_count}}</div>
+                                <div class="col">{{client.failed_orders_count}}</div>
+                                <div class="col">{{client.open_orders_count}}</div>
+                                <div class="col">{{client.completed_orders_count}}</div>
+</div>
+                                {% endfor %}
+
+</div>
+                            {% else %}
+                            <p>No client data available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            -->
+
+            <div class="col-sm">
+                <!-- Account details card-->
+                <div class="card mb-4">
+                    <div class="card-header">Account Details</div>
+                    <div class="card-body">
+                        {% if company %}
+                        <div id="data-address-copy" style="display:none" >{{company.name}}
+                            {{company.street}}
+                            {{company.zip_code}} {{company.place}}</div>
+                        <div class="row">
+                            <div class="col-sm-3 text-black">Address</div>
+                            <div class="col-sm-7">{{company.name}}, {{company.place}}, {{company.country}}</div>
+                            <div class="col-sm-2"><button class="btn btn-xs js-copy" data-toggle="tooltip" data-placement="bottom" data-id="{{video.id}}" title="Copy to clipboard">
+                                <i data-feather="clipboard" ></i>
+                            </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3 text-black">Street</div>
+                            <div class="col-sm">{{company.street}}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3 text-black">Zip</div>
+                            <div class="col-sm">{{company.zip_code}}</div>
+                        </div>
+
+
+                        <hr>
+                        <div class="row">
+                            <div class="col-3 text-black">Website</div>
+                            <div class="col-sm">
+                                {% if company.website %}<a href="{{company.website}}" target="_blank">{{company.website}}</a>
+                                {% else %}
+                                <span class="text-xs">no website available</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-3 text-black">Email</div>
+
+                            <div class="col-sm">
+                                {% if company.email %}{{company.email}}
+                                {% else %}
+                                <span class="text-xs">no email address  available</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3 text-black">Phone</div>
+                            <div class="col-sm">
+                                {% if company.phone_number %}{{company.phone_number}}
+                                {% else %}
+                                <span class="text-xs">no phone number available</span>
+                                {% endif %}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3 text-black">Abbreviation</div>
+                            <div class="col-sm">
+                                {% if company.abbreviation %}{{company.abbreviation}}
+                                {% else %}
+                                <span class="text-xs">no abbreviation available</span>
+                                {% endif %}</div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-3 text-black">Description</div>
+                            <div class="col-sm"> {% if company.description %}{{company.description}}
+                                {% else %}
+                                <span class="text-xs">no description available</span>
+                                {% endif %}</div>
+                        </div>
+
+                        <hr>
+                        {% if company_clients %}
+                        Clients:
+                        {% for client in company_clients %}
+                        <a href="{% url 'FileCollector:client_detail' client.id %}">{{ client.firstname }} {{client.lastname }}
+                            {% endfor %}
+
+                            {% else %}
+                            <p>No client data available.</p>
+                            {% endif %}
+                            {% else %}
+                            <span>No Client Data</span>
+                            {% endif %}
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm">
+                <div class="card">
+                    <div class="card-header">Projects</div>
+                    <div class="card-body text-xs">
+                        {% for project in company_projects %}
+                        <div class="row">
+                            <div class="col-5"><a href="{% url 'FileCollector:project_dashboard' project.id %}" class="font-weight-600">{{project.name}}</a> ({{project.abbreviation}}) <span class="text-muted">[{{project.id}}]</span></div>
+                            <div class="col">{{project.video_count}} videos</div>
+                            <div class="col">{{company.created}}</div>
+                        </div>
+                        {% empty %}
+                        no projects yet
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row mt-4">
+
+            <div class="col">
+                <div class="card mb-4">
+                    <div class="card-header">Clients</div>
+                    <div class="card-body">
+                        <div class="datatable">
+                            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                                <!--                                    <span>Default ordering is set to column number 4, Created, using zero based counting. -->
+                                <!--                                        To change that or If column count is changed, please supply new index-->
+                                <!--                                        in datatables-demo.js-->
+                                <!--                                    </span>-->
+
+
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+
+                                    <th>Total Orders</th>
+                                    <th>Failed Orders</th>
+                                    <th>Open Order</th>
+                                    <th>Completed Order</th>
+                                    <th>Created</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+
+                                    <th>Total Orders</th>
+                                    <th>Failed Orders</th>
+                                    <th>Open Order</th>
+                                    <th>Completed Order</th>
+                                    <th>Created</th>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+
+
+                                {% if company_clients %}
+                                <tr>
+
+                                    {% for client in company_clients %}
+                                    <td>{{client.id}}</td>
+                                    <td><a href="{% url 'FileCollector:client_detail' client.id %}">{{ client.firstname }} {{client.lastname }}
+                                    </td>
+
+
+                                    <td>{{client.orders_count}}</td>
+                                    <td>{{client.failed_orders_count}}</td>
+                                    <td>{{client.open_orders_count}}</td>
+                                    <td>{{client.completed_orders_count}}</td>
+                                    <td>{{client.created}}</td>
+                                </tr>
+                                {% endfor %}
+
+                                {% else %}
+                                <p>No client data available.</p>
+                                {% endif %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+</main>
+
+
+
+{% endblock %}
+{% block javascript %}
+<script>
+
+         // COPY TO CLIPBOARD
+            // Attempts to use .execCommand('copy') on a created text field
+            // Falls back to a selectable alert if not supported
+            // Attempts to display status in Bootstrap tooltip
+            // ------------------------------------------------------------------------------
+
+            function copyToClipboard(text, el) {
+                var copyTest = document.queryCommandSupported('copy');
+                var elOriginalText = el.attr('data-original-title');
+
+                if (copyTest === true) {
+                    var copyTextArea = document.createElement("textarea");
+                    copyTextArea.value = text;
+                    document.body.appendChild(copyTextArea);
+                    copyTextArea.select();
+                    try {
+                        var successful = document.execCommand('copy');
+                        var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+                        el.attr('data-original-title', msg).tooltip('show');
+                    } catch (err) {
+                        console.log('Oops, unable to copy');
+                    }
+                    document.body.removeChild(copyTextArea);
+                    el.attr('data-original-title', elOriginalText);
+                } else {
+                    // Fallback if browser doesn't support .execCommand('copy')
+                    window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+                }
+            }
+
+         $(document).ready(function() {
+                // Initialize
+                // ---------------------------------------------------------------------
+                // Tooltips
+                // Requires Bootstrap 3 for functionality
+                $('.js-tooltip').tooltip();
+
+                // Copy to clipboard
+                // Grab any text in the attribute 'data-copy' and pass it to the
+                // copy function
+               $('.js-copy').click(function() {
+			    var id = $(this).data('id');
+			    text = $(`#data-address-copy`).text().trim().replace(/\t+/g,'');
+			    var el = $(this);
+			    copyToClipboard(text, el);
+		});
+            });
+
+
+        </script>
+
+
+<!--                </div>-->
+<!-- End page content -->
+{% endblock %}

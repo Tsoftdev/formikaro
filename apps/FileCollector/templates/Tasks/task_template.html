@@ -1,0 +1,410 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" integrity="sha512-f8gN/IhfI+0E9Fc/LKtjVq4ywfhYAVeMGKsECzDUHcFJ5teVwvKTqizm+5a84FINhfrgdvjX8hEJbem2io1iTA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}"/>
+<style>
+.bootstrap-datetimepicker-widget table td, .bootstrap-datetimepicker-widget table th{
+    border: none;
+}
+.bootstrap-datetimepicker-widget.dropdown-menu {
+    width: 21em;
+}
+.table td { padding-left: 0px; padding-right: 0px; vertical-align: top;  }
+.button-start-task {width: 32px !important; color:var(--bs-blue); height:32px !important; stroke-width: 0.8px;}
+.button-finalize-task {width: 32px !important; color:var(--bs-green); height:32px !important; stroke-width: 0.8px;}
+.button-task-trash {width: 32px !important;  height:32px !important; stroke-width: 0.8px;}
+
+</style>
+
+<div class="table-responsive table-billing-history text-xs table-borderless mb-2 datatable">
+    <table class="table table-hover mt-2" {% if not smallmode %} id="dataTable"{% endif %} width="100%" cellspacing="0">
+        <thead>
+        <tr class="border-bottom">
+            <!--<th class="border-gray-200 col-1" scope="col">ID</th>-->
+            <th class="border-gray-200 col-1" scope="col">Name</th>
+            {% if not smallmode %}<th class="border-gray-200 col-1" scope="col">Creator</th>{% endif%}
+            <th class="border-gray-200 col-1" scope="col">User</th>
+            <!--<th class="border-gray-200 col-2" scope="col">Startime</th>-->
+            <th class="border-gray-200 col-1" scope="col">Type</th>
+            <th class="border-gray-200 col-1" scope="col">Deadline</th>
+            <th class="border-gray-200 col-1" scope="col">Runtime</th>
+            <!--<th class="border-gray-200 col-1" scope="col">Mode</th>-->
+            <th class="border-gray-200 col-1" scope="col">Status</th>
+            {% if not smallmode %}<th class="border-gray-200 col-1" scope="col">Priority</th>{%endif%}
+            {% if editmode %}<th class="border-gray-200 col-3 " scope="col">Actions</th>{% endif %}
+
+
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for task in tasks %}
+        <tr class="">
+            <!--<td style="width: 2%">
+                <a href="{% url 'FileCollector:task_detail' task.id %}"><button class="btn btn-outline-primary btn-sm" type="button">{{task.id}}</button></a>
+            </td>-->
+
+            <td class="col-sm-3">
+                <div class="row align-items-center div_name" data-id="{{ task.id }}" >
+                    <div class="col">
+                        <a href="{% url 'FileCollector:task_detail' task.id %}" class="fw-600">  {{ task.name }}</a>
+                        {% if editmode  %}
+                            <button class="btn_edit_name btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-name="{{ task.name }}"><i data-feather="edit"></i></button>
+                        {% endif %}
+                        {% for project in task.tasks.all %}
+                            <br><a href="{% url 'FileCollector:project_dashboard' project.id %}" class="text-muted">{{ project.name }}</a>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            </td>
+            <!--<td style="width: 25%">
+                <div class="row align-items-center div_description" data-id="{{ task.id }}" >
+                    {% if editmode  %}
+                    <div class="col-sm-2" >
+                        <button class="btn_edit_description btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-description="{{ task.description }}"><i data-feather="edit"></i></button>
+                    </div>
+                    {% endif %}
+                    <div class="col-sm">
+                        {{ task.description }}
+                    </div>
+                </div>
+            </td>-->
+            {% if not smallmode %}<td >{{ task.creator.get_initials }}</td>{%endif%}
+            <td class="col-sm-1"  {% if editmode  %} class="px-1" {% endif %}>
+                <div class="row align-items-center div_user" data-id="{{ task.id }}" >
+                    {% if editmode  %}
+                    <div class="col-sm-2" >
+                        <button class="btn_edit_user btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-select-user="{{ task.user.id }}"><i data-feather="edit"></i></button>
+                    </div>
+                    {% endif %}
+                    <div class="col-sm">
+                        {{ task.user.get_initials }}
+                    </div>
+                </div>
+            </td>
+            <!--<td style="width: 12%" >
+                {{ task.starttime|date:"d-m-y (H:i)"}}
+            </td>-->
+            <td  class="col-sm-1">
+                {{ task.type }}
+            </td>
+            <td  class="col-sm-2" {% if editmode  %} class="px-1" {% endif %}>
+                <div class="row align-items-center div_deadline" data-id="{{ task.id }}" >
+                    {% if editmode  %}
+                    <div class="col-sm-2" >
+                        <button class="btn_edit_deadline btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-deadline="{{ task.deadline|date:"Y-m-d h:m A" }}"><i data-feather="edit"></i></button>
+                    </div>
+                    {% endif %}
+                    <div class="col-sm">
+                        {{ task.deadline|date:"d-m-y (H:i)" }}
+                    </div>
+                </div>
+            </td>
+            <td  class="col-sm-1" id="td_runtime" data-id="{{ task.id }}">
+                {{ task.get_formated_runtime}}
+            </td>
+            <!--<td style="width: 6%" >
+                {{ task.get_mode_display }}
+            </td>-->
+
+            <td  class="col-sm-1" {% if editmode  %} class="px-1" {% endif %}>
+                <div class="row align-items-center div_status" data-id="{{ task.id }}" >
+                    {% if editmode  %}
+                    <div class="col-sm-2" >
+                        <button class="btn_edit_status btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-status="{{ task.status }}"><i data-feather="edit"></i></button>
+                    </div>
+                    {% endif %}
+                    <div class="col-sm div_task_status"  data-id="{{ task.id }}">
+                        {% if task.status == 'OP' %}
+                        <div class="badge bg-yellow">open</div>
+                        {% elif task.status == 'AC'  %}
+                        <div class="badge bg-indigo">active</div>
+                        {% elif task.status == 'CM'  %}
+                        <div class="badge bg-success">complete</div>
+                        {% elif task.status == 'FD'  %}
+                        <div class="badge bg-danger">failed</div>
+                        {% else %}
+                        <div class="badge bg-dark">-</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </td>
+            {% if not smallmode %}<td class="col-sm-1">
+
+                <div class="row align-items-center div_priority" data-id="{{ task.id }}" >
+                    <div class="col-sm" >
+                        {% if editmode  %}
+                        <!--<button class="btn_edit_priority btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}" data-priority="{{ task.priority }}"><i data-feather="edit"></i></button>-->
+                        <button class="badge btn_edit_priority btn justify-content-center align-items-center {{ task.get_priority_val }} pl-3 pr-3 pt-1 pb-1" data-id="{{ task.id }}" data-priority="{{ task.priority }}">{{ task.priority }}</button>
+                        {% else %}
+                        <button class="badge justify-content-center align-items-center {{ task.get_priority_val }} pl-3 pr-3 pt-1 pb-1" >{{ task.priority }}</button>
+                        <!--<div class="rounded-circle justify-content-center align-items-center {{ task.get_priority_val }}" style="display: flex; width: 40px; height: 40px;"><i data-feather="activity"></i></div>-->
+                        {% endif %}
+                    </div>
+                </div>
+            </td>{%endif%}
+
+            <td>
+                <div class="class="d-flex flex-row-reverse text-right">
+
+
+                {% if task.status != 'CM' %}
+                    <button class="btn btn_startpause_task p-0 pl-2 m-0 btn_tmp_startpause" type="button" data-id="{{ task.id }}" data-name="{{ task.name }} ({% for project in task.tasks.all %}{{ project.name }}{% endfor %}) [{{ task.id }}]" data-runtime="{{ task.runtime|default_if_none:'0' }}">
+                        <i data-feather="play-circle" class="button-start-task" ></i>
+                    </button>
+                    <button class="btn btn_finalize_task  p-0 pl-2 m-0 " type="button" data-id="{{ task.id }}">
+                        <i data-feather="check-circle" class="button-finalize-task "></i>
+                    </button>
+                {% endif %}
+                   {% if editmode  %}
+                    <!--<button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark" data-id="{{ task.id }}">-->
+                    <button class="btn btn_delete p-0 pl-2 m-0" data-id="{{ task.id }}" style="float:Right">
+                        <i data-feather="trash-2"  class="button-task-trash"></i>
+                    </button>
+                {% endif %}
+</div>
+            </td>
+
+        </tr>
+        {% empty %}
+        <td colspan="9" class="text-center">No tasks here. Maybe change filter? </td>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!--<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>-->
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>-->
+<!--<script  src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>-->
+
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="{% static '/js/bootstrap-datetimepicker.min.js' %}"></script>
+
+<script>
+
+
+
+    $(".btn_edit_name").on('click', function(){
+        
+        var line_id = $(this).data('id');
+        var name = $(this).data('name');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<input type="text" class="form-control mb-2 p-2 edtName" value="${name}" style="height: 32px; display: initial;" data-id="${line_id}">`;
+        lineStatusHtml += '<button id="btn_name_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+        lineStatusHtml += '</div>';
+        $('.div_name[data-id="' + line_id + '"]').html(lineStatusHtml);
+        
+        $('#btn_name_save').click(function(){
+            save_edit_change(line_id);
+        });
+    });
+    $(".btn_edit_description").on('click', function(){
+        
+        var line_id = $(this).data('id');
+        var description = $(this).data('description');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<textarea class="form-control mb-2 p-2 edtDescription" data-id="${line_id}" rows="3">${description}</textarea>`;
+        lineStatusHtml += '<button id="btn_description_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+        lineStatusHtml += '</div>';
+        $('.div_description[data-id="' + line_id + '"]').html(lineStatusHtml);
+        
+        $('#btn_description_save').click(function(){
+            save_edit_change(line_id);
+        });
+    });
+    $(".btn_edit_user").on('click', function(){
+        var line_id = $(this).data('id');
+        var selected_user = $(this).data('select-user');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<select class="edtUser form-control p-1 mb-2" style="height: 24px; display: initial;" data-id="${line_id}">`;
+        {% for client in all_users %}
+            lineStatusHtml += '<option value="{{client.id}}">{{client.firstname}} {{client.lastname}}</option>';
+        {% endfor %}
+        lineStatusHtml += '</select>';
+        lineStatusHtml += '</div>';
+        $('.div_user[data-id="' + line_id + '"]').html(lineStatusHtml);
+        $('.edtUser[data-id="' + line_id + '"]').val(selected_user);
+        $('.edtUser[data-id="' + line_id + '"]').on('change', function(){
+            save_edit_change(line_id);
+        });
+    });
+    $(".btn_edit_status").on('click', function(){
+        var line_id = $(this).data('id');
+        var status = $(this).data('status');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<select class="edtStatus form-control p-1 mb-2" style="height: 24px; display: initial;" data-id="${line_id}">`;
+        lineStatusHtml += '<option value="OP">open</option>';
+        lineStatusHtml += '<option value="AC">active</option>';
+        lineStatusHtml += '<option value="CM">complete</option>';
+        lineStatusHtml += '<option value="FD">failed</option>';
+        lineStatusHtml += '</select>';
+        lineStatusHtml += '</div>';
+        $('.div_status[data-id="' + line_id + '"]').html(lineStatusHtml);
+        $('.edtStatus[data-id="' + line_id + '"]').val(status);
+        $('.edtStatus[data-id="' + line_id + '"]').on('change', function(){
+            save_edit_change(line_id);
+        });
+    });
+    $(".btn_edit_priority").on('click', function(){
+        var line_id = $(this).data('id');
+        var priority = $(this).data('priority');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<select class="edtPriority form-control p-1 mb-2" style="height: 24px; display: initial;" data-id="${line_id}">`;
+        lineStatusHtml += '<option value="0">low</option>';
+        lineStatusHtml += '<option value="5">medium</option>';
+        lineStatusHtml += '<option value="10">high</option>';
+        lineStatusHtml += '</select>';
+        lineStatusHtml += '</div>';
+        $('.div_priority[data-id="' + line_id + '"]').html(lineStatusHtml);
+        $('.edtPriority[data-id="' + line_id + '"]').val(priority);
+        $('.edtPriority[data-id="' + line_id + '"]').on('change', function(){
+            save_edit_change(line_id);
+        });
+    });
+    $(".btn_edit_deadline").on('click', function(){
+        var line_id = $(this).data('id');
+        var deadline = $(this).data('deadline');
+        var lineStatusHtml = '<div class="col-sm ">';
+        lineStatusHtml += `<input type="text" class="form-control mb-2 p-2 edtdeadline" data-id="${line_id}" style="height: 24px; display: initial;">`;
+        lineStatusHtml += '</div>';
+        $('.div_deadline[data-id="' + line_id + '"]').html(lineStatusHtml);
+        if (deadline == ''){
+            deadline = new Date().toISOString()
+        }
+        $('.edtdeadline[data-id="' + line_id + '"]').datetimepicker({
+            defaultDate: new Date(deadline),
+            format: 'DD.MM.YYYY HH:mm',
+            icons: {
+                time: 'fa fa-clock',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-check',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+        $('.edtdeadline[data-id="' + line_id + '"]').on('dp.hide', function(){
+            save_edit_change(line_id);
+        })
+    });
+    function save_edit_change(line_id){
+        var user_id = $('.edtUser[data-id="' + line_id + '"]').val();
+        var deadline = $('.edtdeadline[data-id="' + line_id + '"]').val();
+        var status = $('.edtStatus[data-id="' + line_id + '"]').val();
+        var priority = $('.edtPriority[data-id="' + line_id + '"]').val();
+        var name = $('.edtName[data-id="' + line_id + '"]').val();
+        var description = $('.edtDescription[data-id="' + line_id + '"]').val();
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:change-edit-task' %}",
+            data: {
+                "task_id": line_id,
+                "name": name == undefined ? "undefined" : name,
+                "description": description == undefined ? "undefined" : description,
+                "user_id": user_id == undefined ? "undefined" : user_id,
+                "status": status == undefined ? "undefined" : status,
+                "deadline": deadline == undefined ? "undefined" : deadline,
+                "priority": priority == undefined ? "undefined" : priority,
+            },
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            }
+        });
+    }
+    $('.btn_delete').click(function(){
+        var task_id = $(this).data('id');
+        var task_name = $(this).data('name');
+        swal.fire({
+            title: `Do you really want to delete task "${task_name}?"`,
+            text: "You will not be able to recover this task!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonClass: "btn-danger",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel plx!",
+        },
+        function(isConfirm) {
+            if (isConfirm) {
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:delete_task_ajax' %}",
+                    data: {
+                        "task_id": task_id,
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+            }
+        });
+    });
+
+    var task_ids = [];
+    {% for task in tasks %}
+        task_ids.push('{{ task.id }}');
+    {% endfor %}
+    console.log(task_ids);
+    refreshPageTask();
+
+    function refreshPageTask(){
+        for (var task_id of task_ids) {
+            var selTaskId = localStorage.getItem('selected_open_task');
+            var isPlaying = localStorage.getItem('isPlaying')
+            if (selTaskId == task_id && isPlaying == "true") {
+                $('.btn_startpause_task[data-id="' + task_id + '"]').html('<i data-feather="pause-circle" style="width: 32px; color:#0061f2; height:32px; stroke-width: 0.8px;"></i>');
+            }
+        }
+    }
+    /*
+    $('.btn_startpause_task').click(function(){
+        var task_id = $(this).data('id');
+        var runtime = $(this).data('runtime');
+        $("#open_tasks").val(task_id);
+        $('#open_tasks').trigger('change');
+        var selTaskId = localStorage.getItem('selected_open_task');
+        if ( selTaskId == null ){
+            $('.btn_startpause_task[data-id="' + task_id + '"]').html('<i data-feather="pause-circle" style="width: 32px; color:#0061f2; height:32px; stroke-width: 0.8px;"></i>');
+            feather.replace();
+            var isTaskPage = localStorage.getItem('task_page');
+            if (isTaskPage == null) {
+                $("#startButton").click();
+            }
+            
+        }else{
+            $('.btn_startpause_task[data-id="' + task_id + '"]').html('<i data-feather="play-circle" style="width: 32px; color:teal; height:32px; stroke-width: 0.8px;"></i>');
+            feather.replace();
+            //$("#stopButton").click();
+        }
+    });*/
+
+    $('.btn_finalize_task').click(function(){
+        var task_id = $(this).data('id');
+        var selTaskId = localStorage.getItem('selected_open_task');
+        if ( selTaskId == task_id ){
+            $("#stopButton").click();
+        }
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:update-complete-task' %}",
+            data: {
+                "task_id": task_id
+            },
+            type: 'POST',
+            success: function (data) {
+                location.reload();
+            }
+        });
+    });
+    function taskPageReload(){
+        location.reload();
+    }
+</script>

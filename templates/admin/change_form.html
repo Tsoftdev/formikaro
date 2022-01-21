@@ -1,0 +1,53 @@
+{% extends 'admin/change_form.html' %}
+
+{% load static %}
+
+{% block extrastyle %}
+        {{ block.super }}
+        <link rel="stylesheet" type="text/css" href="{% static "resources/font-awesome/css/font-awesome.min.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "/css/custom.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "resources/bootstrap/dist/css/bootstrap.min.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "resources/summernote/dist/summernote.css" %}">
+{% endblock %}
+
+{% block inline_field_sets %}
+        {{ block.super }}
+        <div id="summernote"></div>
+        <div id="clipboard-btn-wrapper"></div>
+{% endblock %}
+
+{% block admin_change_form_document_ready %}
+{{ block.super }}
+<script type="text/javascript" src="{% static 'resources/jquery/dist/jquery.js' %} "></script>
+<script type="text/javascript" src="{% static 'resources/tablesorter/dist/js/jquery.tablesorter.js' %} "></script>
+<script type="text/javascript" src="{% static 'resources/bootstrap/dist/js/bootstrap.min.js' %} "></script>
+<script type="text/javascript" src="{% static 'resources/summernote/dist/summernote.js' %} "></script>
+<script type="text/javascript" src="{% static 'resources/clipboard/dist/clipboard.min.js' %} "></script>
+<script type="text/javascript" src="{% static 'resources/jquery.shorten/src/jquery.shorten.min.js' %} "></script>
+<script type="text/javascript">
+(function($) {
+        var regexTest = /\/admin\/app\/project\/(\d+)\/change/gm;
+        var match = regexTest.exec(window.location.pathname);
+        if(match != null) {
+                $.ajax({
+                        type: "GET",
+                        url: '/admin/clipboardinfo/'+match[1],
+                        dataType: 'html',
+                        success: function (data) {
+                                $('#summernote').summernote('code',data);
+                                $('#clipboard-btn-wrapper').append('<button class="btn btn-clipboard btn-mini" data-clipboard-target=".note-editable" type="button"><i class="fa fa-copy fa-lg"></i> Copy entire Project</button>')
+                                new ClipboardJS('.btn-clipboard');
+                        }
+                });
+        }
+        $('table').tablesorter();
+        $('.tablesorter .field-_appendend_urls p').replaceWith( function() { return '<textarea class="clipboard-urls"  id="clip-'+$(this).closest('tr').attr('id')+'">'+$(this).text()+'</textarea><button class="btn btn-clipboard" type="button" data-clipboard-target="#clip-'+$(this).closest('tr').attr('id')+'"><i class="fa fa-copy"></i> Single copy</button>'});
+        new ClipboardJS('.btn-clipboard')
+        $('.tablesorter .field-url p, .tablesorter .field-url_review p, .tablesorter .field-url_download p').wrap( function() { return '<div class="url-links-more"><a href="'+$(this).text() + '" target="blank"></a></div>'});
+        $('.url-links-more').shorten({
+                showChars: 30,
+                moreText: 'more'
+        });
+})(jQuery);
+</script>
+{% endblock %}

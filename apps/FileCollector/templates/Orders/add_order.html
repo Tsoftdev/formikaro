@@ -1,0 +1,349 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+
+
+{% block title %}Order Detailed View {% endblock %}
+{% block style_css %}
+    <style>
+        
+        .del-asset:hover{
+            color: #FF0000;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <!-- start page content-->
+    <header class="page-header page-header-light bg-white bg-shadow pb-10">
+        <div class="container">
+            <div class="page-header-content pt-4">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-auto mt-4">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Add an order manually
+
+                        </h1>
+                        <div class="page-header-subtitle">Here you can add an order manually</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-n10">
+
+        <div class="container mt-n10 mb-3">
+            <div class="row ">
+                <div class="col-7">
+                   
+                    <div class="form-group">
+                        <label for="companySelect">Company</label>
+                        <select class="form-control" name="companySelect" id="companySelect">
+                            <option>---</option>
+                            {% for company in companies %}
+                                <option value="{{company.id}}">{{company.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="clientSelect">Client</label>
+                        <select class="form-control" name="clientSelect" id="clientSelect">
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productSelect">Product</label>
+                        <select class="form-control" id="productSelect" name="productSelect[]" multiple="multiple">
+                            {% for product in products %}
+                                <option value="{{product.id}}">{{product.base.name}} <span class="text-xs">({{product.fsin}})</span></option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="text-center">
+                        <span class="alert-danger valid_err_msg" style="display:none">Should be selected client or company, not global</span>
+                    </div>
+                    <div class="product-details">
+
+                    </div>
+                    <button class="btn btn-dark btn_create">Create Order</button>
+                    
+                </div>
+                <div class="col-6 p-5">
+                    
+                </div>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+    </div>
+
+    <!-- End page content -->
+
+
+
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript">
+    var selected_products;
+    var client_data;
+    var company_assets = [];
+    var client_assets = [];
+    var canSaveProducts = {};
+    
+    
+    $productMuti = $("#productSelect").select2();
+    $('#productSelect').on('select2:select', function (e) {
+        var data = e.params.data;
+        selected_products = $('#productSelect').val();
+        appendProductDetail(data);
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+        
+    });
+    $('#productSelect').on('select2:unselect', function (e) {
+        var data = e.params.data;
+        $("#prod_detail_" + data.id).remove();
+        delete canSaveProducts[data.id+"a"];
+        selected_products = $('#productSelect').val();
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+    });
+    
+    {% if sel_company is not None %}
+        $("#companySelect").val('{{sel_company.id}}');
+        getClients();
+    {% endif %}
+
+    $("#clientSelect").change(function(){
+        clearProductDetail();
+        getClientAssets($("#clientSelect").val());
+    })
+   
+    $('#companySelect').change(function(){
+        getClients();
+    });
+    function getClients(){
+        console.log('aaa');
+        clearProductDetail();
+        $("#clientSelect").html("");
+        company_assets = [];
+        client_data = [];
+        client_assets = [];
+        $.ajax({
+            type:"GET",
+            dataType: 'json',
+            url: "/selectclients",
+            data:{
+                company_id: $("#companySelect").val()
+            },
+            success: function( data ) { 
+                console.log(data)
+                $("#clientSelect").html("");
+                company_assets = JSON.parse(data["company_assets"]);
+                client_data = data["clients"];
+                if (client_data != '')
+                {
+                    client_data.forEach(function(client){
+                        $("#clientSelect").append("<option value=\"" + client["id"] +"\">"+ client["name"] + "</option>");
+                    });
+                    {% if sel_client is not None %}
+                        $("#clientSelect").val('{{ sel_client.id }}')
+                    {% endif %}
+                }
+                getClientAssets($("#clientSelect").val());
+            }
+        })
+    }
+    $('.btn_create').on('click', function(){
+        var bValid = validSelection();
+        if (bValid){
+            $(".valid_err_msg").hide();
+            $( ".asset-edit" ).each(function( index ) {
+                canSaveProducts[$( this ).data('prod-id')+"a"]["new_asset"] = [];
+            });
+            $( ".asset-edit" ).each(function( index ) {
+                var owner_type = $('.asset-owner').eq(index).val();
+
+                canSaveProducts[$( this ).data('prod-id')+"a"]["new_asset"].push({
+                    "asset_id": $( this ).data('asset-id'),
+                    "asset_type_id": $( this ).data('asset-type-id'), 
+                    "asset_name": $( this ).data('asset-name'), 
+                    "value": $(this).val(),
+                    "org_value": $( this ).data('org-value'),
+                    "owner_type": owner_type,
+                    "org_type": $( this ).data('org-type')
+                });
+            });
+            console.log(canSaveProducts);
+            
+            var data = {
+                client_id: $("#clientSelect").val(),
+                company_id: $("#companySelect").val(),
+                prod_data: canSaveProducts
+            }
+            console.log(JSON.stringify(data));
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:create_ajax_order' %}",
+                data: {data: JSON.stringify(data)},
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    location.href = "{% url 'FileCollector:orders' %}";
+                }
+            });
+        }else{
+            console.log("Validation ERROR");
+            $(".valid_err_msg").show();
+        }
+        
+    });
+    function validSelection(){
+        var bValid = true;
+        $( ".asset-owner" ).each(function() {
+            if ($(this).val() == null){
+                bValid = false;
+            }
+        });
+        return bValid;
+    }
+    function deleteProduct(sel_id){
+        delete canSaveProducts[sel_id+""];
+        $("#prod_detail_" + sel_id).remove();
+        selected_products.splice(selected_products.indexOf(sel_id.toString()), 1);
+        $productMuti.val(selected_products).trigger("change");
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+    }
+    function getClientAssets(client_id){
+        client_assets = [];
+        for (var i=0; i < client_data.length; i++){
+            if (client_data[i]["id"] == client_id){
+                client_assets = JSON.parse(client_data[i]["assets"]);
+                break;
+            }
+        }
+    }
+    function appendProductDetail(data){
+        console.log(client_assets);
+        console.log(company_assets);
+        var existAsset = [];
+
+        var prodHtml = '<div class="form-group" id="prod_detail_' + data.id + '">';
+         prodHtml += '<div class="row mb-2">';
+            prodHtml += '<div class="col-11">';
+                prodHtml += '<h4>' + data.text + '</h4>'
+            prodHtml += '</div>';
+            prodHtml += '<div class="col-1">';
+                prodHtml += '<span class="del-asset" onclick="deleteProduct(' + data.id + ')">[X]</span>';
+            prodHtml += '</div>';
+        prodHtml += '</div>';
+        
+        {%  for prod in products  %}
+            if ('{{prod.id}}' == data.id){
+                {%  for asset in prod.base.assets.all %}
+                    var exsitAssetItem = isExistAsset('{{ asset.name }}');
+                    
+                    prodHtml += '<div class="row mt-2">';
+                        prodHtml += '<div class="col-5">';
+                            prodHtml += '<label>{{ asset }}</label>';
+                        prodHtml += '</div>';
+                        prodHtml += '<div class="col-5">';
+                            if (exsitAssetItem.asset_id > 0){
+                                prodHtml += '<input type="text" class="form-control asset-edit" value="' + exsitAssetItem.value + '" data-org-value="' + exsitAssetItem.value + '" data-org-type="'+ exsitAssetItem.type +'" data-prod-id="{{ prod.id }}" data-asset-id="' + exsitAssetItem.asset_id + '" data-asset-name="{{ asset.name }}" data-asset-type-id="{{ asset.assettype.id }}" {%if asset.get_maxlength > 0 %}maxlength="' + exsitAssetItem.maxlength + '" {% endif %}>';
+                                if ({{asset.get_maxlength }}) {
+                                prodHtml += '<span class="text-xs">Maxlength {{asset.get_maxlength}}</span>'
+                                } else {
+                                 prodHtml += '<span class="text-xs">unlimited</span>'
+                                 }
+                                existAsset.push(exsitAssetItem.asset_id)
+                            }else{
+                                prodHtml += '<input type="text" class="form-control asset-edit" value="{{ asset.value|default_if_none:"" }}" data-org-value="' + exsitAssetItem.value + '"data-org-type="'+ exsitAssetItem.type +'" data-prod-id="{{ prod.id }}" data-asset-id="{{asset.id}}" data-asset-name="{{ asset.name }}" data-asset-type-id="{{ asset.assettype.id }}" {%if asset.get_maxlength > 0 %} maxlength="{{ asset.get_maxlength }}{% endif %}">';
+                  if ({{asset.get_maxlength }}) {
+                                prodHtml += '<span class="text-xs">Maxlength {{asset.get_maxlength}}</span>'
+                                } else {
+                                 prodHtml += '<span class="text-xs">unlimited</span>'
+                                 }                            }
+                            
+                        prodHtml += '</div>';
+                        prodHtml += '<div class="col-2">';
+                            prodHtml += '<select class="form-control pl-1 pr-1 asset-owner" name="owner_select">';
+                                if (exsitAssetItem.asset_id == 0){
+                                    if(exsitAssetItem.type == "-1"){
+                                        prodHtml += '<option value="-1" selected disabled>Global</option>';
+                                    }else{
+                                        prodHtml += '<option value="-1" disabled>Global</option>';
+                                    }
+                                }
+                                
+                                if(exsitAssetItem.type == "0"){
+                                    prodHtml += '<option value="0" selected>Client</option>';
+                                }else{
+                                    prodHtml += '<option value="0">Client</option>';
+                                }
+                                if(exsitAssetItem.type == "1"){
+                                    prodHtml += '<option value="1" selected>Company</option>';
+                                }else{
+                                    prodHtml += '<option value="1">Company</option>';
+                                }
+                                
+                                
+                            prodHtml += '</select>';
+                        prodHtml += '</div>';
+                    
+                    prodHtml += '</div>';
+                {% endfor %}
+            }
+        {% endfor %}
+        prodHtml += '<hr>';
+        prodHtml += '</div>';
+        canSaveProducts[data.id+"a"] = {"existAsset": existAsset};
+        canSaveProducts[data.id+"a"]["new_asset"] = []
+        $(".product-details").append(prodHtml);
+        $(".asset-owner").on('change', function(){
+            if (validSelection()){
+                $(".valid_err_msg").hide();
+            }else{
+                $(".valid_err_msg").show();
+            }
+        })
+        
+    }
+    function isExistAsset(asset_name){
+        console.log(asset_name)
+        for (var i=0; i < client_assets.length; i++){
+            if (client_assets[i]["name"] == asset_name){
+                console.log('client have asset', asset_name);
+                return { asset_id: client_assets[i]["id"], value: client_assets[i]["value"], type: "0", maxlength: client_assets[i]["maxlength"]};
+            }
+        }
+        for (var i=0; i < company_assets.length; i++){
+            if (company_assets[i]["name"] == asset_name){
+                console.log('company have asset', asset_name);
+                return { asset_id: company_assets[i]["id"], value: company_assets[i]["value"], type: "1", maxlength: company_assets[i]["maxlength"]};
+            }
+        }
+        console.log('not exist asset', asset_name);
+        return { asset_id: 0, value: "", type: "-1", maxlength: ''};
+    }
+    function clearProductDetail(){
+        canSaveProducts = {};
+        selected_products = [];
+        $productMuti.val([]).trigger("change");
+        $(".product-details").html("");
+        $(".valid_err_msg").hide();
+    }
+   </script>
+{% endblock %}

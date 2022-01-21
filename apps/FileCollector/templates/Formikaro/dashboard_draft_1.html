@@ -1,0 +1,231 @@
+{% extends 'Formikaro/base_site.html' %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Formikaro - Dashboard {% endblock %}</title>
+    </head>
+    <body class="nav-fixed">
+        {% block content %}
+        <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="activity"></i></div>
+                                Formikaro - Dashboard
+                            </h1>
+                            <div class="page-header-subtitle">...the video backend</div>
+                        </div>
+                        <div class="col-12 col-xl-auto mt-4">
+                            <button class="btn btn-white p-3" id="reportrange">
+                                <i class="mr-2 text-primary" data-feather="calendar"></i>
+                                <span></span>
+                                <i class="ml-1" data-feather="chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container mt-n10">
+            <div class="row">
+                <div class="col-xxl-4 col-xl-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body h-100 d-flex flex-column justify-content-center py-5 py-xl-4">
+                            <div class="row align-items-center">
+                                <div class="col-xl-8 col-xxl-12">
+                                    <div class="text-center text-xl-left text-xxl-center px-4 mb-4 mb-xl-0 mb-xxl-4">
+                                        <h1 class="text-primary">Welcome - Willkommen - Bienvenidos!</h1>
+                                        <p class="text-gray-700 mb-0">This is the Filmagio tool for all video services. Get your information about orders, create products and oversee production from the top of the anthill</p>
+                                    </div>
+                                </div>
+                                <div class="col-xl-4 col-xxl-12 text-center"><img class="img-fluid" src="assets/img/illustrations/at-work.svg" style="max-width: 26rem" /></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--  DATA CARDS START -->
+            <div class="row">
+                <div class="col-xl-3 col-lg-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="mr-3">
+                                    <div class="text-white-75 small">Total Orders</div>
+                                    <div class="text-lg font-weight-bold">250/1200</div>
+                                    <span class="text-xs">orders/products</span>
+                                </div>
+                                <i class="feather-xl text-white-50" data-feather="film"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Orders</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-6">
+                    <div class="card bg-danger text-white mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="mr-3">
+                                    <div class="text-white-75 small">Failed</div>
+                                    <div class="text-lg font-weight-bold">17/40</div>
+                                    <span class="text-xs">orders/products</span>
+                                </div>
+                                <i class="feather-xl text-white-50" data-feather="alert-triangle"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View List</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="mr-3">
+                                    <div class="text-white-75 small">Open Products</div>
+                                    <div class="text-lg font-weight-bold">12</div>
+                                    <span class="text-xs">active/idle</span>
+                                </div>
+                                <i class="feather-xl text-white-50" data-feather="cloud-lightning"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View Orders</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-lg-6">
+                    <div class="card bg-success text-white mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="mr-3">
+                                    <div class="text-white-75 small">Completed Products</div>
+                                    <div class="text-lg font-weight-bold">24</div>
+                                    <span class="text-xs">(this year)</span>
+                                </div>
+                                <i class="feather-xl text-white-50" data-feather="check-square"></i>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <a class="small text-white stretched-link" href="#">View List</a>
+                            <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- DATA CARDS END -->
+            <div class="row mb-5 align-items-center">
+ <div class="col-2">
+                <div class="card card-progress sm">
+    <div class="card-header text-dark d-flex justify-content-center">Janitor</div>
+    <div class="card-body d-flex justify-content-center"> <button class="btn btn-red">offline</button></div>
+    <div class="progress rounded-0">
+        <div class="progress-bar bg-danger" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+                </div>
+                
+       <div class="col-2">
+                <div class="card card-progress sm">
+    <div class="card-header text-dark d-flex justify-content-center">FileCollector</div>
+    <div class="card-body d-flex justify-content-center"><button class="btn btn-green">online</button></div>
+    <div class="progress rounded-0 ">
+        <div class="progress-bar bg-green" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+                </div>       
+          <div class="col-2">
+                <div class="card card-progress sm">
+    <div class="card-header text-dark d-flex justify-content-center">FormikoBot</div>
+    <div class="card-body d-flex justify-content-center"><button class="btn btn-green">online</button></div>
+    <div class="progress rounded-0 ">
+        <div class="progress-bar bg-green" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+                </div>             
+            </div>
+            <!-- Example DataTable for Dashboard Demo-->
+            <div class="card mb-4">
+                <div class="card-header">Open orders</div>
+                <div class="card-body">
+                    <div class="datatable">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Office</th>
+                                    <th>Age</th>
+                                    <th>Start date</th>
+                                    <th>Salary</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Office</th>
+                                    <th>Age</th>
+                                    <th>Start date</th>
+                                    <th>Salary</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+
+                                <tr>
+                                    <td>Ashton Cox</td>
+                                    <td>Junior Technical Author</td>
+                                    <td>San Francisco</td>
+                                    <td>66</td>
+                                    <td>2009/01/12</td>
+                                    <td>$86,000</td>
+                                    <td><div class="badge badge-secondary badge-pill">Part-time</div></td>
+                                    <td>
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"><i data-feather="more-vertical"></i></button>
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="trash-2"></i></button>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Hermione Butler</td>
+                                    <td>Regional Director</td>
+                                    <td>London</td>
+                                    <td>47</td>
+                                    <td>2011/03/21</td>
+                                    <td>$356,250</td>
+                                    <td><div class="badge badge-primary badge-pill">Full-time</div></td>
+                                    <td>
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2"><i data-feather="more-vertical"></i></button>
+                                        <button class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="trash-2"></i></button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-----------END TABLE------------------->
+
+        {% endblock %}
+    </body>
+</html>

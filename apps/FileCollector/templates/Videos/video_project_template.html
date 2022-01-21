@@ -1,0 +1,253 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+
+<div class="table-responsive table-billing-history text-sm table-borderless mb-0 datatable">
+    <table class="table table-hover text-xs p-0" id="collapseProjectVideosTable" width="100%" cellspacing="0" >
+
+        <thead>
+        <tr class="border-bottom">
+            <th class="border-gray-200" scope="col">Name</th>
+            <th class="border-gray-200" scope="col">EP#</th>
+            <th class="border-gray-200" scope="col">Resolution</th>
+            <th class="border-gray-200" scope="col">Loops</th>
+            <th class="border-gray-200" scope="col">Videos</th>
+            <th class="border-gray-200" scope="col">Status</th>
+            <th class="border-gray-200" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- START PLACEHOLDER --
+        <tr class="placeholder-glow">
+            <td colspan="7">
+                <span class="placeholder col-2"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-1"></span>
+                <span class="placeholder col-4"></span>
+                <span class="placeholder col-1"></span>
+                 <span class="placeholder col-1"></span>
+
+            </td>
+        </tr>
+        <!-- END PLACEHOLDER -->
+        {% for line in videos %}
+            <tr class="border-bottom" id="project_video_line_{{ line.id }}">
+
+                <td class="col-2"><a href="{% url 'FileCollector:projectvideo' line.id %}">{{line.name}}</a><br><a href="" class=" text-muted">ID: {{ line.id }}</a>
+                    <small class="text-muted text-xs">{{ line.getCorrectFilename }}</small>
+                </td>
+                <td  class="col-1">{% if line.episode %}
+                    {{line.episode}}
+                {% else %}
+                    -
+                {% endif %}
+                </td>
+                <td class="col-1">{% if line.resolution %}{{ line.resolution }}{% else %}-{% endif %} </td>
+                <td  class="col-1">{% if line.feedbackloops %}{{ line.feedbackloops }}{% else %}-{% endif %} </td>
+                <td class="col-5" id="assigned_videos_{{line.id}}">{% if line.videos %}
+                    {% for video in line.videos.all %}
+                        <div id="lnk-remove-project-video-{{ video.id }}" >
+                            <a href="{% url 'FileCollector:video_detail' video.id %}" >{{video.unique_fn}}</a>
+                            <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 btn-remove-project-video" data-id="{{ video.id }}" data-projectvideoid="{{ line.id }}"><i data-feather="x"></i></button>
+                        </div>
+
+                    {% endfor %}
+                {% else %}-{% endif %}
+                    <div class="form-group mb-2">
+                        <select class="form-control form-control-sm collapse" id="sel_videos_{{ line.id }}" required>
+                            {% for item in project.project_videos.all %}
+                                <option value="{{item.id}}">{{ item.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+
+                        <button class="btn btn-xs bg-primary text-white float-end btn_assign_video" data-projectvideoid="{{ line.id }}" >Assign</button>
+                        <button class="btn btn-xs bg-dark text-white float-end btn_abort_assign_videos me-2 collapse" id="btn_abort_assign_videos_{{ line.id }}" data-projectvideoid="{{ line.id }}" ">Abort</button>
+
+                    </div>
+                </td>
+                <td  class="col-1">
+                    <div class="div_proj_status">
+                        {% if line.status != 'UPLOADING' %}
+                            <span class="video-status badge {% if line.status == 'COMPLETE' %}
+                                                     badge-teal
+                                                     {% elif line.status == 'PENDING' %}
+                                                     badge-orange
+                                                     {% elif line.status == 'READY' %}
+                                                     badge-info
+                                                     {% elif line.status == 'IDLE' %}
+                                                     badge-yellow
+                                                     {% elif line.status == 'ACTIVE' %}
+                                                     badge-primary
+                                                     {% elif line.status == 'FAILED' %}
+                                                     badge-danger
+                                                     {% elif line.status == 'COMPLETE' %}
+                                                     badge-success
+                                                     {% elif line.status == 'DELIVERED' %}
+                                                     badge-teal
+                                                     {% endif %}" style="cursor:pointer" data-id="{{ line.id }}">{{line.status}}</span>
+                        {% else %}
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                        {% endif %}
+                    </div>
+                </td>
+                <td style="width:60px;">
+                    <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 js-copy" data-id="{{line.id}}" data-toggle="tooltip" data-placement="bottom"  title="Copy to clipboard">
+                        <i data-feather="clipboard" ></i>
+                    </button>
+                    <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 btn_edit_projectvideo" data-id="{{line.id}}" data-toggle="tooltip" data-placement="bottom"  title="Copy to clipboard">
+                        <i data-feather="edit" ></i>
+                    </button>
+                    <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 btn_delete_projectvideo" data-id="{{line.id}}"><i data-feather="trash-2"></i></button>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr class="border-bottom text-md-center"><td colspan="7">there are no projects videos here yet :/</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% block javascript %}
+    <script type="text/javascript">
+
+        $(".btn_edit_projectvideo").on('click', function() {
+            var video_id = $(this).data('id');
+            loadProjectVideo(video_id);
+        });
+        function loadProjectVideo(video_id){
+            $.ajax({
+                type:"POST",
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:get-edit-pojectvideo-ajax' %}",
+                data:{
+                    video_id: video_id,
+                    is_editable: '{% if is_editable %}1{% else %}0{% endif %}',
+                    is_inline: 1
+                },
+                success: function (data) {
+
+                    $("#_divVideoList").prepend(data);
+                    feather.replace();
+                }
+            })
+        }
+
+        $(".btn_save_projectvideo").on('click', function(){
+            var video_id = $(this).data('id');
+            if (!$("#create_video_form_" + video_id)[0].checkValidity()) {
+                $("#create_video_form_" + video_id).addClass('was-validated');
+                return false;
+            }
+            $("#btn_save_projectvideo_"+video_id).html('<div class="spinner-border spinner-border-sm text-white mr-2" role="status"><span class="sr-only">Loading...</span></div>Save');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:save-projectvideo-ajax' %}",
+                data: {
+                    "project_id": $('#projectID_{{order_number}}').val(),
+                    "video_id": $('#videoID_{{order_number}}').val(),
+                    "title": $('#videotitle_{{order_number}}').val(),
+                    "duration": $('#videoduration_{{order_number}}').val(),
+                    "resolution": $('#resolution_{{order_number}}').val(),
+                    "subtitles": $('#subtitles_{{order_number}}').val(),
+                    "feedbackloops": $('#feedbackloops_{{order_number}}').val(),
+                    "description": $('#videodescription_{{order_number}}').val(),
+                    "create_episodes": $('#video_create_episodes_{{order_number}}').val(),
+                    "is_inline" : 1
+
+                },
+                type: 'POST',
+                success: function (data) {
+                    $("#btn_save_video_{{order_number}}").html('Save');
+                    if (data.status){
+                        location.reload();
+                        Toastify({
+                            text: "Saved project video successfully",
+                            className: "info",
+                            style: {
+                                background: "linear-gradient(to right, #00b09b, #96c93d)",
+                            }
+                        }).showToast();
+                        $("#videoID_{{order_number}}").val(data.video_id);
+
+                        //if the box is called via the project videos page we want to close the box after finishing
+
+                        {% if is_inline %}
+                            $("#card_{{order_number}}").remove();
+                            console.log("#card_" + data['video_id']);
+                            console.log(data);
+                            $("#card_" + data['video_id']).remove();
+                        {% endif %}
+
+                    }else{
+                        Swal.fire({
+                            icon: "waring",
+                            title: `There has been an error`,
+                            text: "ERROR: " + data.message,
+                            confirmButtonClass: "btn-danger",
+                        });
+                    }
+
+                },
+
+            });
+        });
+        $(".btn_delete_projectvideo").on('click', function(){
+
+            var video_id = $(this).data('id');
+            console.log("test clicked trash" + video_id);
+
+            Swal.fire({
+                title: `Do you really want to delete this video?`,
+                text: "You will not be able to recover this video!",
+                icon: "warning",
+                showCancelButton: true,
+                customClass: {
+                    confirmButton: 'btn btn-danger me-4',
+                    cancelButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    console.log("confirmed! id: "+ video_id)
+                    //var video_id = $("#videoID_{{order_number}}").val();
+                    if (video_id != "-1") {
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-projectvideo-ajax' %}",
+                            data: {
+                                "video_id": video_id,
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                $('#project_video_line_' + data['video_id']).remove()
+
+                                console.log(data)
+                                Toastify({
+                                    text: data['message'],
+                                    className: "info text-xs",
+                                    duration: 5000,
+                                    style: {
+                                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    }
+                                }).showToast();
+                                //location.reload();
+                                console.log($(this))
+
+                            },
+                        });
+                    }
+                    $("#card_{{order_number}}").remove();
+                };
+            });
+
+
+        });
+    </script>
+{% endblock %}

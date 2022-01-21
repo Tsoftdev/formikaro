@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load static %}
+{% load custom_tags %}
+{% load notifications_tags %}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="{% static 'assets/img/favicon.png' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/datatables.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+    <!--<link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">-->
+    <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+    <script src="{% static 'notifications/notify.js' %}" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <script>
+        function my_special_notification_callback(data) {
+            notification_html= ''
+            for (var i=0; i < data.unread_list.length; i++) {
+                msg = data.unread_list[i];
+                if (data.unread_list[i]['level'] == 'success') {
+                    icon = 'fa-check-circle'
+                    icon_class =  'bg-success'
+                    var url = '{% url 'notifications:mark_as_read' 123 %}'.replace('123', data.unread_list[i]['slug']) + '?next={% url 'FileCollector:video_detail' 123 %}'.replace('123', data.unread_list[i]['action_object_object_id']);
+                }
+                else if (data.unread_list[i]['level'] == 'error') {
+                icon = 'fa-exclamation-triangle'
+                    icon_class =  'bg-danger'
+                    var url = '{% url 'notifications:mark_as_read' 123 %}'.replace('123', data.unread_list[i]['slug']) + '?next={{ request.get_full_path }}';
+                }
+                else if (data.unread_list[i]['level'] == 'warning') {
+                    icon = 'fa-check-circle'
+                    icon_class =  'bg-warning'
+                    var url = '{% url 'notifications:mark_as_read' 123 %}'.replace('123', data.unread_list[i]['slug']) + '?next={{ request.get_full_path }}';
+                }
+                else if (data.unread_list[i]['level'] == 'info') {
+                    icon = 'fa-info'
+                    icon_class =  'bg-info'
+                    var url = '{% url 'notifications:mark_as_read' 123 %}'.replace('123', data.unread_list[i]['slug']) + '?next={{ request.get_full_path }}';
+                }
+
+                notification_html += '<a class="dropdown-item dropdown-notifications-item" href="'+ url +'">' +
+                '<div class="dropdown-notifications-item-icon ' + icon_class + ' "><i class="fas ' + icon + '"></i></div>' +
+                '<div class="dropdown-notifications-item-content">' + data.unread_list[i]['actor'] +
+                '<div class="dropdown-notifications-item-content-details">' + moment(data.unread_list[i]['timestamp']).fromNow() + '</div>' +
+                '<div class="text-xs text-wrap" >' + data.unread_list[i]['verb'] + '</div>' +
+                '</div>' +
+                '</a>'
+            }
+            if (i==0) {
+            $('.live_notify_badge').hide();
+            }
+            else {
+            $('.live_notify_badge').show();
+            $('#notify_container').html(notification_html);
+            }
+
+        }
+    </script>
+    {% register_notify_callbacks callbacks='fill_notification_badge, my_special_notification_callback' %}
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Add jQuery -->
+    <!--<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>-->
+    <script src="{% static 'js/jquery-3.6.0.js' %}" crossorigin="anonymous"></script>
+    <style>
+        .select2-container .select2-selection--single{
+            height: 42px;
+
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered{
+            line-height: 42px;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 42px;
+        }
+    </style>
+    {% block style_css %} {% endblock %}
+
+</head>
+
+<body class="nav-fixed">
+
+<nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
+
+    <!-- Navbar Brand-->
+    <!-- * * Tip * * You can use text or an image for your navbar brand.-->
+    <!-- * * * * * * When using an image, we recommend the SVG format.-->
+    <!-- * * * * * * Dimensions: Maximum height: 32px, maximum width: 240px-->
+    <!--<button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle"><i data-feather="menu"></i></button>-->
+    <button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 me-2 ms-lg-2 me-lg-0" id="sidebarToggle"><i data-feather="menu"></i></button>
+
+    <!--<a class="navbar-brand" href="{% url 'FileCollector:index' %}">Formikaro</a>-->
+    <a class="navbar-brand pe-3 ps-4 ps-lg-2" href="{% url 'FileCollector:index' %}">Formikaro</a>
+    <!-- Sidenav Toggle Button-->
+
+    <!-- Navbar Search Input-->
+    <!-- * * Note: * * Visible only on and above the md breakpoint-->
+    <div class="form-line mr-auto d-none d-md-block mr-0 " style="width: 450px;">
+        <div class="row" style="width:700px">
+
+            <div  class=" col-md-12 input-group ">
+
+                <select style="width:250px !important" class="form-control" id="open_tasks" placeholder="CurrentTask" aria-label="CurrentTask">
+                    <option value=""></option>
+                    {% for task in open_tasks %}
+                    <option value="{{task.id}}">{{task.name}} ({{task.project_name}}) [{{task.id}}]</option>
+                    {% endfor %}
+                </select>
+
+                <div class="btn-group p-0">
+
+                    <div class="btn-group p-0 ms-2" role="group" aria-label="First group">
+                        <button class="btn btn-primary " type="button" id="startButton" >Start</button>
+
+                        <button class="btn btn-danger ml-sm-2" type="button" id="stopButton" style="display: none;">Stop</button>
+                        <button class="btn btn_startpause_task btn-danger" style="padding:0px 5px; display:none;" type="button" id="pauseButton" data-id="0" data="off">
+                            <i data-feather="pause-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" id="clockButtonSplit" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden" style="display:none">Toggle Dropdown</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-lg-end" >
+                        <li><a class="dropdown-item" href="{% url 'FileCollector:add_task' %}">New task</a></li>
+
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'FileCollector:mytasks'  %}">All my tasks</a></li>
+
+                    </div>
+
+                </div>
+                <div class="col-md-4 mt-2 text-lg px-1 ms-2" >
+                    <strong id="runtime_counter">00:00:00</strong>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Navbar Items-->
+    <ul class="navbar-nav align-items-center ms-auto">
+        <li class="nav-item dropdown no-caret d-none d-sm-block me-3 dropdown-notifications " >
+            <a class="btn btn-icon dropdown-toggle" href="javascript:void(0);" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><!-- <i data-feather="bell"></i>--><i class="fas fa-bell fa-lg" ></i>
+                <!--<span class="badge rounded-pill badge-notification bg-danger">12</span>-->
+                {% live_notify_badge badge_class="badge rounded-pill badge-notification bg-danger live_notify_badge" %}
+
+            </a>
+            <div class="dropdown-menu dropdown-menu-end border-0 shadow animated--fade-in-up" style="width: 350px !important;" aria-labelledby="navbarDropdownAlerts">
+                <h6 class="dropdown-header dropdown-notifications-header" >
+                    <i class="me-2" data-feather="bell" ></i>
+                    User Notifications
+                </h6>
+                {% live_notify_list  %}
+                <div id="notify_container">
+                </div>
+                <a class="dropdown-item dropdown-notifications-footer" id="mark_user_notifications_read" href="">Mark all as read</a>
+            </div>
+        </li>
+
+        <!-- User Dropdown-->
+        <li class="nav-item dropdown no-caret dropdown-user me-3 me-lg-4">
+            <a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownUserImage" href="javascript:void(0);" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="img-fluid" src="{% static 'assets/img/illustrations/profiles/profile-1.png' %}" /></a>
+            <div class="dropdown-menu dropdown-menu-end border-0 shadow animated--fade-in-up" aria-labelledby="navbarDropdownUserImage">
+                <h6 class="dropdown-header d-flex align-items-center">
+                    <img class="dropdown-user-img" src="{% static 'assets/img/illustrations/profiles/profile-1.png' %}" />
+                    <div class="dropdown-user-details">
+                        <div class="dropdown-user-details-name">{{ user.get_username  }} {{ user.last_name }}
+
+                        </div>
+                        <div class="dropdown-user-details-email">{{ user.email }}</div>
+                    </div>
+                </h6>
+                <div class="dropdown-divider"></div>
+                <!--<a class="dropdown-item" href="#!">
+                <div class="dropdown-item-icon"><i data-feather="settings"></i></div>
+                Account
+                </a>-->
+                <a class="dropdown-item" href="{% url 'FileCollector:mytasks'  %}">
+                    <div class="dropdown-item-icon"><i data-feather="check-circle"></i></div>
+                    My tasks
+                </a>
+                <a class="dropdown-item" href="/admin/logout">
+                    <div class="dropdown-item-icon"><i data-feather="log-out"></i></div>
+                    Logout
+                </a>
+            </div>
+        </li>
+    </ul>
+</nav>
+<div id="layoutSidenav">
+    <div id="layoutSidenav_nav">
+        <nav class="sidenav shadow-right sidenav-dark">
+            <div class="sidenav-menu">
+                <div class="nav accordion" id="accordionSidenav">
+                    <!-- Sidenav Menu Heading (Account)-->
+                    <!-- * * Note: * * Visible only on and above the sm breakpoint-->
+                    <div class="sidenav-menu-heading d-sm-none">Account</div>
+                    <!-- Sidenav Link (Alerts)-->
+                    <!-- * * Note: * * Visible only on and above the sm breakpoint-->
+                    <a class="nav-link d-sm-none" href="#!">
+                        <div class="nav-link-icon"><i data-feather="bell"></i></div>
+                        Alerts
+                        <span class="badge badge-warning-soft text-warning ml-auto">4 New!</span>
+                    </a>
+                    <!-- Sidenav Link (Messages)-->
+                    <!-- * * Note: * * Visible only on and above the sm breakpoint-->
+                    <a class="nav-link d-sm-none" href="#!">
+                        <div class="nav-link-icon"><i data-feather="mail"></i></div>
+                        Messages
+                        <span class="badge badge-success-soft text-success ml-auto">2 New!</span>
+                    </a>
+
+
+                    <!-- Sidenav Menu Heading (Core)-->
+                    <div class="sidenav-menu-heading">Core</div>
+
+                    <a class="nav-link" href="{% url 'FileCollector:index' %}">
+                        <div class="nav-link-icon"><i data-feather="activity"></i></div>
+                        Dashboard
+                    </a>
+
+                    <!-- Sidenav Menu Heading (Core)-->
+                    <div class="sidenav-menu-heading">Collectors</div>
+                    <!-- Sidenav Link (Intakes)-->
+                    <a class="nav-link" href="{% url 'FileCollector:intakes' %}">
+                        <div class="nav-link-icon"><i data-feather="sunset"></i></div>
+                        Intakes
+                    </a>
+
+                    <!-- Sidenav Link (Orders)-->
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseOrders" aria-expanded="false" aria-controls="collapseOrders">
+                        <div class="nav-link-icon"><i data-feather="list"></i></div>
+                        Orders
+                        <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseOrders" data-bs-parent="#accordionSidenav">
+                        <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                            <a class="nav-link" href="{% url 'FileCollector:add_order' %}">+ Add</a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders' %}">All</a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders_by_status' 'pending' %}">
+                                Pending
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders_by_status' 'active' %}">
+                                Active
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders_by_status' 'failed' %}">
+                                Failed
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders_by_status' 'complete' %}">
+                                Complete
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:orders_by_status' 'delivered' %}">
+                                Delivered
+                            </a>
+
+                        </nav>
+                    </div>
+
+
+
+
+                    <!-- Sidenav Link (Tasks)-->
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseTasks" aria-expanded="false" aria-controls="collapseTasks">
+                        <div class="nav-link-icon"><i data-feather="check-circle"></i></div>
+                        Tasks
+                        <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseTasks" data-bs-parent="#accordionSidenav">
+                        <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+
+                            <a class="nav-link" href="{% url 'FileCollector:add_task' %}">+ Add</a>
+                            <a class="nav-link" href="{% url 'FileCollector:tasks' %}">All</a>
+
+                            <a class="nav-link" href="{% url 'FileCollector:mytasks'  %}">
+                                My tasks
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:tasks_by_status' 'open' %}">
+                                Open
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:tasks_by_status' 'active' %}">
+                                Active
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:tasks_by_status' 'failed' %}">
+                                Failed
+                            </a>
+                            <a class="nav-link" href="{% url 'FileCollector:tasks_by_status' 'complete' %}">
+                                Complete
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- Sidenav Link (ASSETS)-->
+
+                    <a class="nav-link collapsed" href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseAssets" aria-expanded="false" aria-controls="collapseAssets">
+                        <div class="nav-link-icon"><i data-feather="file-plus"></i></div>
+                        Assets
+                        <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                    </a>
+                    <div class="collapse" id="collapseAssets" data-bs-parent="#accordionSidenav">
+                        <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+                            <a class="nav-link" href="{% url 'FileCollector:assets' %}">List</a>
+                            <a class="nav-link" href="{% url 'FileCollector:create_asset' %}">
+                                create Asset
+                                <span class="badge bg-primary-soft text-primary ms-auto">beta</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <div class="sidenav-menu-heading">Delivery</div>
+                    <a class="nav-link" href="{% url 'FileCollector:proto_delivery_api' %}">
+                        <div class="nav-link-icon"><i data-feather="truck"></i></div>
+                        Delivery Overview
+                    </a>
+                    <!-- Sidenav Menu Heading (Core)--
+                    <div class="sidenav-menu-heading">Worker</div> -->
+                    <!-- Sidenav Link (Jobs)--
+<a class="nav-link" href="{% url 'FileCollector:not_yet' %}">
+<div class="nav-link-icon"><i data-feather="cpu"></i></div>
+Jobs
+</a>
+<a class="nav-link" href="{% url 'FileCollector:not_yet' %}">
+<div class="nav-link-icon"><i data-feather="settings"></i></div>
+Settings
+</a>  -->
+
+
+                    <!-- Sidenav Menu Heading (Core)-->
+                    <div class="sidenav-menu-heading">Administration</div>
+                    <!-- Sidenav Link (Clients)-->
+                    <a class="nav-link" href="{% url 'FileCollector:clients' %}">
+                        <div class="nav-link-icon"><i data-feather="users"></i></div>
+                        Clients
+                    </a>
+                    <a class="nav-link" href="{% url 'FileCollector:companies' %}">
+                        <div class="nav-link-icon"><i data-feather="globe"></i></div>
+                        Companies
+                    </a>
+
+
+                    <!-- Sidenav Link (Products)-->
+                    <a class="nav-link" href="{% url 'FileCollector:products' %}">
+                        <div class="nav-link-icon"><i data-feather="youtube"></i></div>
+                        Products
+                    </a>
+                    <!-- Sidenav Link (Projects)-->
+                    <a class="nav-link" href="{% url 'FileCollector:projects' %}">
+                        <div class="nav-link-icon"><i data-feather="package"></i></div>
+                        Projects
+                        <span class="badge bg-primary-soft text-primary ms-auto">updated</span>
+                    </a>
+                    {% if user.is_staff %}
+                    <div class="sidenav-menu-heading">Settings</div>
+                    <a class="nav-link" href="{% url 'FileCollector:settings'%}">
+                        <div class="nav-link-icon"><i data-feather="settings"></i></div>
+                        Settings
+                    </a>
+
+                    <a class="nav-link" href="{% url 'FileCollector:log_viewer'%}">
+                        <div class="nav-link-icon"><i data-feather="activity"></i></div>
+                        Log Viewer
+                    </a>
+
+                    <!-- Sidenav Link (Admin Panel)-->
+                    <a class="nav-link" href="{% url 'admin:index'%}">
+                        <div class="nav-link-icon"><i data-feather="tool"></i></div>
+                        Backend
+                    </a>
+                    {% endif %}
+
+                    <!-- Sidenav Footer-->
+                    <div class="sidenav-footer">
+                        <div class="sidenav-footer-content">
+                            {% if user.is_authenticated %}
+                            <div class="sidenav-footer-subtitle">Logged in as:</div>
+                            <div class="sidenav-footer-title"> {{ user.username }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <!-- MAIN CONTAINER START -->
+        <main>
+            {% include 'Formikaro/messages.html' %}
+            {% block content %}
+
+            {% endblock %}
+
+            <br /><br /><br /><br /><br /><br />
+
+            <div class="container mt-n10">
+
+                <div class="card card-icon mb-4">
+                    <div class="row no-gutters">
+                        <div class="col-auto card-icon-aside bg-warning"><i class="mr-1 text-white-50" data-feather="alert-triangle"></i></div>
+                        <div class="col">
+                            <div class="card-body py-5">
+                                <h5 class="card-title">Prototype!</h5>
+                                <p class="card-text">Please don't forget that this is just a prototype. Please submit any errors or suggestions</p>
+                                <a class="btn btn-warning btn-sm" href="mailto:io@filmagio.com" target="_blank">
+                                    <i class="mr-1" data-feather="external-link"></i>
+                                    Mail to development
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <!-- MAIN CONTAINER END -->
+        <footer class="footer mt-auto footer-light">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6 small">Copyright &copy; Formikaro 2021</div>
+                    <div class="col-md-6 text-md-right small">
+                        <a href="#!">Privacy Policy</a>
+                        &middot;
+                        <a href="#!">Terms &amp; Conditions</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+<script type="text/javascript" src="{% static '/js/datatables.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static '/js/scripts.js' %}"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/components/prism-core.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.min.js" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="{% static '/js/sweetalert2.all.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script>
+    var current_runtime = 0;
+    var real_runtime = 0;
+    var current_task = '';
+    var timerPaused = false;
+    var showTimer;
+    var ajaxTimer;
+     $('.live_notify_badge').hide();
+
+
+    $("#mark_user_notifications_read").on('click', function(){
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:mark-user-notifications-read-ajax' %}",
+                data: {
+                    "user_id": '{{ user.id }}',
+                },
+                type: 'POST',
+                success: function (data) {
+                    if (data.status){
+                        location.reload();
+                    }else{
+                        swal({
+                            icon: "waring",
+                                title: `There has been an error`,
+                                text: "ERROR: " + data.message,
+                                confirmButtonClass: "btn-danger",
+                            });
+                    }
+
+                },
+
+            });
+        });
+
+
+
+
+    	// COPY TO CLIPBOARD
+	// Attempts to use .execCommand('copy') on a created text field
+	// Falls back to a selectable alert if not supported
+	// Attempts to display status in Bootstrap tooltip
+	// ------------------------------------------------------------------------------
+
+	function copyToClipboard(text, el) {
+		var copyTest = document.queryCommandSupported('copy');
+		var elOriginalText = el.attr('data-original-title');
+
+		if (copyTest === true) {
+			var copyTextArea = document.createElement("textarea");
+			copyTextArea.value = text;
+			document.body.appendChild(copyTextArea);
+			copyTextArea.select();
+			try {
+				var successful = document.execCommand('copy');
+				var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+				el.attr('data-original-title', msg).tooltip('show');
+			} catch (err) {
+				console.log('Oops, unable to copy');
+			}
+			document.body.removeChild(copyTextArea);
+			el.attr('data-original-title', elOriginalText);
+		} else {
+			// Fallback if browser doesn't support .execCommand('copy')
+			window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+		}
+	}
+
+
+
+ $(document).ready(function() {
+                $('#dataTable').DataTable();
+
+
+
+                $('.js-tooltip').tooltip();
+
+                $('.js-copy').click(function() {
+			    var id = $(this).data('id');
+			    text = $(`#data-copy-${id}`).text().trim().replace(/\t+/g,'');
+			    var el = $(this);
+			    console.log(text);
+			    try {
+			        copyToClipboard(text, el);
+			        toast_text = 'Copied video info';
+			        toast_background = "linear-gradient(to right, #00b09b, #96c93d)";
+			     }
+			     catch ( err ) {
+			        toast_text = 'Error copying video info' + err;
+			       toast_background = "linear-gradient(to right, #e81500, #b51909)";
+			     }
+
+			     Toastify({
+                        text: toast_text,
+                        className: "info",
+                        style: {
+                          background: toast_background,
+                        }
+                        }).showToast();
+		});
+            });
+
+   $(function() {
+      $('.toast').toast('show');
+   });
+
+    $("#open_tasks").select2({
+        placeholder: 'CurrentTask'
+    });
+    function startShowTimer() {
+        showTimer = setInterval(function(){
+                current_runtime += 1;
+                real_runtime += 1;
+                localStorage.setItem('current_runtime', current_runtime);
+                localStorage.setItem('real_runtime', real_runtime);
+                $("#runtime_counter").html(new Date(current_runtime * 1000).toISOString().substr(11, 8));
+            }, 1000);
+    }
+
+    function startAjaxTimer() {
+        ajaxTimer = setInterval(function(){
+                saveRuntimeDB();
+            }, {% get_RuntimeSaveInterval %} * 1000);
+        
+    }
+
+    $("#startButton").on('click', function(){
+
+        startTask(false);
+    });
+    function startTask(isFromTaskList){
+        console.log('startbutton');
+
+        if ($("#open_tasks").val() != ""){
+            $('#open_tasks').prop("disabled", true);
+            $("#stopButton").show();
+            $("#pauseButton").show();
+            $("#startButton").hide();
+            $("#clockButtonSplit").removeClass("btn-primary");
+            $("#clockButtonSplit").addClass("btn-danger");
+            $('.btn_startpause_task[data-id="'+$("#open_tasks").val()+'"]').html('<i data-feather="pause-circle" style="width: 32px; color:#0061f2; height:32px; stroke-width: 0.8px;"></i>');
+            feather.replace();
+            localStorage.setItem('start_time', new Date().getTime());
+            localStorage.setItem('start_real_time', new Date().getTime());
+            localStorage.setItem('selected_open_task', $("#open_tasks").val());
+            current_runtime = 0;
+            real_runtime = 0;
+            startAjaxTimer();
+            startShowTimer();
+        }
+        else
+        {
+            alert("Please select a task before you start the clock")
+        }
+    }
+    $('.btn_startpause_task').click(function(){
+        var task_id = $(this).data('id');
+        var runtime = $(this).data('runtime');
+
+        if (task_id != 0) {
+            // is task page and when click start/stop button on task list
+            var selTaskId = localStorage.getItem('selected_open_task');
+            var task_name = $(this).data('name');
+            if (selTaskId != task_id){
+                // click another task // mytasks page, play button click
+                stopTask();
+                var is_exsit = false;
+                $("#open_tasks option").each(function(){
+                    if($(this).val() == task_id) {
+                        is_exsit = true;
+                    }
+                });
+                if (!is_exsit){
+                    $("#open_tasks").append(`<option value="${task_id}">${task_name}</option>`);
+                }
+                
+                $("#open_tasks").val(task_id);
+                $('#open_tasks').trigger('change');
+                startTask();
+            }else{
+                //start-pause loop // click (start/stop) same task
+                if (timerPaused == false){
+
+                    timerPaused = true;
+                    $("#pauseButton").html('<i data-feather="play-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>');
+                    feather.replace();
+                    if (task_id != 0) {
+                        $('.btn_startpause_task[data-id="' + task_id + '"]').html('<i data-feather="play-circle" style="width: 32px; color:teal; height:32px; stroke-width: 0.8px;"></i>');
+                        feather.replace();
+                    }
+                    clearInterval(ajaxTimer);
+                    clearInterval(showTimer);
+                    saveRuntimeDB();
+                    localStorage.setItem('isPlaying', false);
+                } else {
+                    timerPaused = false;
+                    $("#pauseButton").html('<i data-feather="pause-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>');
+                    feather.replace();
+                    if (task_id != 0) {
+                        $('.btn_startpause_task[data-id="' + task_id + '"]').html('<i data-feather="pause-circle" style="width: 32px; color:#0061f2; height:32px; stroke-width: 0.8px;"></i>');
+                        feather.replace();
+                    }
+                    startAjaxTimer();
+                    startShowTimer();
+                    localStorage.setItem('isPlaying', true);
+                }
+            }
+        } else {
+            // top bar start/stop button clicked
+            var selTaskId = localStorage.getItem('selected_open_task');
+            if (timerPaused == false){
+                timerPaused = true;
+                $("#pauseButton").html('<i data-feather="play-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>');
+                if (selTaskId != null) {
+                    $('.btn_startpause_task[data-id="' + selTaskId + '"]').html('<i data-feather="play-circle" style="width: 32px; color:teal; height:32px; stroke-width: 0.8px;"></i>');
+                }
+                feather.replace();
+                clearInterval(ajaxTimer);
+                clearInterval(showTimer);
+                saveRuntimeDB();
+                localStorage.setItem('isPlaying', false);
+            } else {
+                timerPaused = false;
+                $("#pauseButton").html('<i data-feather="pause-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>');
+                if (selTaskId != null) {
+                    $('.btn_startpause_task[data-id="' + selTaskId + '"]').html('<i data-feather="pause-circle" style="width: 32px; color:#0061f2; height:32px; stroke-width: 0.8px;"></i>');
+                }
+                feather.replace();
+                startAjaxTimer();
+                startShowTimer();
+                localStorage.setItem('isPlaying', true);
+            }
+        }
+    });
+
+    $("#stopButton").on('click', function(){
+        stopTask();
+    });
+    function stopTask(){
+        $("#stopButton").hide();
+        $("#pauseButton").hide();
+        $("#startButton").show();
+        $("#clockButtonSplit").removeClass("btn-danger");
+        $("#clockButtonSplit").addClass("btn-primary");
+        clearInterval(showTimer);
+        clearInterval(ajaxTimer);
+        $('#open_tasks').prop("disabled", false);
+        $('#open_tasks').val('');
+        $('#open_tasks').trigger('change');
+
+        saveRuntimeDB(true);
+        localStorage.removeItem('start_time');
+        localStorage.removeItem('start_real_time');
+        localStorage.removeItem('selected_open_task');
+
+        current_runtime = 0;
+        real_runtime = 0;
+        localStorage.setItem('current_runtime', current_runtime);
+        localStorage.setItem('real_runtime', real_runtime);
+        $("#runtime_counter").html(new Date(current_runtime * 1000).toISOString().substr(11, 8));
+    }
+    refreshPage();
+    function refreshPage(){
+        var start_time = localStorage.getItem('start_time');
+        var start_real_time = localStorage.getItem('start_real_time');
+        var selected_task_id = localStorage.getItem('selected_open_task');
+        if (start_time != null && selected_task_id != null){
+            $('#open_tasks').val(selected_task_id);
+            $('#open_tasks').trigger('change');
+            $('#open_tasks').prop("disabled", true);
+            $("#stopButton").show();
+            $("#pauseButton").show();
+            $("#clockButtonSplit").addClass("btn-danger");
+            $("#clockButtonSplit").removeClass("btn-primary");
+            $("#startButton").hide();
+            current_runtime = parseInt(localStorage.getItem('current_runtime'));
+            real_runtime = parseInt(localStorage.getItem('real_runtime'));
+            $("#runtime_counter").html(new Date(current_runtime * 1000).toISOString().substr(11, 8));
+            var isPlaying = localStorage.getItem('isPlaying');
+            console.log(isPlaying)
+            if (isPlaying == "true") {
+                console.log('isPlaying')
+                timerPaused = false;
+                showTimer = setInterval(function(){
+                    current_runtime += 1;
+                    real_runtime += 1;
+                    localStorage.setItem('current_runtime', current_runtime);
+                    localStorage.setItem('real_runtime', real_runtime);
+                    $("#runtime_counter").html(new Date(current_runtime * 1000).toISOString().substr(11, 8));
+                }, 1000);
+                ajaxTimer = setInterval(function(){
+                    saveRuntimeDB();
+                    //console.log("save call" + current_runtime);
+                }, {% get_RuntimeSaveInterval %} * 1000); //seconds between saves
+            } else {
+                timerPaused = true;
+                $("#pauseButton").html('<i data-feather="play-circle" style="width: 32px; color:#ffffff; height:32px; stroke-width: 1px;"></i>');
+                feather.replace();
+            }
+            
+        }
+    }
+    function saveRuntimeDB(stopFlag=''){
+        var start_time = localStorage.getItem('start_time');
+        var selected_task_id = localStorage.getItem('selected_open_task');
+        if (start_time != null && selected_task_id != null){
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:update-runtime-task' %}",
+                data: {
+                    "task_id": selected_task_id,
+                    "runtime": real_runtime,
+                    "stop_flag": stopFlag,
+                },
+                type: 'POST',
+                success: function (data) {
+                    if (stopFlag != true){
+                        //console.log('aaaaa', stopFlag);
+                        localStorage.setItem('start_real_time', new Date().getTime());
+
+                    }else{
+                        taskPageReload();
+                    }
+                    real_runtime = 0;
+                    localStorage.setItem('real_runtime', real_runtime);
+                }
+            });
+        }
+    }
+
+
+</script>
+{% block javascript %} {% endblock %}
+</body>
+</html>

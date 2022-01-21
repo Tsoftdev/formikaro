@@ -1,0 +1,130 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Formikaro - Projects {% endblock %}</title>
+</head>
+<body>
+{% block content %}
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="package"></i></div>
+                        Projects
+                    </h1>
+                    <div class="page-header-subtitle">These are the projects in the system</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+<div class="container mt-n10">
+    <!-----------START TABLE------------------->
+    <div class="card mb-4">
+        <div class="card-header">Projects
+
+            <div style="float:right;">
+
+                <a href="{% url 'FileCollector:project_add'  %}"><button class="btn btn-blue btn-sm">create project</button></a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive table-billing-history text-xs table-borderless mb-0 datatable">
+                <table class="table table-hover text-xs " id="dataTableOFFLINE" width="100%" cellspacing="0">
+                    <thead>
+                    <tr class="border-bottom">
+
+                        <th class="border-gray-200 col-3" scope="col">Name/Abrev.</th>
+                        <th class="border-gray-200 col-2" scope="col">Client/Company</th>
+                        <th class="border-gray-200 col-1" scope="col">Videos</th>
+                        <th class="border-gray-200 col-1" scope="col">Status</th>
+                        <th class="border-gray-200 col-1" scope="col">Projectleader</th>
+                        <th class="border-gray-200 col-2" scope="col">Created</th>
+                        <th class="border-gray-200 col-2" scope="col">Updated</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% if latest_projects_list %}
+                    <tr>
+                        {% for project in latest_projects_list %}
+
+                        <td><a href="{% url 'FileCollector:project_dashboard' project.id %}" class="fw-600">{{project.name}}</a> ({{project.abbreviation}}) <span class="text-muted">[{{project.id}}]</span></td>
+                        <td>
+                            {% if project.client.id %}
+                            <a href="{% url 'FileCollector:client_detail' project.client.id %}" class="fw-300">{{project.client}}</a>
+                            {% endif %}
+                            {% if project.company.id %}
+                            <br>(<a href="{% url 'FileCollector:company_detail' project.company.id %}" class="fw-300 text-body">{{project.company}}</a>)
+
+                            {% endif %}
+                        </td>
+                        <td>{{project.video_count}}</td>
+                        <td>
+
+                            {% if project.status == 'ESTIMATE' %}
+                            <span class="badge bg-yellow">
+                            {% elif project.status == 'CLIENT' %}
+                            <span class="badge bg-pink">
+                                {% elif project.status == 'ONHOLD' %}
+                            <span class="badge bg-orange">
+                                {% elif project.status == 'FAILED' %}
+                            <span class="badge bg-red">
+                                {% elif project.status == 'ACTIVE' %}
+                            <span class="badge bg-primary">
+                                {% elif project.status == 'COMPLETE' %}
+                            <span class="badge bg-cyan">
+                                {% elif project.status == 'DELIVERED' %}
+                            <span class="badge bg-teal">
+                                {% elif project.status == 'PAID' %}
+                            <span class="badge bg-green">
+                                {% else %}
+                                <span>
+                                {% endif %}
+
+
+                                            {{project.status}}</span>
+
+
+                        </td>
+                        <td>
+                            {% if project.projectmanager.all %}
+                            {% for projectmanager in project.projectmanager.all %}
+                            <a href"">{{projectmanager }}</a><br>
+                            {% endfor %}
+                            {% endif %}
+                        </td>
+                        <td>{{project.created|date:"d-m-y (H:i)"}}</td>
+                        <td>
+                            {% if  project.updated > project.latest_data or project.latest_data is None %}
+                            <span alt="{{project.updated|date:"d-m-y (H:i)"}}">{{project.updated | naturaltime}}</span>
+                            {% else %}
+                            <span alt="{{project.latest_data|date:"d-m-y (H:i)"}}">{{project.latest_data | naturaltime}}</span>
+                            {% endif %}<br>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    {% else %}
+                    <p>No project are available.</p>
+                    {% endif %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-----------END TABLE------------------->
+
+{% endblock %}
+</body>
+</html>

@@ -1,0 +1,73 @@
+{% load custom_tags %}
+{% if product.product_texts.all %}
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace()
+    </script>
+    {% for line in product.product_texts.all %}
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-cyan btn-icon" type="button">{{line.language.abbreviation}}</button>
+            <div class="ml-4">
+                <div class="small"><strong>Title</strong><br>{{line.title}}</div><br>
+                <div class="text-xs">
+                    <strong>Description short</strong><br>{{line.desc_short}}<br><br>
+                    <strong>Description long</strong><br>
+                    {{line.desc_long}}
+                </div>
+            </div>
+        </div>
+        {% if user.is_staff %}
+        <div class="ml-4 small">
+            <button class="btn_edit_text btn btn-datatable btn-icon btn-transparent-dark mr-2" data-id="{{line.id}}" data-desc-short="{{line.desc_short}}" data-desc-long="{{line.desc_long}}" data-lang="{{line.language.id}}"  data-title="{{line.title}}"><i data-feather="edit"></i></button>
+            <button class="btn_delete_text btn btn-datatable btn-icon btn-transparent-dark mr-2" data-id="{{line.id}}"><i data-feather="trash-2"></i></button>
+        </div>
+        {% endif %}
+    </div>
+    <hr />
+    {% endfor %}
+{% else %}
+    <div class="d-flex align-items-center justify-content-between">
+        No product text has been defined yet 
+    </div>
+{% endif %}
+<script>
+    $(".btn_edit_text").on('click', function(){
+        $("#editTextInfoCenterTitle").html("Edit Text Information");
+        $("#prod_text_id").val($(this).data('id'));
+        $("#title").val($(this).data('title'));
+        $("#language").val($(this).data('lang'));
+        $("#description_short").val($(this).data('desc-short'));
+        $("#description_long").val($(this).data('desc-long'));
+        $("#editTextInfo").modal('show');
+    });
+    $(".btn_delete_text").on('click', function(){
+        var prod_text_id = $(this).data('id');
+        swal({
+                title: "Are you sure?",
+                text: "You will not be able to recover this Text Information!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:delete_product_text_info' %}",
+                        data: {
+                            "prod_text_id": prod_text_id,
+                            "prod_id": $("#prod_id").val(),
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            $("#div_text_info").html(data);
+                        }
+                    });
+                }
+            }
+        );
+    });
+</script>

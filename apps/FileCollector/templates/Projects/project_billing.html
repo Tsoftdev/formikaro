@@ -1,0 +1,467 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load static %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}"/>
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+
+    <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+        <div class="container-fluid">
+            <div class="page-header-content">
+                <div class="row align-items-center justify-content-between pt-3">
+                    <div class="col-auto mb-3">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Detail of project {{ project.name }}
+                            [<strong>{{ project.id }}</strong>]
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+</header>
+
+<div class="container mt-n10">
+    <!-- Dashboard info widget 1-->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="container">
+                {% include "Projects/project_nav.html" with menuitem="billing"  %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12 collapse collapse-horizontal" id="collapseNewLineItem">
+                <!-- START CREATE NEW LINE ITEM -->
+                <div class="card mb-4 card-header-actions mx-auto " >
+                    <div class="card-header">
+                        <span id="sp_title">Create new line item for this project</span>
+                        <button class="btn btn-icon text-muted"  type="button"  data-bs-toggle="collapse" data-bs-target="#collapseNewLineItem" aria-expanded="false" aria-controls="collapseNewTask" ><i class="feather-icon" data-feather="x-circle" alt="Cancel" ></i></button>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <form id="create_line_item" class="needs-validation" novalidate>
+                                <!-- Form Group (Add line item name)-->
+                                <div class="form-group  input-group-lg">
+                                    <div class="form-row row mt-4">
+                                        <div class="form-group col-md-9 ">
+                                            <label class="mb-1" for="lineitemname">Line item name</label>
+                                            <div class="input-group mb-3">
+                                                <input type="text" class="form-control" placeholder="Line item name" id="lineitemname" name="lineitemname" aria-label="Line item name" aria-describedby="button-addon2" required>
+                                                    <button class="btn dropdown-toggle bg-light" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                            <a class="dropdown-item _lineitemname" href="javascript:void(0);">1</a>
+                                                            <a class="dropdown-item _lineitemname" href="javascript:void(0);">2</a>
+                                                            <a class="dropdown-item _lineitemname" href="javascript:void(0);">3</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-3 ">
+                                            <div class="form-group">
+                                                <label for="lineitemvideo" class="small">Video</label>
+                                                <div class="input-group mb-3">
+                                                    <select class="form-control" name="lineitemvideo" id="lineitemvideo" aria-label="name of the line item">
+                                                        {% for item in project.project_videos.all %}
+                                                        <option value="{{item.id}}">{{ item.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Form Row -->
+                                    <div class="form-row row">
+                                        <!-- Form Group (abbreviation)-->
+                                        <div class="form-group col-md-3 ">
+                                            <div class="form-group">
+                                                <label for="lineitemcost" class="small">Cost</label>
+                                                <div class="input-group mb-3">
+                                                        <span class="input-group-text">€</span>
+                                                    <input type="number" step="0.01" class="form-control" name="lineitemcost" id="lineitemcost" aria-label="Amount (to the nearest Euro)" required>
+                                                        <span class="input-group-text text-xs">(net)</span>
+                                                    </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group col-md-3 ">
+                                            <div class="form-group">
+                                                <label for="lineitemprice" class="small">Price</label>
+                                                <div class="input-group mb-3">
+                                                        <span class="input-group-text">€</span>
+                                                    <input type="number"  step="0.01" class="form-control" name="lineitemprice" id="lineitemprice" aria-label="Amount (to the nearest Euro)" required>
+                                                        <span class="input-group-text text-xs">(net)</span>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-2 ">
+                                            <div class="form-group">
+                                                <label for="lineitemquantity" class="small">Quanity</label>
+                                                <div class="input-group mb-3">
+                                                    <input type="number" min="1" max="10" class="form-control" name="lineitemquantity" id="lineitemquantity" value="1" aria-label="name of the line item" required>
+                                                        <button class="btn dropdown-toggle bg-light" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                                <a class="dropdown-item _lineitemquantity" href="javascript:void(0);">1</a>
+                                                                <a class="dropdown-item _lineitemquantity" href="javascript:void(0);">2</a>
+                                                                <a class="dropdown-item _lineitemquantity" href="javascript:void(0);">3</a>
+                                                            </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-md-2 ">
+                                            <div class="form-group">
+                                                <label for="lineitemstatus" class="small">Status</label>
+                                                <div class="input-group mb-3">
+                                                    <select class="form-control" name="lineitemstatus" id="lineitemstatus" aria-label="status of line item">
+                                                        <option value="OPEN">Open</option>
+                                                        <option value="PAID">Paid</option>
+                                                        <option value="DISCOUNTED">Discount</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group col-md-2 _divPaidDate" style="display:none;">
+                                            <div class="form-group">
+                                                <label for="paiddate" class="small">Paid (Date)</label>
+                                                <input class="form-control dateTime" id="paiddate" type="text" placeholder="Paid Date">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Form Row -->
+                                    <div class="form-row row ">
+                                        <!-- Form Group (organization name)-->
+                                        <div class="form-group col-md-10">
+                                            <label class="small mb-1" for="description">Line item description</label>
+                                            <textarea class="form-control" id="description" rows="4"></textarea>
+                                        </div>
+                                        <!-- Form Group (location)-->
+                                        <div class="form-group col-auto pt-4 ml-5">
+                                            <div class="text-uppercase small fw-700 text-muted">Total cost:</div>
+                                            <div class="h5 mb-2 fw-700">€ <span id="total_cost">0,00</span></div>
+                                            <div class="text-uppercase small fw-700 text-muted">Total price:</div>
+                                            <div class="h5 mb-0 fw-700">€ <span id="total_price">0,00</span></div>
+                                        </div>
+                                    </div>
+                                    <!-- Form Group (email address)-->
+                                    <div class="form-row row">
+                                        <!-- Form Row-->
+                                        <div class="form-group col-md-10">
+                                            <input type="hidden" id="line_id" value="-1" />
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <!-- Save changes button-->
+                                            <b id="btn_save_lineitem" class="btn btn-primary" type="button" style="float:right">Create</b>
+                                            <b class="btn btn-grey" type="button"  data-bs-toggle="collapse" data-bs-target="#collapseNewLineItem" aria-expanded="false" aria-controls="collapseNewTask" style="float:right">Cancel</b>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--- END CREATE NEW LINEITEM -->
+            </div>
+        </div>
+
+        <div class="card mb-4 card-header-actions mx-auto">
+            <div class="card-header">
+                Line items for {{ project.name }}
+                <div>
+                    {% if is_editable %}
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseNewLineItem" aria-expanded="false" aria-controls="collapseNewLineItem">Add</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <div class="card-body">
+                    <!-- Billing history table-->
+                    {% if project.lineitems.all %}
+                    <div class="table-responsive table-billing-history text-sm table-borderless mb-0 datatable">
+                        <table class="table table-hover text-xs p-0" id="dataTable" width="100%" cellspacing="0" >
+                            <thead>
+                            <tr class="border-bottom">
+                                <th class="border-gray-200 col-1" scope="col" >ID</th>
+                                <th class="border-gray-200 col-2" scope="col">Name</th>
+                                <th class="border-gray-200 col-1" scope="col">Cost center</th>
+                                <th class="border-gray-200 col-2" scope="col">Date</th>
+                                <th class="border-gray-200 col-1" scope="col">Qnt</th>
+                                <th class="border-gray-200 col-1" scope="col">Cost (total)</th>
+                                <th class="border-gray-200 col-1" scope="col">Price (total)</th>
+                                <th class="border-gray-200 col-1" scope="col">Status</th>
+                                <th class="border-gray-200 col-2" scope="col"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for lineitem in project.lineitems.all %}
+                            <tr class="border-top">
+                                <td>#{{ lineitem.id }}</td>
+                                <td>{{ lineitem.name }}</td>
+                                <td>{{ lineitem.video.name }}</td>
+                                <td>{{ lineitem.created|date:"d.m.y (H:i)" }}</td>
+                                <td>{{ lineitem.quantity }}</td>
+                                <td>€ {{ lineitem.cost }} (€ {% widthratio lineitem.quantity 1 lineitem.cost  %})</td>
+                                <td>€ {{ lineitem.price }}  (€ {% widthratio lineitem.quantity 1 lineitem.price  %})</td>
+                                <td><span class="badge {% if lineitem.status == 'PAID' %}bg-success text-light{% else %}bg-light text-dark{% endif %}">{{lineitem.status}}</span></td>
+                                <td>
+                                    <button class="btn btn-transparent-dark btn-icon" type="button" data-bs-toggle="collapse" href="#collapseItem{{ lineitem.id }}" role="button" aria-expanded="false" aria-controls="">
+                                        <i data-feather="arrow-down"></i>
+                                    </button>
+                                    {% if is_editable %}
+                                    <button class="btn_edit_lineitem btn btn-transparent-dark btn-icon" data-id="{{ lineitem.id }}" data-name="{{ lineitem.name }}"  data-quantity="{{ lineitem.quantity }}" data-cost="{{ lineitem.cost }}" data-price="{{ lineitem.price }}" data-status="{{ lineitem.status }}" data-video-id="{{ lineitem.video.id }}" data-paid="{{ lineitem.paid|date:"d.m.Y H:i" }}" data-description="{{ lineitem.description }}">
+                                    <i data-feather="edit"></i>
+                                    </button>
+                                    <button data-id="{{ lineitem.id }}" class="btn_delete_lineitem btn btn-transparent-dark btn-icon" type="button" data-bs-toggle="collapse"  role="button" aria-expanded="false" aria-controls="">
+                                        <i data-feather="trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="collapseItem{{ lineitem.id }}">
+                                <td colspan="7"><strong>Description:</strong><br>{{ lineitem.description }}
+                                    <br>{% if lineitem.changelog %}</br>
+                                    <strong>Changelog:</strong><br>{{ lineitem.changelog }}
+                                    {% else %}<br> <strong>Changelog</strong> is empty{% endif %}
+                                </td>
+
+                                <td colspan="2">
+                                    <div class="row">
+                                        <div class="col">Created by</div>
+                                        <div class="col">{{ lineitem.creator }}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">Timestamp</div>
+                                        <div class="col">{{ lineitem.created|date:"d.m.y (H:i)"}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">Last update:</div>
+                                        <div class="col">{{ lineitem.updated|date:"d.m.y (H:i)"}}</div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {% endfor %}
+                            <tr class="border-top">
+                                <th colspan="7"></th>
+                                <th class="text-end pt-4"><div class="text-uppercase small fw-700 text-muted">Total cost:</div></th>
+                                <th class="text-end pt-4"><div class="h5 mb-0 fw-700">€ {{ total_cost }}</div></th>
+                            </tr>
+                            <tr>
+                                <th colspan="7"></th>
+                                <th class="text-end"><div class="text-uppercase small fw-700 text-muted">Total price:</div></th>
+                                <th class="text-end"><div class="h5 mb-0 fw-700">€ {{ total_price }}</div></th>
+                            </tr>
+                            <tr>
+                                <th colspan="7"></th>
+                                <th class="text-end pb-4"><div class="text-uppercase small fw-700 text-muted">Difference:</div></th>
+                                <th class="text-end pb-4"> <div class="h5 mb-0 fw-700  {{ diff_class }}">€ {{ total_diff }}</div></th>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p>No line items defined yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="mt-2 mb-4" />
+</div>
+
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="{% static '/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script type="text/javascript">
+        $('.dateTime').datetimepicker({
+            format: 'DD.MM.YYYY HH:mm',
+            icons: {
+                time: 'fa fa-clock',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-check',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+        $('._lineitemname').on('click', function(){
+            $("#lineitemname").val($(this).text());
+        });
+        $('._lineitemquantity').on('click', function(){
+            $("#lineitemquantity").val($(this).text());
+        });
+        $('#lineitemstatus').on('change', function(){
+            changeItemStatus();
+        });
+        function changeItemStatus(){
+            if($('#lineitemstatus').val() == "PAID") {
+                $('._divPaidDate').show();
+                $('#paiddate').attr('required', true);
+            }else{
+                $('._divPaidDate').hide();
+                $('#paiddate').attr('required', false);
+            }
+        }
+        $("#btn_save_lineitem").on('click', function(){
+            if (!$("#create_line_item")[0].checkValidity()) {
+                $("#create_line_item").addClass('was-validated');
+                return false;
+            }
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:save-project-lineitem-ajax' %}",
+                data: {
+                    "line_id": $('#line_id').val(),
+                    "project_id": '{{ project.id }}',
+                    "status": $('#lineitemstatus').val(),
+                    "cost": $('#lineitemcost').val(),
+                    "name": $('#lineitemname').val(),
+                    "price": $('#lineitemprice').val(),
+                    "description": $('#description').val(),
+                    "quantity": $('#lineitemquantity').val(),
+                    "paiddate": $('#paiddate').val(),
+                    "video_id": $('#lineitemvideo').val(),
+                },
+                type: 'POST',
+                success: function (data) {
+                    if (data.status){
+                        location.reload();
+                    }else{
+                        swal({
+                            icon: "waring",
+                                title: `There has been an error`,
+                                text: "ERROR: " + data.message,
+                                confirmButtonClass: "btn-danger",
+                            });
+                    }
+                    
+                },
+
+            });
+        });
+        $("#lineitemcost").on('keyup', function(){
+            changePrice();
+        });
+        $("#lineitemprice").on('keyup', function(){
+            changePrice();
+        });
+        $("#lineitemquantity").on('keyup', function(){
+            changePrice();
+        });
+        function changePrice(){
+            var cost = $("#lineitemcost").val();
+            var price = $("#lineitemprice").val();
+            var quantity = $("#lineitemquantity").val();
+
+            console.log(cost, quantity, price);
+            if (!isNaN(cost) && !isNaN(quantity)){
+                $('#total_cost').html(cost * quantity);
+            }
+            if (!isNaN(price) && !isNaN(quantity)){
+                $('#total_price').html(price * quantity);
+            }
+        }
+        $(".btn_edit_lineitem").on('click', function(){
+            $("#sp_title").html('Edit line item for this project');
+            $("#btn_save_lineitem").html('Save');
+            $('#line_id').val($(this).data('id'));
+            $('#lineitemstatus').val($(this).data('status'));
+            changeItemStatus();
+
+            $('#lineitemcost').val($(this).data('cost'));
+            $('#lineitemname').val($(this).data('name'));
+            $('#lineitemprice').val($(this).data('price'));
+            $('#description').val($(this).data('description'));
+            $('#lineitemquantity').val($(this).data('quantity'));
+            $('#paiddate').val($(this).data('paid'));
+            $('#lineitemvideo').val($(this).data('video-id'));
+            changePrice();
+            $("#collapseNewLineItem").addClass('show');
+
+        });
+        $(".btn_delete_lineitem").on('click', function(){
+            var line_id = $(this).data('id');
+            swal({
+                    title: `Do you really want to delete this LineItem?`,
+                    text: "You will not be able to recover this LineItem!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "No, cancel plx!",
+                },
+                function(isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-projectlineitem-ajax' %}",
+                            data: {
+                                "line_id": line_id,
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                location.reload();
+                            }
+                        });
+                    }
+                }
+            );
+        });
+        
+        function copyToClipboard(text, el) {
+            var copyTest = document.queryCommandSupported('copy');
+            var elOriginalText = el.attr('data-original-title');
+
+            if (copyTest === true) {
+                var copyTextArea = document.createElement("textarea");
+                copyTextArea.value = text;
+                document.body.appendChild(copyTextArea);
+                copyTextArea.select();
+                try {
+                    var successful = document.execCommand('copy');
+                    var msg = successful ? 'Copied!' : 'Whoops, not copied!';
+                    el.attr('data-original-title', msg).tooltip('show');
+                } catch (err) {
+                    console.log('Oops, unable to copy');
+                }
+                document.body.removeChild(copyTextArea);
+                el.attr('data-original-title', elOriginalText);
+            } else {
+                // Fallback if browser doesn't support .execCommand('copy')
+                window.prompt("Copy to clipboard: Ctrl+C or Command+C, Enter", text);
+            }
+        }
+
+        $(document).ready(function() {
+            // Initialize
+            // ---------------------------------------------------------------------
+
+            // Tooltips
+            // Requires Bootstrap 3 for functionality
+            $('.js-tooltip').tooltip();
+
+            // Copy to clipboard
+            // Grab any text in the attribute 'data-copy' and pass it to the 
+            // copy function
+            $('.js-copy').click(function() {
+                text = $('#data-copy').text();
+                var el = $(this);
+                copyToClipboard(text, el);
+            });
+        });
+
+
+    </script>
+{% endblock %}
+
+

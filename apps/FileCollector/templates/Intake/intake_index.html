@@ -1,0 +1,230 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% load humanize %}
+{% block title %}FileCollector - Dashboard {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="sunset"></i></div>
+                        Intakes
+                    </h1>
+                    <div class="page-header-subtitle">These are all incoming transmissions from our clients</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- Main page content-->
+<div class="container mt-n10">
+    <div class="card mb-4">
+        <div class="card-header ">List of the last Intakes</div>
+        <div class="card-body">
+
+
+                 <div class=" table-billing-history text-sm table-borderless  mb-0 datatable">
+                        <table class="table table-responsive-sm table-hover text-xs p-0 " id="dataTable" width="100%" cellspacing="0" >
+                    <thead>
+                    <tr class="border-bottom ">
+                        <th class="border-gray-200 col-sm-1" scope="col">Origin</th>
+                        <th class="border-gray-200 col-sm-3" scope="col">Client/Company</th>
+                        <th class="border-gray-200 col-sm-1" scope="col">Files/Size</th>
+                        <th class="border-gray-200 col-sm-2" scope="col">Order</th>
+                        <th class="border-gray-200 col-sm-2" scope="col">Project</th>
+                        <th class="border-gray-200 col-sm-2" scope="col">Created</th>
+                        <th class="border-gray-200 col-sm-1" scope="col">Action</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    {% if latest_intakes_list %}
+                    {% for intake in latest_intakes_list %}
+                    <tr class="border-top text-xs ">
+                        <!--<td><a href="{% url 'FileCollector:intake_detail' intake.id %}"><button class="btn btn-outline-dark btn-sm" type="button">{{intake.id}}</button></a></td>-->
+                        <td class="pt-3"><a href="{% url 'FileCollector:intake_detail' intake.id %}" class="fw-600">{{ intake.sender }}</a></td>
+                        <td>
+                            <div class=" div_client_edit" data-id="{{ intake.id }}">
+                                {% if intake.order %}
+                                <div><a href="{% url 'FileCollector:client_detail' intake.order.client.id %}">{{intake.order.client.firstname}} {{intake.order.client.lastname}}</a></div><br>
+                                <a href="{% url 'FileCollector:company_detail' intake.client.company.id %}" class="fw-300 text-body">{{intake.order.client.company}}</a>
+                                {% elif intake.client %}
+                                <span><a href="{% url 'FileCollector:client_detail' intake.client.id %}">{{intake.order.client.firstname}} {{intake.client}}</a></span><br>
+                                <a href="{% url 'FileCollector:company_detail' intake.client.company.id %}" class="fw-300 text-body">{{intake.client.company}}</a>
+                                {% else %}
+                                <span class="text-xs">N/A</span>
+                                {% endif %}
+                                <button class="btn_client_edit btn btn-datatable btn-sm btn-transparent-dark ml-2" data-id="{{ intake.id }}"><i data-feather="edit"></i></button>
+                            </div>
+            </div>
+            </td>
+            <td>{{ intake.files_count }} Files<br>({{ intake.total_size|filesize_format }})</td>
+            <td>
+                <div class="align-items-center div_order_edit" data-id="{{ intake.id }}">
+                    {% if intake.order %}
+                    <a href="{% url 'FileCollector:orders_detail' intake.order.id %}">
+                        <button class="btn btn-outline-teal btn-sm" type="button">{{intake.order.id}}</button></a>
+
+                    {% endif %}
+                    {% if intake.client is not None %}
+                    <button class="btn_order_edit btn-datatable btn-icon btn-transparent-dark ml-2" data-id="{{ intake.id }}" data-client-id="{{ intake.client.id }}"><i data-feather="edit"></i></button>
+                    {% endif %}
+
+                </div>
+            </td>
+            <td>
+                <div class="  align-items-center div_project_edit" data-id="{{ intake.id }}">
+                    {% if intake.project %}
+                    <a href="{% url 'FileCollector:project_detail' intake.project.id %}">
+                        <button class="btn btn-outline-secondary btn-sm" type="button">{{intake.project.name}}</button></a>
+                    </a>
+                    {% endif %}
+                    {% if intake.client is not None %}
+
+                    <button class="btn_project_edit btn-datatable btn-icon btn-transparent-dark ml-2" data-id="{{ intake.id }}" data-client-id="{{ intake.client.id }}"><i data-feather="edit"></i></button>
+                    {% endif %}
+                </div>
+        </div>
+        </td>
+        <td>{{intake.created|date:"d-m-y (H:i)"}}<br><span class="text-xs">{{intake.created|naturaltime}}</span></td>
+        <td>
+            <button class="btn_delete btn btn-datatable btn-sm btn-transparent-dark" data-id="{{ line.id }}"><i data-feather="trash-2"></i></button>
+        </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <p>No intakes are available.</p>
+        {% endif %}
+        </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+        $(".btn_client_edit").on('click', function(){
+            //console.log("AAAA");
+            var line_id = $(this).data('id');
+            var lineStatusHtml = '<div class="col-sm ">';
+            lineStatusHtml += '<select id="clientEditSelect" class="form-select form-select-sm ml-0 mb-2 w-75 mr-2 mt-2 text-xs" style=" display: initial;">';
+            {% for client in clients %}
+                lineStatusHtml += '<option value="{{client.id}}">{{client.lastname}}, {{client.firstname}} ({{client.company}})</option>';
+            {% endfor %}
+            lineStatusHtml += '</select>';
+            lineStatusHtml += '<button id="btn_client_save" class="btn btn-green btn-sm ps-2 pe-2 pt-1 pb-1 mt-0" data-id="' + line_id + '" type="button">Save</button>';
+            lineStatusHtml += '</div>';
+            console.log(lineStatusHtml);
+            $('.div_client_edit[data-id="' + line_id + '"]').html(lineStatusHtml);
+            
+            $('#btn_client_save').click(function(){
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:change-intake-client' %}",
+                    data: {
+                        "client_id": $("#clientEditSelect").val(),
+                        "intake_id": $(this).data("id")
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        location.reload();
+                    }
+                });
+            });
+        });
+        $(".btn_order_edit").on('click', function(){
+            var line_id = $(this).data('id');
+            var client_id = $(this).data('client-id');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:get-intake-order-available' %}",
+                data: {
+                    "client_id": client_id
+                },
+                type: 'POST',
+                success: function (data) {
+                    if(data.order_objs){
+                        var isEmpty = true;
+                        var lineStatusHtml = '<div class="col-sm ">';
+                        lineStatusHtml += '<select id="orderEditSelect" class="form-select form-select-sm ml-0 mb-2 w-50 me-1 mt-2 text-xs" style="display: initial;">';
+                        $.each( data.order_objs, function( key, value ) {
+                            lineStatusHtml += `<option value="${value}">${value}</option>`;
+                            isEmpty = false;
+                        });
+                        lineStatusHtml += '</select>';
+                        lineStatusHtml += '<button id="btn_order_save" class="btn btn-green btn-sm ps-2 pe-2 pt-1 pb-1 mt-0" data-id="' + line_id + '" type="button">Save</button>';
+                        lineStatusHtml += '</div>';
+                        if (!isEmpty){
+                            $('.div_order_edit[data-id="' + line_id + '"]').html(lineStatusHtml);
+                            $('#btn_order_save').click(function(){
+                                $.ajax({
+                                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                                    url: "{% url 'FileCollector:change-intake-order' %}",
+                                    data: {
+                                        "order_id": $("#orderEditSelect").val(),
+                                        "intake_id": $(this).data("id")
+                                    },
+                                    type: 'POST',
+                                    success: function (data) {
+                                        location.reload();
+                                    }
+                                });
+                            });
+                        }
+                        
+                    }
+                }
+            });
+            
+        });
+        $(".btn_project_edit").on('click', function(){
+            var line_id = $(this).data('id');
+            var client_id = $(this).data('client-id');
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:get-intake-project-available' %}",
+                data: {
+                    "client_id": client_id
+                },
+                type: 'POST',
+                success: function (data) {
+                    if(data.project_objs){
+                        var isEmpty = true;
+                        var lineStatusHtml = '<div class="col-sm">';
+                        lineStatusHtml += '<select id="projectEditSelect" class="form-select form-select-sm ml-0 mb-2 w-50 me-1 mt-2 text-xs" style="display: initial;">';
+                        $.each( data.project_objs, function( key, value ) {
+                            lineStatusHtml += `<option value="${value[0]}">${value[1]}</option>`;
+                            isEmpty = false;
+                        });
+                        lineStatusHtml += '</select>';
+                        lineStatusHtml += '<button id="btn_project_save" class="btn btn-green btn-sm ps-2 pe-2 pt-1 pb-1 mt-0" data-id="' + line_id + '" type="button">Save</button>';
+                        lineStatusHtml += '</div>';
+                        if (!isEmpty){
+                            $('.div_project_edit[data-id="' + line_id + '"]').html(lineStatusHtml);
+                            $('#btn_project_save').click(function(){
+                                $.ajax({
+                                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                                    url: "{% url 'FileCollector:change-intake-project' %}",
+                                    data: {
+                                        "project_id": $("#projectEditSelect").val(),
+                                        "intake_id": $(this).data("id")
+                                    },
+                                    type: 'POST',
+                                    success: function (data) {
+                                        location.reload();
+                                    }
+                                });
+                            });
+                        }
+                        
+                    }
+                }
+            });
+            
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% block title %}Create a new project{% endblock %}
+{% block style_css %}
+<style>
+
+    .del-asset:hover{
+        color: #FF0000;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+{% block content %}
+    <!-- start page content-->
+    <header class="page-header page-header-light bg-white bg-shadow pb-10">
+        <div class="container">
+            <div class="page-header-content pt-4">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-auto mt-4">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="list"></i></div>
+                            Create a new project
+                        </h1>
+                        <div class="page-header-subtitle">Here you can create a new project</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mt-n10">
+        {% include "Projects/project_info.html" with is_editable=True %}
+    </div>
+
+<!-- End page content -->
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript">
+
+</script>
+{% endblock %}

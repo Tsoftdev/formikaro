@@ -1,0 +1,676 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% block title %}Order Detailed View {% endblock %}
+{% block style_css %}
+<style>
+
+    .del-asset:hover{
+        color: #FF0000;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<!-- start page content--
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+    <div class="container">
+        <div class="page-header-content pt-4">
+            <div class="row align-items-center justify-content-between">
+                <div class="col-auto mt-4">
+                    <h1 class="page-header-title">
+                        <div class="page-header-icon"><i data-feather="list"></i></div>
+                        Create a new project
+
+                    </h1>
+                    <div class="page-header-subtitle">Here you can create a new project</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>-->
+       <main>
+                    <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                        <div class="container-xl px-4">
+                            <div class="page-header-content">
+                                <div class="row align-items-center justify-content-between pt-3">
+                                    <div class="col-auto mb-3">
+                                        <h1 class="page-header-title">
+                                             <div class="page-header-icon"><i data-feather="list"></i></div>
+                        Create a new project
+                                        </h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+    <div class="container-xl px-4 mt-4">
+                        <!-- Account page navigation-->
+                        <nav class="nav nav-borders">
+                            <a class="nav-link ms-0" href="account-profile.html">General</a>
+                            <a class="nav-link active" href="account-billing.html">Line items</a>
+                            <a class="nav-link" href="account-notifications.html">Notifications</a>
+                        </nav>
+                        <hr class="mt-0 mb-4" />
+                        <div class="row">
+                            <div class="col-lg-4 mb-4">
+                                <!-- Billing card 1-->
+                                <div class="card h-100 border-start-lg border-start-primary">
+                                    <div class="card-body">
+                                        <div class="small text-muted">Current monthly bill</div>
+                                        <div class="h3">$20.00</div>
+                                        <a class="text-arrow-icon small" href="#!">
+                                            Switch to yearly billing
+                                            <i data-feather="arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-4">
+                                <!-- Billing card 2-->
+                                <div class="card h-100 border-start-lg border-start-secondary">
+                                    <div class="card-body">
+                                        <div class="small text-muted">Next payment due</div>
+                                        <div class="h3">July 15</div>
+                                        <a class="text-arrow-icon small text-secondary" href="#!">
+                                            View payment history
+                                            <i data-feather="arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 mb-4">
+                                <!-- Billing card 3-->
+                                <div class="card h-100 border-start-lg border-start-success">
+                                    <div class="card-body">
+                                        <div class="small text-muted">Current plan</div>
+                                        <div class="h3 d-flex align-items-center">Freelancer</div>
+                                        <a class="text-arrow-icon small text-success" href="#!">
+                                            Upgrade plan
+                                            <i data-feather="arrow-right"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Billing history card-->
+                        <div class="card mb-4 card-header-actions mx-auto">
+                            <div class="card-header">
+                        Line items
+                        <div>
+                            <button class="btn btn-primary btn-sm">Add</button>
+                        </div>
+                    </div>
+                    <div>
+
+                            <div class="card-body p-0">
+                                <!-- Billing history table-->
+                                <div class="table-responsive table-billing-history">
+                                    <table class="table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-gray-200" scope="col">ID</th>
+                                                <th class="border-gray-200" scope="col">Name</th>
+                                                <th class="border-gray-200" scope="col">Date</th>
+                                                <th class="border-gray-200" scope="col">Cost</th>
+                                                <th class="border-gray-200" scope="col">Price</th>
+                                                <th class="border-gray-200" scope="col">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>#39201</td>
+                                                <td>Überstunde Drehteam</td>
+                                                <td>05.04.2021</td>
+                                                <td>€ 100,00</td>
+                                                <td>€ 150,00</td>
+                                                <td><span class="badge bg-light text-dark">Pending</span></td>
+                                            </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+<!-- END PAGE -->
+
+
+
+
+<div class="container mt-n10">
+
+    <div class="container mt-n10 mb-3">
+        <div class="row ">
+            <div class="col-4">
+                <div class="card mb-4">
+                    <div class="card-header">Company/Client information</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="companySelect">Company</label>
+                            <select class="form-control" name="companySelect" id="companySelect">
+                                <option>---</option>
+                                {% for company in companies %}
+                                <option value="{{company.id}}">{{company.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientSelect">Client</label>
+                            <select class="form-control" name="clientSelect" id="clientSelect">
+                            </select>
+                        </div>
+                        <hr>
+
+                        <div class="form-group">
+                            <label for="projectmanagerSelect">Projectmanager</label>
+                            <select class="form-control" name="projectmanagerSelect" id="projectmanagerSelect">
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="text-center">
+                                <span class="alert-danger valid_err_msg" style="display:none">Should be selected client or company, not global</span>
+                            </div>
+                        </div>
+                        <div class="product-details">
+
+                        </div>
+
+                    </div></div>
+
+
+            </div>
+            <div class="col-8">
+
+                <div class="card mb-4">
+                    <div class="card-header">General Details</div>
+                    <div class="card-body">
+                        <form>
+                            <!-- Form Group (project name)-->
+                            <div class="form-group  input-group-lg">
+                                <label class="small mb-1" for="inputProject">Project name (will be used accross the system to identify this project)</label>
+                                <input class="form-control" id="inputProject" type="text" placeholder="My project" value="project name" />
+                            </div>
+                            <!-- Form Row-->
+                            <div class="form-row">
+                                <!-- Form Group (abbreviation)-->
+                                <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="inputFirstName">Abbreviation</label>
+                                    <input class="form-control" id="inputFirstName" type="text" aria-label="this will mark all output files of this project" placeholder="Enter the project abbreviation" value="ABR" />
+                                </div>
+                                <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="inputshootingdays">Shooting days</label>
+                                     <div class="input-group mb-3">
+                                   <input class="form-control" id="inputshootingdays" type="text" placeholder="Enter number of shooting days" value="1" />
+                                     <div class="dropdown">
+                                        <button class="btn dropdown-toggle" id="dropdownShootingDaysPreset" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#!">0.5</a>
+                                            <a class="dropdown-item" href="#!">1</a>
+                                            <a class="dropdown-item" href="#!">1.5</a>
+                                            <a class="dropdown-item" href="#!">2</a>
+                                            <a class="dropdown-item" href="#!">2.5</a>
+                                            <a class="dropdown-item" href="#!">3</a>
+                                        </div>
+                                     </div></div>
+                                </div>
+                                  <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="reportrange">Deadline</label>
+                                    <button class="btn btn-light btn-sm line-height-normal p-3 form-control" id="reportrange">
+                                        <i class="mr-2 text-primary" data-feather="calendar"></i>
+                                        <span></span>
+                                        <i class="ml-1" data-feather="chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <hr>
+                            <!-- Form Row        -->
+                            <div class="form-row">
+                                <!-- Form Group (organization name)-->
+                                <div class="form-group col-md-12">
+                                    <label class="small mb-1" for="inputOrgName">Project description</label>
+                                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="10"></textarea>
+                                </div>
+                                <!-- Form Group (location)-->
+
+                            </div>
+                            <!-- Form Group (email address)-->
+                            <div class="row justify-content-end">
+
+                            <!-- Form Row-->
+
+                            <!-- Save changes button-->
+                            <button class="btn btn-primary" type="button">Create project</button>
+                                  </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+            <div class="row justify-content-end">
+                    <div class="col-1 ml-10" >
+                        <button class="btn btn-transparent-dark btn-icon mb-2 ml-5" type="button"><i class="feather-icon" data-feather="plus" alt="Add another video"></i></button>
+
+
+                    </div>
+            </div>
+        <!-- SALE INFO -->
+          <div class="row">
+                     <div class="col-12">
+
+                              <div class="card mb-4 card-header-actions mx-auto">
+
+                    <div class="card-header">
+                        Line items
+                        <div>
+
+<!--                            <button class="btn btn-primary btn-sm">Add</button>-->
+                        </div>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <label for="videotitle_1">Item name</label>
+                                <input type="text" class="form-control" name="videotitle_1" id="videotitle_1" aria-label="Video title">
+
+                            </div>
+                              <div class="form-row mt-4 ">
+
+                                <div class="col">
+                                <label for="projectbudget">Cost</label>
+                                <div class="input-group mb-3">
+
+                                    <span class="input-group-text">€</span>
+                                    <input type="text" class="form-control" name="projectbudget" id="projectbudget" aria-label="Amount (to the nearest dollar)">
+                                    <span class="input-group-text text-xs">(net)</span>
+                                </div>
+                                    </div>
+                                <div class="col">
+                                <label for="projectbudget">Price</label>
+                                    <div class="input-group mb-3">
+
+                                    <span class="input-group-text">€</span>
+                                    <input type="text" class="form-control" name="projectbudget" id="projectbudget" aria-label="Amount (to the nearest dollar)">
+                                    <span class="input-group-text text-xs">(net)</span>
+                                </div>
+                                </div>
+                                                <div class="form-group col-md-4">
+                                    <label class="small mb-1" for="reportrange">Date</label>
+                                    <button class="btn btn-light btn-sm line-height-normal p-3 form-control" id="reportrange">
+                                        <i class="mr-2 text-primary" data-feather="calendar"></i>
+                                        <span></span>
+                                        <i class="ml-1" data-feather="chevron-down"></i>
+                                    </button>
+                                </div>
+
+
+
+                            </div>
+                             <div class="row">
+                                <!-- Form Group (organization name)-->
+                                <div class="form-group col-md-12">
+                                    <label class="small mb-1" for="videodescription_1">Line item description</label>
+                                    <textarea class="form-control" id="videodescription_1" rows="10"></textarea>
+                                </div>
+                                <!-- Form Group (location)-->
+
+                            </div>
+                        </div>
+<!-- <button class="btn btn-dark btn_create">Create Project</button>-->
+                    </div>
+                </div>
+
+
+
+
+</div>
+        </div>
+        <!-- END SALE INFO -->
+
+
+                <div class="row">
+                     <div class="col-12">
+
+                    <!-- START VIDEO -->
+                              <div class="card mb-4 card-header-actions mx-auto">
+
+                    <div class="card-header">
+                        Video #1 specifications
+                        <div>
+
+<!--                            <button class="btn btn-primary btn-sm">Add</button>-->
+                        </div>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="form-row">
+                                <label for="videotitle_1">Video title</label>
+                                <input type="text" class="form-control" name="videotitle_1" id="videotitle_1" aria-label="Video title">
+
+                            </div>
+                              <div class="form-row mt-4 ">
+                                <div class="col-2">
+                                <label for="videoruntime">Runtime</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" name="videoruntime" id="videoruntime" aria-label="">
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#!">1</a>
+                                            <a class="dropdown-item" href="#!">2</a>
+                                            <a class="dropdown-item" href="#!">3</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                </div>
+                                <div class="col">
+                                <label for="projectbudget">Budget</label>
+                                <div class="input-group mb-3">
+
+                                    <span class="input-group-text">€</span>
+                                    <input type="text" class="form-control" name="projectbudget" id="projectbudget" aria-label="Amount (to the nearest dollar)">
+                                    <span class="input-group-text text-xs">(net)</span>
+                                </div>
+                                    </div>
+                                <div class="col">
+                                <label for="projectbudget">Paid (already)</label>
+                                <div class="input-group mb-3">
+
+                                    <span class="input-group-text">€</span>
+                                    <input type="text" class="form-control" name="projectbudget" id="projectbudget" aria-label="Amount (to the nearest dollar)">
+                                    <span class="input-group-text text-xs">(net)</span>
+                                </div>
+                                </div>
+
+                                <div class="col">
+                                <label for="projectbudget">Feedback loops</label>
+                                <div class="input-group mb-3">
+                                    <input type="text" class="form-control" name="projectbudget" id="projectbudget" aria-label="Amount (to the nearest dollar)">
+                                    <div class="dropdown">
+                                        <button class="btn dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item" href="#!">1</a>
+                                            <a class="dropdown-item" href="#!">2</a>
+                                            <a class="dropdown-item" href="#!">3</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            </div>
+                             <div class="row">
+                                <!-- Form Group (organization name)-->
+                                <div class="form-group col-md-12">
+                                    <label class="small mb-1" for="videodescription_1">Video description</label>
+                                    <textarea class="form-control" id="videodescription_1" rows="10"></textarea>
+                                </div>
+                                <!-- Form Group (location)-->
+
+                            </div>
+                        </div>
+<!-- <button class="btn btn-dark btn_create">Create Project</button>-->
+                    </div>
+                </div>
+                <!-- END VIDEO -->
+
+
+
+</div>
+        </div>
+    </div>
+    <div class="row">
+    </div>
+</div>
+
+<!-- End page content -->
+
+
+
+{% endblock %}
+{% block javascript %}
+<script type="text/javascript">
+    var selected_products;
+    var client_data;
+    var company_assets = [];
+    var client_assets = [];
+    var canSaveProducts = {};
+
+    $productMuti = $("#productSelect").select2();
+    $('#productSelect').on('select2:select', function (e) {
+        var data = e.params.data;
+        selected_products = $('#productSelect').val();
+        appendProductDetail(data);
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+
+    });
+    $('#productSelect').on('select2:unselect', function (e) {
+        var data = e.params.data;
+        $("#prod_detail_" + data.id).remove();
+        delete canSaveProducts[data.id+"a"];
+        selected_products = $('#productSelect').val();
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+    });
+    $("#clientSelect").change(function(){
+        clearProductDetail();
+        getClientAssets($("#clientSelect").val());
+    })
+
+    $('#companySelect').change(function(){
+        clearProductDetail();
+        $("#clientSelect").html("");
+        company_assets = [];
+        client_data = [];
+        client_assets = [];
+        $.ajax({
+            type:"GET",
+            dataType: 'json',
+            url: "/selectclients",
+            data:{
+                company_id: companySelect.value
+            },
+            success: function( data ) { 
+                console.log(data)
+                $("#clientSelect").html("");
+                company_assets = JSON.parse(data["company_assets"]);
+                client_data = data["clients"];
+                if (client_data != '')
+                {
+                    client_data.forEach(function(client){
+                        $("#clientSelect").append("<option value=\"" + client["id"] +"\">"+ client["name"] + "</option>");
+                    })
+                }
+                getClientAssets($("#clientSelect").val());
+            }
+        })
+    });
+
+    $('.btn_create').on('click', function(){
+        var bValid = validSelection();
+        if (bValid){
+            $(".valid_err_msg").hide();
+            $( ".asset-edit" ).each(function( index ) {
+                canSaveProducts[$( this ).data('prod-id')+"a"]["new_asset"] = [];
+            });
+            $( ".asset-edit" ).each(function( index ) {
+                var owner_type = $('.asset-owner').eq(index).val();
+
+                canSaveProducts[$( this ).data('prod-id')+"a"]["new_asset"].push({
+                    "asset_id": $( this ).data('asset-id'),
+                    "asset_type_id": $( this ).data('asset-type-id'), 
+                    "asset_name": $( this ).data('asset-name'), 
+                    "value": $(this).val(),
+                    "org_value": $( this ).data('org-value'),
+                    "owner_type": owner_type,
+                    "org_type": $( this ).data('org-type')
+                });
+            });
+            console.log(canSaveProducts);
+
+            var data = {
+                client_id: $("#clientSelect").val(),
+                company_id: $("#companySelect").val(),
+                prod_data: canSaveProducts
+            }
+            console.log(JSON.stringify(data));
+            $.ajax({
+                headers: { "X-CSRFToken": '{{csrf_token}}' },
+                url: "{% url 'FileCollector:create_ajax_order' %}",
+                data: {data: JSON.stringify(data)},
+                type: 'POST',
+                dataType: 'json',
+                success: function (data) {
+                    location.href = "{% url 'FileCollector:orders' %}";
+                }
+            });
+        }else{
+            console.log("Validation ERROR");
+            $(".valid_err_msg").show();
+        }
+
+    });
+    function validSelection(){
+        var bValid = true;
+        $( ".asset-owner" ).each(function() {
+            if ($(this).val() == null){
+                bValid = false;
+            }
+        });
+        return bValid;
+    }
+    function deleteProduct(sel_id){
+        delete canSaveProducts[sel_id+""];
+        $("#prod_detail_" + sel_id).remove();
+        selected_products.splice(selected_products.indexOf(sel_id.toString()), 1);
+        $productMuti.val(selected_products).trigger("change");
+        if (validSelection()){
+            $(".valid_err_msg").hide();
+        }else{
+            $(".valid_err_msg").show();
+        }
+    }
+    function getClientAssets(client_id){
+        client_assets = [];
+        for (var i=0; i < client_data.length; i++){
+            if (client_data[i]["id"] == client_id){
+                client_assets = JSON.parse(client_data[i]["assets"]);
+                break;
+            }
+        }
+    }
+    function appendProductDetail(data){
+        console.log(client_assets);
+        console.log(company_assets);
+        var existAsset = [];
+
+        var prodHtml = '<div class="form-group" id="prod_detail_' + data.id + '">';
+        prodHtml += '<div class="row mb-2">';
+        prodHtml += '<div class="col-11">';
+        prodHtml += '<h4>' + data.text + '</h4>'
+        prodHtml += '</div>';
+        prodHtml += '<div class="col-1">';
+        prodHtml += '<span class="del-asset" onclick="deleteProduct(' + data.id + ')">[X]</span>';
+        prodHtml += '</div>';
+        prodHtml += '</div>';
+
+        {%  for prod in products  %}
+        if ('{{prod.id}}' == data.id){
+            {%  for asset in prod.base.assets.all %}
+            var exsitAssetItem = isExistAsset('{{ asset.name }}');
+
+             prodHtml += '<div class="row mt-2">';
+             prodHtml += '<div class="col-5">';
+             prodHtml += '<label>{{ asset }}</label>';
+             prodHtml += '</div>';
+             prodHtml += '<div class="col-5">';
+             if (exsitAssetItem.asset_id > 0){
+                 prodHtml += '<input type="text" class="form-control asset-edit" value="' + exsitAssetItem.value + '" data-org-value="' + exsitAssetItem.value + '" data-org-type="'+ exsitAssetItem.type +'" data-prod-id="{{ prod.id }}" data-asset-id="' + exsitAssetItem.asset_id + '" data-asset-name="{{ asset.name }}" data-asset-type-id="{{ asset.assettype.id }}" maxlength="' + exsitAssetItem.maxlength + '">';
+                 existAsset.push(exsitAssetItem.asset_id)
+             }else{
+                 prodHtml += '<input type="text" class="form-control asset-edit" value="{{ asset.value|default_if_none:"" }}" data-org-value="' + exsitAssetItem.value + '"data-org-type="'+ exsitAssetItem.type +'" data-prod-id="{{ prod.id }}" data-asset-id="{{asset.id}}" data-asset-name="{{ asset.name }}" data-asset-type-id="{{ asset.assettype.id }}" maxlength="{{ asset.assettype.maxlength }}">';
+             }
+
+             prodHtml += '</div>';
+             prodHtml += '<div class="col-2">';
+             prodHtml += '<select class="form-control pl-1 pr-1 asset-owner" name="owner_select">';
+             if (exsitAssetItem.asset_id == 0){
+                 if(exsitAssetItem.type == "-1"){
+                     prodHtml += '<option value="-1" selected disabled>Global</option>';
+                 }else{
+                     prodHtml += '<option value="-1" disabled>Global</option>';
+                 }
+             }
+
+             if(exsitAssetItem.type == "0"){
+                 prodHtml += '<option value="0" selected>Client</option>';
+             }else{
+                 prodHtml += '<option value="0">Client</option>';
+             }
+             if(exsitAssetItem.type == "1"){
+                 prodHtml += '<option value="1" selected>Company</option>';
+             }else{
+                 prodHtml += '<option value="1">Company</option>';
+             }
+
+
+             prodHtml += '</select>';
+             prodHtml += '</div>';
+
+             prodHtml += '</div>';
+             {% endfor %}
+             }
+             {% endfor %}
+             prodHtml += '<hr>';
+              prodHtml += '</div>';
+              canSaveProducts[data.id+"a"] = {"existAsset": existAsset};
+              canSaveProducts[data.id+"a"]["new_asset"] = []
+              $(".product-details").append(prodHtml);
+              $(".asset-owner").on('change', function(){
+                  if (validSelection()){
+                      $(".valid_err_msg").hide();
+                  }else{
+                      $(".valid_err_msg").show();
+                  }
+              })
+
+             }
+             function isExistAsset(asset_name){
+                 console.log(asset_name)
+                 for (var i=0; i < client_assets.length; i++){
+                     if (client_assets[i]["name"] == asset_name){
+                         console.log('client have asset', asset_name);
+                         return { asset_id: client_assets[i]["id"], value: client_assets[i]["value"], type: "0", maxlength: client_assets[i]["maxlength"]};
+                     }
+                 }
+                 for (var i=0; i < company_assets.length; i++){
+                     if (company_assets[i]["name"] == asset_name){
+                         console.log('company have asset', asset_name);
+                         return { asset_id: company_assets[i]["id"], value: company_assets[i]["value"], type: "1", maxlength: company_assets[i]["maxlength"]};
+                     }
+                 }
+                 console.log('not exist asset', asset_name);
+                 return { asset_id: 0, value: "", type: "-1", maxlength: ''};
+             }
+             function clearProductDetail(){
+                 canSaveProducts = {};
+                 selected_products = [];
+                 $productMuti.val([]).trigger("change");
+                 $(".product-details").html("");
+                 $(".valid_err_msg").hide();
+             }
+</script>
+{% endblock %}

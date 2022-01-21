@@ -1,0 +1,237 @@
+{% load humanize %}
+{% load custom_tags %}
+<!-- START VIDEO -->
+<div id="card_camera_{{order_number}}">
+    <form id="create_camera_form_{{order_number}}" class="needs-validation" novalidate>
+        <!-- CAMERA SETTING ENTRY START -->
+        <div class="card mb-4 card-header-actions mx-auto " >
+            <div class="card-header">
+                Camera #{{order_number}}
+                <b class="btn btn-sm btn-icon  text-muted" id="btn_del_camera_{{order_number}}">
+                    <i class="feather-icon" data-feather="trash" alt="Delete this camera entry" ></i>
+                </b>
+            </div>
+            <div class="card-body">
+                <div class="form-row row mt-1">
+                    <div class="form-group col-md-4">
+                        <label class="mb-1 font-weight-bolder" for="settingname_{{order_number}}">Name</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="camera #1,..." id="settingname_{{order_number}}" required value="{{ setting.name }}">
+                            <button class="btn dropdown-toggle bg-light" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">A Camera</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">B Camera</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">Action Camera #1</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">Action Camera #2</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">Action Camera #3</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">C Camera</a>
+                                <a class="dropdown-item _settingname_{{order_number}}" href="javascript:void(0);">D Camera</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="mb-1 small" for="operator_{{order_number}}">Operator</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group mb-3">
+                                <select class="form-control" id="operator_{{order_number}}">
+                                    {% for item in crews %}
+                                    {% if item.role.name == "PERSON_IS_OPERATOR" %}
+                                    <option value="{{ item.id }}">{{ item.person.firstname }} {{ item.person.lastname }}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+
+                        <label class="mb-1 small" for="cameraname_{{order_number}}">Camera</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="camera #1,..." id="cameraname_{{order_number}}" required value="{{ setting.camera }}">
+                            <button class="btn dropdown-toggle bg-light" type="button" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _cameraname_{{order_number}}" href="javascript:void(0);">Sony A7Sii</a>
+                                <a class="dropdown-item _cameraname_{{order_number}}" href="javascript:void(0);">Sony A7Siii</a>
+                                <a class="dropdown-item _cameraname_{{order_number}}" href="javascript:void(0);">BMPCC4K</a>
+                                <a class="dropdown-item _cameraname_{{order_number}}" href="javascript:void(0);">BMPCC6K</a>
+                                <a class="dropdown-item _cameraname_{{order_number}}" href="javascript:void(0);">Canon C300</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row row mt-1">
+                    <div class="form-group col-md-3">
+                        <label class="mb-1 small" for="whitebalance_{{order_number}}">White balance</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="5600" id="whitebalance_{{order_number}}" required  value="{{ setting.whitebalance }}">
+                            <button class="btn dropdown-toggle bg-light" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _whitebalance_{{order_number}}" href="javascript:void(0);">3200</a>
+                                <a class="dropdown-item _whitebalance_{{order_number}}" href="javascript:void(0);">4700</a>
+                                <a class="dropdown-item _whitebalance_{{order_number}}" href="javascript:void(0);">5600</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="mb-1 small" for="framerate_{{order_number}}">Framerate</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="camera #1,..." id="framerate_{{order_number}}" required value="{{ setting.framerate }}">
+                            <button class="btn dropdown-toggle bg-light" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _framerate_{{order_number}}" href="javascript:void(0);">24</a>
+                                <a class="dropdown-item _framerate_{{order_number}}" href="javascript:void(0);">25</a>
+                                <a class="dropdown-item _framerate_{{order_number}}" href="javascript:void(0);">30</a>
+                                <a class="dropdown-item _framerate_{{order_number}}" href="javascript:void(0);">50</a>
+                                <a class="dropdown-item _framerate_{{order_number}}" href="javascript:void(0);">100</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="mb-1 small" for="videoformat_{{order_number}}">Videoformat</label>
+                        <div class="input-group mb-3">
+                            <select class="form-control" id="videoformat_{{order_number}}">
+                                {% for item in videoformats %}
+                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="mb-1 small" for="colorprofile_{{order_number}}">Color profile</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Slog2" id="colorprofile_{{order_number}}" required value="{{ setting.colorprofile }}">
+                            <button class="btn dropdown-toggle bg-light" type="button" id="" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="dropdown-item _colorprofile_{{order_number}}" href="javascript:void(0);">Slog 2</a>
+                                <a class="dropdown-item _colorprofile_{{order_number}}" href="javascript:void(0);">Slog 3</a>
+                                <a class="dropdown-item _colorprofile_{{order_number}}" href="javascript:void(0);">BM</a>
+                                <a class="dropdown-item _colorprofile_{{order_number}}" href="javascript:void(0);">Canon..</a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="form-row row">
+                    <div class="form-group col-md-12">
+                        <label class="mb-1 small" for="settingremark_{{order_number}}">Remark</label>
+                        <div class="input-group mb-3">
+                            <textarea class="form-control" rows="4" id="settingremark_{{order_number}}">{{ setting.remark }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-end mt-2">
+                    <div class="col-1">
+                        <button id="btn_save_camera_{{order_number}}" class="btn btn-sm btn-primary" type="button">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- CAMERA SETTING ENTRY END -->
+        <input type="hidden" id="cameraID_{{order_number}}" value="{{ camera_id }}" />
+        <input type="hidden" id="shootID_{{order_number}}" value="{{ shoot_id }}" />
+    </form>
+</div>
+<!-- END VIDEO -->
+<script type="text/javascript">
+    {% if setting %}
+        $("#videoformat_{{order_number}}").val('{{ setting.videoformat.id }}');
+        $("#operator_{{order_number}}").val('{{ setting.operator.id }}');
+    {% endif %}
+    
+    $('._settingname_{{order_number}}').on('click', function(){
+        $("#settingname_{{order_number}}").val($(this).text());
+    });
+    $('._cameraname_{{order_number}}').on('click', function(){
+        $("#cameraname_{{order_number}}").val($(this).text());
+    });
+    $('._whitebalance_{{order_number}}').on('click', function(){
+        $("#whitebalance_{{order_number}}").val($(this).text());
+    });
+    $('._framerate_{{order_number}}').on('click', function(){
+        $("#framerate_{{order_number}}").val($(this).text());
+    });
+    $('._colorprofile_{{order_number}}').on('click', function(){
+        $("#colorprofile_{{order_number}}").val($(this).text());
+    });
+
+
+    $("#btn_del_camera_{{order_number}}").on('click', function(){
+        
+        swal({
+                title: `Do you really want to delete this Camera?`,
+                text: "You will not be able to recover this Camera!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            },
+            function(isConfirm) {
+                if (isConfirm) {
+                    var camera_id = $("#cameraID_{{order_number}}").val();
+                    if (camera_id != "-1"){
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-shootcamera-ajax' %}",
+                            data: {
+                                "camera_id": camera_id,
+                                "shoot_id": $('#shootID_{{order_number}}').val()
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                
+                            }
+                        });
+                    }
+                    $("#card_camera_{{order_number}}").remove();
+                }
+            }
+        );
+    });
+    $("#btn_save_camera_{{order_number}}").on('click', function(){
+        if (!$("#create_camera_form_{{order_number}}")[0].checkValidity()) {
+            $("#create_camera_form_{{order_number}}").addClass('was-validated');
+            return false;
+        }
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:save-shootcamera-ajax' %}",
+            data: {
+                "camera_id": $("#cameraID_{{order_number}}").val(),
+                "shoot_id": $('#shootID_{{order_number}}').val(),
+                "camera_name": $('#cameraname_{{order_number}}').val(),
+                "setting_name": $('#settingname_{{order_number}}').val(),
+                "operator": $('#operator_{{order_number}}').val(),
+                "videoformat": $('#videoformat_{{order_number}}').val(),
+                "whitebalance": $('#whitebalance_{{order_number}}').val(),
+                "framerate": $('#framerate_{{order_number}}').val(),
+                "colorprofle": $('#colorprofile_{{order_number}}').val(),
+                "remark": $('#settingremark_{{order_number}}').val()
+            },
+            type: 'POST',
+            success: function (data) {
+                if (data.status){
+                    Toastify({
+                        text: "Saved camera successfully",
+                        className: "info",
+                        style: {
+                          background: "linear-gradient(to right, #00b09b, #96c93d)",
+                        }
+                    }).showToast();
+                    $("#cameraID_{{order_number}}").val(data.camera_id);
+                }else{
+                    swal({
+                        icon: "waring",
+                            title: `There has been an error`,
+                            text: "ERROR: " + data.message,
+                            confirmButtonClass: "btn-danger",
+                        });
+                }
+                
+            },
+
+        });
+    });
+</script>

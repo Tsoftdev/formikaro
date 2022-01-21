@@ -1,0 +1,452 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+{% block title %}ProductBase Detailed View {% endblock %}
+{% block content %}
+    
+        <header class="page-header page-header-light bg-white bg-shadow pb-10">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="youtube"></i></div>
+                                Detail of ProductBase&nbsp;
+                                {% if user.is_staff %}
+                                <a target="_blank" href="{{product.get_admin_url}}"> [<strong>{{ productbase.fsin_base }}</strong>]</a>
+                                {% else %}
+                                [<strong>{{ productbase.fsin_base }}</strong>]
+                                {% endif %}
+                            </h1>
+                            <div class="page-header-subtitle">This is a {{ productbase.mode }} product. 
+                                {% if user.is_staff %}
+                                Admin: 
+                                <a target="_blank" href="{{productbase.get_admin_url}}">{{ productbase.name }}</a>
+                                {% endif %}
+                                <br>
+                                {% if productbase.owner.get_full_name %}
+                                Product owner is <strong>{{productbaseowner.get_full_name}}
+                                {% else %}
+                                No product owner assigned yet
+                                {% endif %}
+                                </strong></div><br >
+
+                            
+                        </div>
+                    </div>
+                </div>
+                
+               <div class="card mb-5">
+                    <div class="card-header">
+                        <ul class="nav nav-pills card-header-pills" id="cardPill" role="tablist">
+                            {% if productbase.mode == 'AE' %}
+                                <button class="btn btn-primary mr-2">After Effects</button>
+                            {% elif productbase.mode == 'PR' %}
+                                <button class="btn btn-secondary mr-2">Premiere</button>
+                            {% elif productbasemode == 'FO' %}
+                                <button class="btn btn-dark mr-2">FormikoBot</button>
+                            {% endif %}
+                            {% if productbase.needs_intake %}
+                                <button class="btn_need_intake btn btn-pink mr-2" data-intake="0">Needs Intake</button>
+                            {% else %}
+                                <button class="btn_need_intake btn btn-dark mr-2" data-intake="1">Need no Intake</button>
+                            {% endif %}
+                            {% if productbase.assets.all %}
+                                <button class="btn btn-pink mr-2">Needs Assets</button>
+                            {% else %}
+                                <button class="btn btn-dark mr-2">Needs no Assets</button>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container mt-n10">
+            <!-- Dashboard info widget 1-->
+            <div class="container mt-n10 mb-3">
+                <div class="row">
+                    <div class="col"> 
+
+                        <div class="card card-header-actions h-100">
+                            <div class="card-header ">
+                                <div><i class="text-dark-50" data-feather="file-plus"></i>Assets
+
+                                </div> 
+                                <div style="float: right">
+
+                                    <a href="{% url 'FileCollector:create_asset'  %}"><button class="btn btn-blue btn-sm">Create Asset</button></a> 
+                                    <button class="btn btn-blue btn-sm" type="button" data-toggle="modal" data-target="#staticBackdropAddAsset">Add Asset</button>
+                                </div>
+                                <!-- Modal -->
+                                <div class="modal fade" id="staticBackdropAddAsset" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <form id="addAssetForm" method="post" action="">
+                                            <input type="hidden" id="productbase_id" name="productbase_id" value="{{ productbase.id}}">
+                                            {% csrf_token %}
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="staticBackdropLabel">Add Asset to ProductBase {{ productbase }}</h5>
+                                                    <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                                </div>
+                                                <div class="modal-body">
+
+                                                    <div class="form-group">
+                                                        <span class="text-xs text-body">You can only select assets that are not owned by any company or client</span>
+                                                        <div class="input-group input-group-joined">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">
+                                                                    <i data-feather="search"></i>
+                                                                </span>
+                                                            </div>
+
+                                                            <input class="form-control" type="text" id="searchAsset" placeholder="Search assets..." aria-label="Search">
+
+                                                        </div></div>
+                                                    <div class="form-group">
+                                                        <label for="foundAssets" class="text-body">Found Assets</label><select class="form-control" id="foundAssets" name="foundAssets" multiple="">
+                                                        </select>
+                                                    </div>         
+
+                                                </div>
+                                                <div class="modal-footer"><button class="btn btn-secondary" type="button" data-dismiss="modal" id="buttonCloseAddAsset">Close</button><button class="btn btn-primary" type="submit" id="buttonAddAsset">ADD</button>
+
+
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div id="messageBox">
+                                    <div class="alert alert-success" role="alert" id="messageSuccess">
+                                        A success alert—check it out!
+                                    </div>
+                                    <div class="alert alert-danger" role="alert" id="messageError">
+                                        A success alert—check it out!
+                                    </div>
+                                </div>
+                                {% if productbase.assets.all %}
+                                    <div id="assetsContainer">
+                                    
+                                    </div>
+                                {% else %}
+                                <div class="text-xs text-center ">
+                                    <br><br><br><br><br>
+                                    no assets needed (or defined) for this product
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- MODAL ASSETs -->
+
+                    <div class="col-xl ">
+                        <div class="row"  >
+                            <div class="col mb-1" >
+                                <div class="card bg-primary border-0 h-100 ">
+                                    <div class="card-body ">
+                                        <h5 class="text-white-50">Operational</h5>
+                                        <div class="mb-4">
+                                            {% if product.orders_count %}
+                                            <span class="display-4 text-white">{{product.orders_count}} times ordered</span>
+                                            <span class="text-white-50">
+                                                <br/>({{product.failed_products_count}} error(s))</span>
+                                        {% else %}
+                                            <span class="text-white">not yet ordered</span>
+                                        {% endif %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <!-- it is either operation if it's not finished or it shows the next card 'production' with a summary of production time-->
+                                <div class="card bg-secondary border-0 h-100 " >
+                                    <div class="card-body ">
+                                        <h5 class="text-white-50">Scope</h5>
+                                        <div class="mb-4">
+                                            <span class="display-4 text-white">-</span>
+                                            <span class="text-white-50"><br />(run time)</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+
+            <hr class="mt-2 mb-4" />
+            <!-- Knowledge base main category card 1-->
+
+            <div class="card card-icon  mb-4">
+                <div class="row no-gutters">
+                    <div class="col-auto card-icon-aside bg-primary"><i class="text-white-50" data-feather="dollar-sign"></i></div>
+                    <div class="col">
+
+                        <div class="card-body py-4">
+                            <h3>Sales information:</h3>
+                            <div class="row">
+                                <div class="col-2"><strong>Price</strong></div>
+                                <div class="col-5"><strong>{{product.price}}</strong></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-2"><strong>Sold</strong></div>
+                                <div class="col-5">{{product.orders_count}} times</div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4 ">
+                <div class="card-header">List of all products with the same product base</div>
+                <div class="card-body">
+                    <div class="datatable" id="">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>FSIN</th>
+                                    <th>Product name</th>
+                                    <th>Runtime</th>
+                                    <th>Status</th>
+                                    <th>Created at</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in child_products %}
+                                <tr>
+                                    <td>{{line.id}}</td>
+                                    <td><a href="{% url 'FileCollector:product_detail' line.id %}">{{line.fsin }}</a></td>
+                                    <td>
+                                        {% if line.product_texts.all %}
+
+                                        {% for inline in line.product_texts.all %}
+                                        {{ inline }}
+                                        {% endfor %}
+                                        {% endif %}
+
+                                    </td>
+                                    <td>{{line.runtime}}</td>
+
+
+                                    <td>
+                                        {% if line.is_active %}
+                                        <div class="badge  badge-success">ACTIVE</div>
+                                        {% else %}
+                                        <div class="badge  badge-red">INACTIVE</div>
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>{{line.created}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <hr>
+                        -
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+{% endblock %}
+{% block javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"></script>
+    <script>
+        $(document).ready(function() {
+
+            //init asset container
+            var refreshAssetContainer = function() {
+                $.ajax({
+                    type:"GET",
+                    dataType: 'json',
+                    url: "{% url 'FileCollector:get_productbase_assets_ajax'  %}",
+                    data:{
+                        productbase_id: $('#productbase_id').val()
+                    },
+                    success: function( data ) 
+                    { 
+                        console.log("got data") 
+                        console.log(data);
+                        var array = data;
+                    },
+                    complete: function(data)
+                    {
+                        $('#assetsContainer').html(data['responseText'])
+                    }
+                })
+            };
+
+            //load form for generic CRUD calls
+            var loadForm = function () {
+                var btn = $(this);
+                this_asset_id = btn.attr("id"),
+                this_url = btn.attr("data-url"),
+                $.ajax({
+                    url: this_url.trim(), //removes blank that causes errors
+                    type: 'get',
+                    dataType: 'json',
+                    data: 
+                    {productbase_id:$('#productbase_id').val(),
+                    asset_id: this_asset_id},
+                    /*beforeSend: function () {
+                        $("#modal-remove").modal("show");
+                    },*/
+                    success: function (data) {
+                        //$("#modal-book .modal-content").html(data.html_form);
+                        console.log("got data" + data['asset_list'])
+                        $('#assetsContainer').html(data['asset_list'])
+                    }
+                });
+            };
+            $("#assetsContainer").on("click", ".js-remove-asset", loadForm);
+            // $('#assetsContainer').html('')
+
+            $('#btnTest').click(function(){
+                alert("test"+$('#productbase_id').val())
+                $.ajax({
+                    type:"GET",
+                    dataType: 'json',
+                    url: "{% url 'FileCollector:get_productbase_assets_ajax'  %}",
+                    data:{
+                        productbase_id: $('#productbase_id').val()
+                    },
+                    success: function( data ) 
+                    { 
+                        console.log("got data") 
+                        console.log(data);
+                        var array = data;
+                    },
+                    complete: function(data)
+                    {
+                        //alert("complete")
+                        //  console.log(data['responseText'])
+                        $('#assetContainer').html(data['responseText'])
+
+                    }
+                })
+
+            })
+
+            //init
+            findMember('');
+            $('#messageError').hide()
+            $('#messageSuccess').hide()
+            $('#searchAsset').val('');
+            refreshAssetContainer();
+
+            var timeoutID = null;
+
+            // SUBMIT FORM
+            $("form").on("submit", function(event){
+
+                event.preventDefault();
+
+                asset_ids = $("#foundAssets").val()
+
+                var formValues= $(this).serialize();
+                $.post("{% url 'FileCollector:add_asset_productbase'  %}", formValues, function(data){         
+
+                    var data = JSON.parse(data);
+
+                    if (data[0])
+                    {
+                        $('#staticBackdropAddAsset').modal('toggle')
+                        $('#messageBox').show()
+                        $('#messageSuccess').show()
+                        $('#messageSuccess').delay(1500).fadeOut( 1600);
+                        $('#messageSuccess').html = data[1]
+                            refreshAssetContainer();
+                    }else
+                    {
+                        $('#messageBox').show()
+                        $('#messageError').show()
+                        $('#messageError').html = data[1]
+                    }
+                    //alert("gotdata" + data)
+                    console.log("got data") 
+                    console.log(data);
+                });
+                return false; //<---- move it here
+            });
+
+            function findMember(str) {
+                console.log('search: ' + str);
+                $.ajax({
+                    type:"GET",
+                    dataType: 'json',
+                    url: "/searchGlobalAssets",
+                    data:{
+                        assetName: str
+                    },
+                    success: function( data ) { 
+                        console.log("got data") 
+                        console.log(data);
+                        $('#foundAssets').empty()
+                        //$( '#like' ).text(data);
+                        var array = data;
+                        if (array != '')
+                        {
+                            for (i in array) {                        
+                                $("#foundAssets").append("<option value=\"" + array[i][0] +"\">"+ array[i][1] + "</option>");
+                            }
+
+                        } else {
+                            $("#foundAssets").append("No assets found");
+
+                        }
+                    }
+                })
+            }
+
+            $('#searchAsset').keyup(function(e) {
+                clearTimeout(timeoutID);
+                timeoutID = setTimeout(() => findMember(e.target.value), 500);
+            });
+
+            $(".btn_need_intake").on('click', function(){
+                var intake = $(this).data('intake');
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: "{% url 'FileCollector:change_product_base_intake' %}",
+                    data: {
+                        "product_base_id": '{{ productbase.id }}',
+                        "intake" : intake
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        if(intake == "0"){
+                            $('.btn_need_intake').data('intake', "1");
+                            $('.btn_need_intake').removeClass('btn-pink');
+                            $('.btn_need_intake').addClass('btn-dark');
+                            $('.btn_need_intake').html("Need no Intake");
+                        }else{
+                            $('.btn_need_intake').data('intake', "0");
+                            $('.btn_need_intake').removeClass('btn-dark');
+                            $('.btn_need_intake').addClass('btn-pink');
+                            $('.btn_need_intake').html("Need Intake");
+                        }
+                    }
+                });
+            });
+            
+        });
+    </script>
+{% endblock %}

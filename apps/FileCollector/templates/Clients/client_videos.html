@@ -1,0 +1,137 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Client Detailed View {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <!-- Begin Page Content -->
+        <!--                <div class="container-fluid">-->
+
+        <!-- Page Heading -->
+        <main>
+           <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                <div class="container-fluid">
+                    <div class="page-header-content">
+                        <div class="row align-items-center justify-content-between pt-3">
+                            <div class="col-auto mb-3">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="user"></i></div>
+                                    Detail of client&nbsp;<strong>{{ client }}</strong>
+                                </h1>
+                                <div class="page-header-subtitle text-xs ">is a employee at <a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a> and in the system since {{client.created}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- Main page content-->
+            <div class="container mt-4">
+                <!-- Account page navigation-->
+                <nav class="nav nav-borders">
+                        <a class="nav-link" href="{% url 'FileCollector:client_detail' client.id %}">Profile</a>
+                    <a class="nav-link " href="{% url 'FileCollector:client_billing' client.id %}">Billing</a>
+                    <a class="nav-link" href="{% url 'FileCollector:client_orders' client.id %}">Orders</a>
+                    <a class="nav-link" href="{% url 'FileCollector:client_assets' client.id %}">Assets</a>
+                    <a class="nav-link active" href="{% url 'FileCollector:client_videos' client.id %}">Videos</a>
+                </nav>
+                <hr class="mt-0 mb-4" />
+
+                <div class="card mb-4">
+                    <div class="card-header">Videos of {{ client }}</div>
+                    <div class="card-body">
+                        <div class="datatable">
+                            {% if video_list %}
+                            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                                <!--                                    <span>Default ordering is set to column number 4, Created, using zero based counting. -->
+                                <!--                                        To change that or If column count is changed, please supply new index-->
+                                <!--                                        in datatables-demo.js-->
+                                <!--                                    </span>-->
+
+
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Company</th>
+                                        <th># Products</th>
+                                        <th>Total running time</th>
+                                        <th>status</th>
+                                        <th>origin</th>
+                                        <th>Created</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Client</th>
+                                        <th>Company</th>
+                                        <th># Products</th>
+                                        <th>Total running time</th>
+                                        <th>status</th>
+                                        <th>origin</th>
+                                        <th>Created</th>
+                                        <th>Updated</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+
+
+                                    
+                                    <tr>
+
+                                        {% for video in video_list %}
+                                        <td>
+                                            <a href="{% url 'FileCollector:not_yet' video.id %}"><button class="btn btn-outline-teal btn-sm" type="button">{{order.id}}</button></a>
+                                        </td>
+                                        <td><a href="{% url 'FileCollector:not_yet' video.id %}">{{order.client }}</a>
+                                        </td>
+                                        <td><a href="{% url 'FileCollector:not_yet'%}"> {{ order.client.company }}</a> </td>
+                                        <td>{{order.products_count}}</td>
+                                        <td>order.total_running_time | seconds_to_clock</td>
+                                        <td>
+                                            {% if order.status == 'COMPLETE' %}
+                                            <div class="badge  badge-teal">{{order.status}}</div>
+                                            {% elif order.status == 'PENDING' %}
+                                            <div class="badge  badge-purple">{{order.status}}</div>
+                                            {% elif order.status == 'ACTIVE' %}
+                                            <div class="badge  badge-yellow">{{order.status}}</div>
+                                            {% elif order.status == 'FAILED' %}
+                                            <div class="badge badge-red">{{order.status}}</div>
+                                            {% elif order.status == 'DELIVERED' %}
+                                            <div class="badge badge-blue">{{order.status}}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td> <div class="badge badge-primary">{{order.origin}}</div></td>
+                                        <td>{{order.created}}</td>
+                                        <td>{{order.updated }} | naturaltime</td>
+                                    </tr>
+                                    {% endfor %}
+
+                                    {% else %}
+                                    <p>No videos are available yet.</p>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </main>
+        <!-- Donut Chart -->
+
+
+
+
+
+        <!--                </div>-->
+        <!-- End page content -->
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,91 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" integrity="sha512-f8gN/IhfI+0E9Fc/LKtjVq4ywfhYAVeMGKsECzDUHcFJ5teVwvKTqizm+5a84FINhfrgdvjX8hEJbem2io1iTA==" crossorigin="anonymous" />
+<table class="table table-bordered table-hover" id="dataTableDEACTIVATED" width="100%" cellspacing="0">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Company</th>
+            <th>Prod.</th>
+            <th>sum runtime</th>
+            <th>status</th>
+            <th>origin</th>
+            <th>placed</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th>ID</th>
+            <th>Client</th>
+            <th>Company</th>
+            <th>Prod.</th>
+            <th>sum runtime</th>
+            <th>status</th>
+            <th>origin</th>
+            <th>placed</th>
+            <th>Created</th>
+            <th>Updated</th>
+        </tr>
+    </tfoot>
+    <tbody>
+
+
+        {% if orders %}
+        <tr>
+
+            {% for order in orders %}
+            <td>
+                <a href="{% url 'FileCollector:orders_detail' order.id %}"><button class="btn btn-outline-teal btn-sm" type="button">{{order.id}}</button></a>
+            </td>
+            <td><a href="{% url 'FileCollector:client_detail' order.client.id %}">{{order.client }}</a>
+            </td>
+            <td><a href="{% url 'FileCollector:company_detail' order.client.company.id %}"> {{ order.client.company }}</a> </td>
+            <td>{{order.products_count}}</td>
+            <td>{{order.total_running_time | seconds_to_clock}}</td>
+            <td>
+                {% if order.status == 'PENDING' %}
+                <div class="badge badge-dark">{{order.status}}</div>
+                {% elif order.status == 'READY'  %}
+                <div class="badge badge-yellow">{{order.status}}</div>
+                {% elif order.status == 'FAILED'  %}
+                <div class="badge badge-red">{{order.status}}</div>
+                {% elif order.status == 'ACTIVE'  %}
+                <div class="badge badge-indigo">{{order.status}}</div>
+                {% elif order.status == 'COMPLETE'  %}
+                <div class="badge badge-cyan">{{order.status}}</div>
+                {% elif order.status == 'DELIVERED'  %}
+                <div class="badge badge-green">{{order.status}}</div>
+                {% else %}
+                <div class="badge badge-dark">{{order.status}}</div>
+                {% endif %}
+
+
+            </td>
+
+            <td>
+                {% if order.origin == 'FSP' %}
+                <div class="badge badge-primary">{{order.origin}}</div>
+                {% else %}
+                    <div class="badge badge-dark">{{order.origin}}</div>
+                {% endif %}
+
+            </td>
+            <td>{% if order.placed %}
+                {{order.placed | naturaltime}}
+                {% else %}
+                -
+                {% endif %}</td>
+            <td>{{order.created|date:"d-m-y (H:i)"}}</td>
+            <td>{{order.updated | naturaltime}}</td>
+        </tr>
+        {% endfor %}
+
+        {% else %}
+        <p>No orders are available.</p>
+        {% endif %}
+    </tbody>
+</table>

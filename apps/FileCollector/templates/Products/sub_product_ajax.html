@@ -1,0 +1,88 @@
+{% load static %}
+<table class="table table-tight table-responsive-sm table-hover text-xs p-0" id="pictureTable" width="100%" cellspacing="0">
+    <thead>
+        <tr class="border-bottom">
+            <th class="border-gray-200" scope="col" >Pos</th>
+            <th class="border-gray-200 col-sm-4" scope="col">Picture</th>
+            <th class="border-gray-200 col-sm-3" scope="col">Title</th>
+            <th class="border-gray-200 col-sm-3" scope="col">Description</th>
+            <th class="border-gray-200 col-sm-1" scope="col">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product_image in product.product_images.all %}
+            <tr class="border-bottom" id="{{product_image.id}}">
+                <td >{{product_image.id}}</td>
+                <td>
+                    <img src="{{product_image.image.url}}" class="drop-thumbnail" style="height: 160px; width: auto;" logo=".." />
+                </td>
+                <td colspan="3" >
+                    <table class="table">
+                        {% for pro_image in product_image.product_image_texts.all %}
+                        {% if pro_image.language.system_language %}
+                        <tr>
+                            <td class="col-sm-5 border-bottom pb-2" >
+                                <span class="p-2 p_title">{{pro_image.title}}</span>
+                                <span class="lang_title">({{pro_image.language.abbreviation}})</span>
+                            </td>
+                            <td class="col-sm-5 border-bottom pb-2">
+                                <span class="p-2 p_desc">{{pro_image.desc_long}}
+                                </span>
+                                <span class="lang_title">({{pro_image.language.abbreviation}})</span>
+                            </td>
+
+                            <td class="col-sm-2">
+                                <button class="btn_delete_info btn btn-datatable btn-icon btn-transparent-dark" data-language="{{pro_image.language.name}}"  data-imagetextid="{{pro_image.id}}" title="Delete">
+                                    <i data-feather="trash-2"  ></i>
+                                </button>
+                                <button class="btn_edit_info btn btn-datatable btn-icon btn-transparent-dark float-right edit" data-imagetextid="{{pro_image.id}}" title="Edit">
+                                    <i data-feather="edit"></i>
+                                </button>
+                                <button class="btn_save_info btn btn btn-datatable btn-icon text-teal mr-2 save" style="display: none;" data-imagetextid="{{pro_image.id}}" title="Save">
+                                    <i data-feather="save"></i>
+                                </button>
+                                <button class="btn_init_info btn btn-datatable btn-icon btn-transparent-dark float-right init" style="display: none;" data-imagetextid="{{pro_image.id}}" title="Init">
+                                    <i data-feather="x"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </table>
+                        <button class="btn btn-sm btn-red float-end delete_product_image" data-id="{{product_image.id}}" type="button"  tabindex="5">Delete picture </button>
+
+                </td>
+            </tr>
+        
+        {% endfor %}
+        
+    </tbody>
+</table>
+<script type="text/javascript">
+
+    $(document).ready(function() {
+        // Initialise the table
+        $("#pictureTable").tableDnD({
+            onDrop : function(table, row) {
+                var serialize = $.tableDnD.serialize();
+                var orderdata = new Array();
+                for(var temp of serialize.split("&")){
+                    orderdata.push(temp.split("=")[1]);
+                }
+                $.ajax({
+                    headers: { "X-CSRFToken": '{{csrf_token}}' },
+                    url: '{% url "FileCollector:sub_product_order" %}',
+                    data: {
+                        'order[]': orderdata
+                    },
+                    type: 'POST',
+                    success: function (data) {
+                        if(data.status =="success"){ 
+                        }
+                    }
+                });
+            },
+        });
+        feather.replace();
+    });
+</script>

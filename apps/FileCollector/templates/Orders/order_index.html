@@ -1,0 +1,74 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}FileCollector - Dashboard {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="list"></i></div>
+                                Orders
+                            </h1>
+                            <div class="page-header-subtitle">These are the latest orders in the system</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+
+
+        <div class="container mt-n10">
+            <!-----------START TABLE------------------->
+            <div class="card mb-4 card-header-actions">
+                <div class="card-header">Orders
+                    
+                    <div style="float:right;">
+                        
+                        <a href="{% url 'FileCollector:add_order' %}" class="btn btn-primary btn-sm mr-5">Create Order</a>
+                        
+
+                        
+                        <a href="{% url 'FileCollector:orders_by_status' 'pending' %}"><button class="btn btn-dark btn-sm">Pending</button></a>
+
+                        <a href="{% url 'FileCollector:orders_by_status' 'ready' %}"><button class="btn btn-yellow btn-sm">Ready</button></a>
+
+                        <a href="{% url 'FileCollector:orders_by_status' 'active' %}"><button class="btn btn-indigo btn-sm">Active</button></a>
+
+
+                        <a href="{% url 'FileCollector:orders_by_status' 'failed' %}"><button class="btn btn-red btn-sm">Failed</button></a>
+
+                        <a href="{% url 'FileCollector:orders_by_status' 'complete' %}"><button class="btn btn-cyan btn-sm">Complete</button></a>
+
+                        <a href="{% url 'FileCollector:orders_by_status' 'delivered' %}"><button class="btn btn-teal btn-sm">Delivered</button></a>
+                    </div>
+
+                </div>
+                <div class="card-body">
+                    <div class="datatable">
+                        {% if latest_orders_list %}
+
+                            <span class="text-xs">
+                            </span>
+                            {% include "Orders/order_template.html" with orders=latest_orders_list suffix='index'  %}
+                        {% else %}
+                             <p>No orders are available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-----------END TABLE------------------->
+
+        {% endblock %}
+    </body>
+</html>

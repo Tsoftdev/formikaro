@@ -1,0 +1,135 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Settings {% endblock %}</title>
+    </head>
+
+    <body>
+
+        {% block content %}
+
+        <main>
+            <header class="page-header page-header-light bg-light mb-0">
+                <div class="container">
+                    <div class="page-header-content pt-4">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mt-4">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="file-plus"></i></div>
+                                    Change settings
+                                </h1>
+                                <div class="page-header-subtitle">Here you can change global Formikaro settings</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- Main page content-->
+            <div class="container-md">
+
+                <div class="card">
+                    <form id="settingsForm" class="needs-validation" method="post">
+                        {% csrf_token %}
+                        <div class="card-header">Main Settings 
+
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <div class="form-group"><label for="" class="text-dark">Key</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group" id="assetTypeGroup">
+                                                <label for="" class="text-dark">Value</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="form-group" id="assetTypeGroup">
+                                                <label for="" class="text-dark">Description</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% for settings_key_val in existing_settings %}
+                                        {% for key, value in settings_key_val.items %}
+                                            <div class="row g-2">
+                                                <div class="col-4">
+                                                    <!--<input class="form-control" id="{{key}}-key" name="{{key}}-key"  value="{{key}}" type="text" placeholder="key..." required readonly> -->
+                                                    <input class="form-control" value="{{key}}" type="text" placeholder="key..." required readonly>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group" id="assetTypeGroup">
+                                                        <input class="form-control" id="{{key}}" name="{{key}}"  value="{{value}}" type="text" placeholder="value..." required >
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="form-group" id="assetTypeGroup">
+                                                        <span class="text-xs"> </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    <button class="btn btn-light" type="button" id="reloadSettings">Reload Settings</button>
+                                    <button class="btn btn-dark" type="submit" id="saveSettings">Save Settings</button>
+
+
+                                </div>
+                                </form>
+                        </div>
+                        </div>
+                </div>
+            </div>
+
+        </main>
+        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="mi-modal">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+              <div class="modal-header">
+                <span class="modal-title" id="myModalLabel">
+                    <h4>Reload Settings Page</h4>
+                    Click Yes to save changes, if any? Click No to discard all changes
+                </span>
+              </div>
+              <div class="modal-footer pull-left">
+                <button type="button" class="btn btn-success" id="modal-btn-yes">Yes</button>
+                <button type="button" class="btn btn-primary" id="modal-btn-no">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script type="text/javascript">
+            var modalConfirm = function(callback){
+            $("#reloadSettings").on("click", function(){
+              $("#mi-modal").modal('show');
+            });
+
+             $("#modal-btn-yes").on("click", function(){
+                callback(true);
+                $("#mi-modal").modal('hide');
+             });
+
+             $("#modal-btn-no").on("click", function(){
+               callback(false);
+               $("#mi-modal").modal('hide');
+             });
+            };
+
+            modalConfirm(function(confirm){
+              if(confirm){
+                document.getElementById("settingsForm").submit();
+                return true;
+              }else{
+                location.reload();
+                return false;
+              }
+            });
+        </script>
+        {% endblock %}
+    </body>
+</html>

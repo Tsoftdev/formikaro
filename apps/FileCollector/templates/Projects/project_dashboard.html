@@ -1,0 +1,324 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+
+<header class="page-header page-header-light bg-white bg-shadow pb-10">
+	<header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+		<div class="container-fluid">
+			<div class="page-header-content">
+				<div class="row align-items-center justify-content-between pt-3">
+					<div class="col-auto mb-3">
+						<h1 class="page-header-title">
+							<div class="page-header-icon"><i data-feather="list"></i></div>
+							Detail of project {{ project.name }}
+							[<strong>{{ project.id }}</strong>]
+						</h1>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
+</header>
+
+<div class="container mt-n10">
+
+	<!-- Dashboard info widget 1-->
+	<div class="container mt-4">
+		<div class="row">
+			<div class="container">
+				{% include "Projects/project_nav.html" with menuitem="dashboard"  %}
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<!-- Change password card-->
+				<div class="card card-header-actions mb-4">
+					<div class="card-header">Project Info {{ project.name }}
+						<div style="float:right">
+							<button id="btn_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1"
+									style="display:none" type="button">Save
+							</button>
+							<select id="statusSelect" class="form-control p-1"
+									style="height: 24px; width: 105px; display: none;">
+								<option value="ESTIMATE">ESTIMATE</option>
+								<option value="CLIENT">CLIENT</option>
+								<option value="ONHOLD">ONHOLD</option>
+								<option value="FAILED">FAILED</option>
+								<option value="ACTIVE">ACTIVE</option>
+								<option value="COMPLETE">COMPLETE</option>
+								<option value="DELIVERED">DELIVERED</option>
+								<option value="PAID">PAID</option>
+							</select>
+						</div>
+						<button id="btn_change" class="btn btn-sm text-white {% if project.status == 'ESTIMATE' %}
+								bg-yellow
+								{% elif project.status == 'CLIENT'  %}
+								bg-pink
+								{% elif project.status == 'ONHOLD'  %}
+								bg-orange
+								{% elif project.status == 'FAILED'  %}
+								bg-red
+								{% elif project.status == 'ACTIVE'  %}
+								bg-blue
+								{% elif project.status == 'COMPLETE'  %}
+								bg-cyan
+								{% elif project.status == 'DELIVERED'  %}
+								bg-teal
+								{% elif project.status == 'PAID'  %}
+								bg-green
+
+								{% else %}
+								bg-dark
+								{% endif %}">Status: {{project.status}}
+						</button>
+
+
+					</div>
+					<div class="card-body ">
+
+						<div class="row">
+							<div class="col-3">
+								{% if project.projectmanager.count > 1 %}
+								Projectmanagers
+								{% else %}
+								Projectmanager
+								{% endif %}
+
+							</div>
+							<div class="col-9">
+								{% for projectmanager in project.projectmanager.all %}{% if forloop.counter|divisibleby:2 %}, {% endif %}{{projectmanager}}{% endfor %}
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Client
+							</div>
+							<div class="col-9">
+								{% if project.client %}
+
+								<a href="{% url 'FileCollector:client_detail' project.client.id %}">{{  project.client }}</a>
+								{% endif %}
+								{% if project.company %}<a
+									href="{% url 'FileCollector:company_detail' project.company.id %}">{{project.company  }}</a>{% endif %}
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Files have to be named:
+							</div>
+							<div class="col-9"><strong>{{ project.company.abbreviation }}_{{  project.abbreviation}}_Title..._DRAFT_[Version].mp4 </strong><br>
+								<span class="text-xs">COMPANYABR_PROJECTABR_Title_DRAFT_VERSION.mp4</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-4">
+				<div class="card card-header-actions mb-4 ">
+					<div class="card-header">Stats</div>
+					<div class="card-body text-xs">
+						<div class="row">
+							<div class="col-3">
+								Folder:
+							</div>
+							<div class="col-9">
+								{% if project.folderid %}
+
+								{% project_folder project %}
+								({{ project.folderid }})
+								{% else %}
+								no folder id specified
+								{% endif %}
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Created:
+							</div>
+							<div class="col-9"> {{ project.created|naturaltime }}</div>
+
+						</div>
+
+						<div class="row">
+							<div class="col-3">
+								Videos:
+							</div>
+							<div class="col-9"> {{ project.videos.count }}</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Intakes:
+							</div>
+							<div class="col-9"> {{ project.intakes.count }}</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Line items:
+							</div>
+							<div class="col-9"> {{ project.lineitems.count }}</div>
+						</div>
+						<div class="row">
+							<div class="col-3">
+								Tasks:
+							</div>
+							<div class="col-9"> {{ project.tasks.count }}</div>
+						</div>
+					</div>
+					</div>
+				</div>
+			<div class="col-8">
+				<div class="card card-header-actions mb-4 ">
+					<div class="card-header"><a href="{% url 'FileCollector:project_tasks' project.id %}">Recent tasks</a></div>
+					<div class="card-body text-xs">
+						 {% if project.tasks.all %}
+                        <span class="text-xs">
+                        </span>
+                        {% include "Tasks/task_template.html" with tasks=task_list all_users=all_users smallmode='on' editmode='on' %}
+                        {% else %}
+                        <p>No tasks available.</p>
+                        {% endif %}
+					</div>
+				</div>
+			</div>
+
+		</div>
+					<!-- CHANGELOG MODAL -->
+					<div class="modal fade" id="changelogModal" tabindex="-1" role="dialog"
+						 aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+						<div class="modal-dialog modal-xl" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="exampleModalScrollableTitle">Log</h5>
+									<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">×</span></button>
+								</div>
+								<div class="modal-body">
+									<h4>Project Log</h4>
+
+								</div>
+								<div class="modal-footer">
+									<button class="btn btn-primary" type="button" data-dismiss="modal">Close
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<!-- END CHANGELOG MODAL -->
+					<!-- START PROCESS OUTPUT MODAL -->
+
+					<div class="modal fade" id="processOutputModal" tabindex="-1" role="dialog"
+						 aria-labelledby="myExtraLargeModalLabel" style="display: none;" aria-hidden="true">
+						<div class="modal-dialog modal-xl" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="processOutputModalTitle">Log</h5>
+									<button class="close" type="button" data-dismiss="modal" aria-label="Close">
+										<span aria-hidden="true">×</span></button>
+								</div>
+								<div class="modal-body">
+									<h4>Command output</h4>
+									<span class="text-xs" id="processOutputModalText">
+								</div>
+								<div class="modal-footer">
+									<button class="btn btn-primary" type="button" data-dismiss="modal">Close
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+<div class="row">
+
+						<div class="col-lg-12">
+							<div class="card card-header-actions mb-4">
+
+								<div class="card-header ">List of the videos associated with project {{ project.name }}</div>
+								<div class="card-body">
+									{% if project.videos.all %}
+									{% include "Videos/video_template.html" with videos=project.videos.all %}
+									{% endif %}
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+
+			<!-- End page content -->
+			{% endblock %}
+			{% block javascript %}
+			<script type="text/javascript">
+
+	// change status project
+	$(".proj-status").on('click', function(){
+		var line_id = $(this).data('id');
+		var lineStatusHtml = '<select id="statusProjSelect" class="form-control p-1 mb-2" style="height: 24px; width: 110px; display: initial;">';
+		lineStatusHtml += '<option value="ESTIMATE">ESTIMATE</option>';
+		lineStatusHtml += '<option value="ACTIVE">ACTIVE</option>';
+		lineStatusHtml += '<option value="ONHOLD">ONHOLD</option>';
+		lineStatusHtml += '<option value="CLIENT">CLIENT</option>';
+		lineStatusHtml += '<option value="FAILED">FAILED</option>';
+		lineStatusHtml += '<option value="COMPLETE">COMPLETE</option>';
+		lineStatusHtml += '<option value="DELIVERED">DELIVERED</option>';
+		lineStatusHtml += '<option value="PAID">PAID</option>';
+		lineStatusHtml += '</select>';
+		lineStatusHtml += '<button id="btn_proj_save" class="btn btn-green btn-sm pl-2 pr-2 pt-1 pb-1" data-id="' + line_id + '" type="button">Save</button>';
+
+		$(this).parent('.div_proj_status').html(lineStatusHtml);
+		$("#statusProjSelect").val($(this).html());
+		$(this).hide();
+		$('#btn_proj_save').click(function(){
+			$.ajax({
+				headers: { "X-CSRFToken": '{{csrf_token}}' },
+				url: "{% url 'FileCollector:change_status_project' %}",
+				data: {
+					"status": $("#statusProjSelect").val(),
+					"project_id": $(this).data("id")
+				},
+				type: 'POST',
+				success: function (data) {
+					location.reload();
+
+				}
+			});
+		});
+	});
+	// change status project
+	$('#btn_change').click(function(){
+		$("#statusSelect").css('display', 'initial');
+		$("#statusSelect").val('{{project.status}}');
+		$("#btn_save").show();
+		$(this).hide();
+	});
+	$('#btn_save').click(function(){
+		$.ajax({
+			headers: { "X-CSRFToken": '{{csrf_token}}' },
+			url: "{% url 'FileCollector:change_status_project' %}",
+			data: {
+				"status": $("#statusSelect").val(),
+				"project_id": "{{ project.id }}"
+			},
+			type: 'POST',
+			success: function (data) {
+				location.reload();
+
+			}
+		});
+	});
+	$('#testButton').click(function() {
+
+		var myModal = new bootstrap.Modal(document.getElementById('processOutputModal'), '')
+		myModal.toggle()
+	});
+
+
+
+</script>
+			{% endblock %}
+
+

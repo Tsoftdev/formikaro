@@ -1,0 +1,56 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load static %}
+{% load custom_tags %}
+
+{% block title %}FileCollector - Dashboard {% endblock %}
+{% block content %}
+    <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+        <div class="container">
+            <div class="page-header-content pt-4">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-auto mt-4">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="check-circle"></i></div>
+                            My Tasks
+                        </h1>
+                        <div class="page-header-subtitle">These are your ({{ projectmanager }}) tasks</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Main page content-->
+
+    <div class="container mt-n10">
+        <!-- ---------START TABLE----------------- -->
+        <div class="card mb-4 card-header-actions">
+            <div class="card-header">MyTasks
+
+                 <div style="float:right;">
+                     <a href="{% url 'FileCollector:mytasks'  %}"><button class="btn btn-dark btn-sm mr-2">All</button></a>
+                     <a href="{% url 'FileCollector:mytasks_by_status' 'open' %}"><button class="btn btn-yellow btn-sm">Open</button></a>
+                        <a href="{% url 'FileCollector:mytasks_by_status' 'active' %}"><button class="btn btn-indigo btn-sm">Active</button></a>
+                        <a href="{% url 'FileCollector:mytasks_by_status' 'failed' %}"><button class="btn btn-red btn-sm">Failed</button></a>
+                        <a href="{% url 'FileCollector:mytasks_by_status' 'complete' %}"><button class="btn btn-teal btn-sm">Complete</button></a>
+                        <a href="{% url 'FileCollector:add_task' %}"><button class="btn btn-blue btn-sm ml-4">Add</button></a>
+                    </div>
+
+            </div>
+            <div class="card-body">
+
+                <div class="datatable">
+                    {% if task_list %}
+                        <span class="text-xs">
+                        </span>
+                        {% include "Tasks/task_template.html" with tasks=task_list all_users=all_users editmode='on' %}
+                    {% else %}
+                        <p>No assets available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ---------END TABLE----------------- -->
+
+{% endblock %}

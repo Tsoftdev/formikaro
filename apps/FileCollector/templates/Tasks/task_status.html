@@ -1,0 +1,51 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+{% block title %}FileCollector - Dashboard {% endblock %}
+{% block content %}
+    <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+        <div class="container">
+            <div class="page-header-content pt-4">
+                <div class="row align-items-center justify-content-between">
+                    <div class="col-auto mt-4">
+                        <h1 class="page-header-title">
+                            <div class="page-header-icon"><i data-feather="check-circle"></i></div>
+                            Tasks
+                        </h1>
+                        <div class="page-header-subtitle">These are the tasks registered in the system</div>
+                    </div>
+                </div>
+                <ol class="breadcrumb mb-0 mt-4">
+                    <li class="breadcrumb-item"><a href="{% url 'FileCollector:tasks'%}">Tasks</a></li>
+                    <li class="breadcrumb-item active">{{ status }}</li>
+                </ol>
+            </div>
+        </div>
+    </header>
+    <!-- Main page content-->
+    <div class="container mt-n10">
+        <!-- ---------START TABLE----------------- -->
+        <div class="card mb-4 card-header-actions">
+            <div class="card-header">Tasks
+                <div style="float:right">
+                <a href="{% url 'FileCollector:add_task' %}"><button class="btn btn-blue btn-sm">Add</button></a>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <div class="datatable">
+                    {% if task_list %}
+                        <span class="text-xs">
+                        </span>
+                        {% include "Tasks/task_template.html" with tasks=task_list %}
+                    {% else %}
+                        <p>No assets available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ---------END TABLE----------------- -->
+
+{% endblock %}

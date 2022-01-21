@@ -1,0 +1,84 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Company CSV Import {% endblock %}</title>
+    </head>
+
+    <body>
+        {% block content %}
+
+        <main>
+            <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+                <div class="container-fluid">
+                    <div class="page-header-content">
+                        <div class="row align-items-center justify-content-between pt-3">
+                            <div class="col-auto mb-3">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="file"></i></div>
+                                    Company CSV Import
+                                </h1>
+                            </div>
+                            <div class="col-12 col-xl-auto mb-3">
+                                <button class="btn btn-sm btn-light text-primary active mr-2">Today</button>
+                                <button class="btn btn-sm btn-light text-primary mr-2">Month</button>
+                                <button class="btn btn-sm btn-light text-primary">Year</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+
+            {% if messages %}
+            {% for message in messages %}
+          <div class="alert alert-primary" role="alert">
+         <!--                | means OR operator-->
+                {{message|safe}}
+            </div>
+            {% endfor %}
+            {% else %}
+            {{order}}
+            <div class="container">
+                <div class="card">
+                    <div class="card-header">Input CSV table</div>
+                    <div class="card-body">This is an admin function to import CSV data directly into the database.
+                        <form action="" method="POST" enctype="multipart/form-data">
+                      
+
+                            {% csrf_token %}
+                            <label for="file1"> Upload a file</label>
+                            <input type="file" class="form-control form-control-solid" id="file1" name="file">
+                            <small>Only accepts CSV files</small>
+                            <p><button type="submit">Upload</button></p>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="card">
+                    <div class="card-header">Companies already in the Database:</div>
+                    <div class="card-body">
+                        {% if companies %}
+
+                            {% for company in companies %}
+                            {{company.name}}<br>
+                            {% endfor %}
+                        {% else %}
+                        no companies in the database!
+                        {% endif %}
+                        {% endblock %}}
+                    </div>
+
+
+                </div>
+            </div>
+            </div>
+
+
+
+
+        </main>
+    </body>
+</html>

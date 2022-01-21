@@ -1,0 +1,190 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Client Detailed View {% endblock %}
+
+{% block content %}
+    <!-- Begin Page Content -->
+    <main>
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+            <div class="container-fluid">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="user"></i></div>
+                                Detail of client&nbsp;<strong>{{ client }}</strong>
+                            </h1>
+                            <div class="page-header-subtitle text-xs ">is a employee at <a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a> and in the system since {{client.created}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container mt-4">
+            <!-- Account page navigation-->
+            <nav class="nav nav-borders">
+                <a class="nav-link active" href="{% url 'FileCollector:client_detail' client.id %}">Profile</a>
+                <a class="nav-link " href="{% url 'FileCollector:client_billing' client.id %}">Billing</a>
+                <a class="nav-link" href="{% url 'FileCollector:client_orders' client.id %}">Orders</a>
+                <a class="nav-link" href="{% url 'FileCollector:client_assets' client.id %}">Assets</a>
+                <a class="nav-link" href="{% url 'FileCollector:client_videos' client.id %}">Videos</a>
+            </nav>
+            <hr class="mt-0 mb-4" />
+            <div class="row">
+                <div class="col-xl-4">
+                    <!-- Profile picture card-->
+                    <div class="card">
+                        <div class="card-header">Profile Picture</div>
+                        <div class="card-body text-center">
+                            <!-- Profile picture image-->
+
+                            {% if client.gender == 'female' %}
+                            <img class="img-account-profile rounded-circle mb-2" src="{% static '/assets/img/illustrations/profiles/profile-1.png' %}" alt="" />
+                            {% elif client.gender == 'male' %}
+                            <img class="img-account-profile rounded-circle mb-2" src="{% static '/assets/img/illustrations/profiles/profile-2.png' %}" alt="" />
+                            {% endif %}
+                            <!-- Profile picture help block--
+<div class="small font-italic text-muted mb-4">JPG or PNG no larger than 5 MB</div>
+<!-- Profile picture upload button--
+<button class="btn btn-primary" type="button">Upload new image</button>-->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-8">
+                    <!-- Account details card-->
+                    <div class="card mb-4">
+                        <div class="card-header">Account Details</div>
+                        <div class="card-body">
+
+                            {% if client %}
+                            <div class="row">
+                                <div class="col-3 text-black">Company</div>
+                                <div class="col-sm"><a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a>, {{client.company.place}}, {{client.company.country}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 text-black">Name</div>
+                                <div class="col-sm">{{client.firstname}} <span class="text-uppercase">{{client.lastname}}</span></div>
+
+                            </div>
+                            <div class="row">
+                                <div class="col-3 text-black">Gender</div>
+                                <div class="col-sm">{{client.gender}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 text-black">Language</div>
+                                <div class="col-sm">{{client.language}}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-3 text-black">Email</div>
+                                <div class="col-sm">{{client.email}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 text-black">Phone</div>
+                                <div class="col-sm">
+                                    {% if client.phone_number %}{{client.phone_number}}
+                                    {% else %}
+                                    <span class="text-xs">no phone number available</span>
+                                    {% endif %}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-3 text-black">Abbreviation</div>
+                                <div class="col-sm">{{client.abbreviation}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 text-black">Def. Psw</div>
+                                <div class="col-sm">{{client.default_vimeo_passwd}}</div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-3 text-black">Description</div>
+                                <div class="col-sm"> {% if client.description %}{{client.description}}
+                                    {% else %}
+                                    <span class="text-xs">no description available</span>
+                                    {% endif %}</div>
+                            </div>
+
+                            <hr>
+                            Total: {{purchased_products_total}} | Pending products: {{client.pending_products_count}}
+                            {% else %}
+                            <span>No Client Data</span>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="container">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Order information</h6>
+                        <div class="float-right">
+                            <a href="{% url 'FileCollector:client_create_order' client.id %}"><button class="btn btn-blue btn-sm">Create Order</button></a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if client_order_products %}
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Order</th>
+                                        <th>FSIN</th>
+                                        <th>Product name</th>
+                                        <th>Runtime</th>
+                                        <th>Status</th>
+                                        <th>Order Date</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    {% for line in client_order_products %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'FileCollector:orders_detail' line.order.id %}"><button class="btn btn-outline-teal btn-sm" type="button">{{line.order.id}}</button></a>
+                                        </td>
+                                        <td><a href="{% url 'FileCollector:product_detail' line.product.id %}">{{line.product.fsin}}</a></td>
+                                        <td>{{line.product.base.name}}</td>
+                                        <td>{{line.product.runtime}} sec</td>
+                                        <td>
+                                            {% if line.status == 'COMPLETE' %}
+                                            <div class="badge  badge-success">{{line.status}}</div>
+                                            {% elif line.status == 'PENDING' %}
+                                            <div class="badge  badge-orange">{{line.status}}</div>
+                                            {% elif line.status == 'READY' %}
+                                            <div class="badge  badge-info">{{line.status}}</div>
+                                            {% elif line.status == 'IDLE' %}
+                                            <div class="badge  badge-yellow">{{line.status}}</div>
+                                            {% elif line.status == 'ACTIVE' %}
+                                            <div class="badge  badge-primary">{{line.status}}</div>
+                                            {% elif line.status == 'FAILED' %}
+                                            <div class="badge badge-danger">{{line.status}}</div>
+                                            {% endif %}
+
+                                        </td>
+                                        <td>{{line.order.created|date:"d-m-y (H:i)"}}<br><span class="text-xs">{{line.order.created | naturaltime}}</span></td>
+
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <hr>
+                            These are all the items/products connected to this client
+                        </div>
+                        {% else %}
+                        <span>This client has no active orders</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- End page content -->
+{% endblock %}

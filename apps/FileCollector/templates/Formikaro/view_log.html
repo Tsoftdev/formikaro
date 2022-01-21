@@ -1,0 +1,95 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}View Log {% endblock %}</title>
+    </head>
+
+    <body>
+
+        {% block content %}
+
+        <main>
+            <header class="page-header page-header-light bg-light mb-0">
+                <div class="container">
+                    <div class="page-header-content pt-4">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mt-4">
+                                <h1 class="page-header-title">
+                                    <div class="page-header-icon"><i data-feather="activity"></i></div>
+                                    View Log
+                                </h1>
+<!--                                <div class="page-header-subtitle">View Log entries</div>-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- Main page content-->
+            <div class="container-md">
+
+                <div class="card">
+                    <div class="card-header">Log Entries</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                {% for log_entry in log_entries reversed%}
+                                    <div class="row g-2">
+                                        <div class="col-12"><span>{{log_entry}}</span></div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="mi-modal">
+          <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+              <div class="modal-header">
+                <span class="modal-title" id="myModalLabel">
+                    <h4>Reload Settings Page</h4>
+                    Click Yes to save changes, if any? Click No to discard all changes
+                </span>
+              </div>
+              <div class="modal-footer pull-left">
+                <button type="button" class="btn btn-success" id="modal-btn-yes">Yes</button>
+                <button type="button" class="btn btn-primary" id="modal-btn-no">No</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <script type="text/javascript">
+            var modalConfirm = function(callback){
+            $("#reloadSettings").on("click", function(){
+              $("#mi-modal").modal('show');
+            });
+
+             $("#modal-btn-yes").on("click", function(){
+                callback(true);
+                $("#mi-modal").modal('hide');
+             });
+
+             $("#modal-btn-no").on("click", function(){
+               callback(false);
+               $("#mi-modal").modal('hide');
+             });
+            };
+
+            modalConfirm(function(confirm){
+              if(confirm){
+                document.getElementById("settingsForm").submit();
+                return true;
+              }else{
+                location.reload();
+                return false;
+              }
+            });
+        </script>
+        {% endblock %}
+    </body>
+</html>

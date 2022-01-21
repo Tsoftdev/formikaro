@@ -1,0 +1,133 @@
+{% extends 'Formikaro/report_base.html' %}
+{% load humanize %}
+{% load custom_tags %}
+{% block title %}Project Detailed View {% endblock %}
+{% block content %}
+
+<!-- Dashboard info widget 1-->
+<div class="d-inline-flex p-2">
+    <div class="row">
+        <div class="col-12">
+            <!-- shoot report -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    Shoot report ({{ shoot.id }}) from the {{ shoot.starttime|date:"d.m.y" }} in {{ shoot.location }} by {{ shoot.creator }}<br>
+                </div>
+                <div>
+                    <div class="card-body">
+                        <!-- Billing history table-->
+                        {% if shoot %}
+                        <div class="table-responsive table-billing-history table-borderless mb-0">
+                            <table class="table table-bordered table-hover text-xs" width="100%" cellspacing="0">
+                                <thead>
+                                <tr class="border-bottom">
+                                    <th class="border-gray-200 col-1" scope="col">ID</th>
+                                    <th class="border-gray-200 col-2" scope="col">Date</th>
+                                    <th class="border-gray-200 col-4" scope="col">Location</th>
+                                    <th class="border-gray-20 col-2" scope="col">Projectmanager</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr class="border-top" >
+                                    <td>#{{shoot.id}}</td>
+                                    <td>{{shoot.starttime|date:"d.m.y"}}</td>
+                                    <td>{{shoot.location}}</td>
+                                    <td>{{shoot.creator}}</td>
+
+                                </tr>
+                                <tr class="">
+                                    <td colspan="5" class="">
+                                        <div class="row">
+                                            <div class="col-8">
+                                        <strong>General remark:</strong><br>
+                                        {% if shoot.remark %}{{ shoot.remark }}{% else %}
+                                        is empty{% endif %}<br><br>
+
+                                        <strong>Damage/lost equipment:</strong><br>
+                                        {% if shoot.damages %}{{ shoot.damages }}{% else %}
+                                        is empty{% endif %}<br><br>
+
+                                        <strong>Crew settings:</strong><br>
+                                        {% if shoot.crew %}
+                                        {% for crewmember in shoot.crew.all %}
+                                        {{ crewmember.get_full_name }} ({{crewmember.role.name}})<br>
+                                        {% endfor %}
+                                        {% else %}
+                                        is empty{% endif %}<br>
+
+                                        <strong>Camera settings:</strong><br>
+                                        {% if shoot.settings %}
+                                        {% for setting in shoot.settings.all %}
+                                        <div class="row">
+                                            <div class="col-4">Name:</div>
+                                            <div class="col-8">{{ setting.name }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">Operator:</div>
+                                            <div class="col-8">{{ setting.operator }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">Camera:</div>
+                                            <div class="col-8">{{ setting.camera }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">White balance:</div>
+                                            <div class="col-8">{{ setting.whitebalance }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">Framerate:</div>
+                                            <div class="col-8">{{ setting.framerate }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">Color profile:</div>
+                                            <div class="col-8">{{ setting.colorprofile }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-4">Video format:</div>
+                                            <div class="col-8">{{ setting.videoformat }}</div>
+                                        </div><hr>
+
+                                        {% endfor %}
+                                        {% else %}
+                                        is empty{% endif %}
+
+                                        <strong>Changelog:</strong><br>
+                                        {% if shoot.changelog %}{{ shoot.changelog }}{% else %}
+                                        is empty{% endif %}<br><br>
+
+                                        </div>
+                                        <div class="col-4">
+                                        <div class="row">
+                                            <div class="col">Created by</div>
+                                            <div class="col">{{ shoot.creator }}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Timestamp</div>
+                                            <div class="col">{{ shoot.created|date:"d.m.y (H:i)"}}</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">Last update:</div>
+                                            <div class="col">{{ shoot.updated|date:"d.m.y (H:i)"}}</div>
+                                        </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                <tr><td colspan="5" class="text-xs">This report has been generated by FormikoAudit {% now "jS F Y H:i" %}<br>
+                                    Original filename: {{ report_filename }}</td>
+                                </tr>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p>No shoot report under this ID available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endblock %}
+

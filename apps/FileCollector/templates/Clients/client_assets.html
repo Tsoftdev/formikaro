@@ -1,0 +1,172 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+{% block title %}Client Detailed View {% endblock %}
+
+{% block content %}
+    <!-- Begin Page Content -->
+    <!-- Page Heading -->
+    <main>
+        <header class="page-header page-header-compact page-header-light border-bottom bg-white mb-4">
+            <div class="container-fluid">
+                <div class="page-header-content">
+                    <div class="row align-items-center justify-content-between pt-3">
+                        <div class="col-auto mb-3">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="user"></i></div>
+                                Detail of client&nbsp;<strong>{{ client }}</strong>
+                            </h1>
+                            <div class="page-header-subtitle text-xs ">is a employee at <a href="{% url 'FileCollector:company_detail' client.company.id %}">{{client.company.name}}</a> and in the system since {{client.created}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container mt-4">
+            <!-- MODAL start -->
+            <div class="modal fade" id="staticBackdropAddAsset" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <input type="hidden" id="client_id" name="client_id" value="{{ client.id}}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">Add Asset to {{ client }}</h5>
+                            <button class="close" type="button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                        </div>
+                        <div class="modal-body">
+
+                            <div class="form-group">
+                                <span class="text-xs text-body">You can only select assets that are not owned by any company or client</span>
+                                <div class="input-group input-group-joined">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i data-feather="search"></i>
+                                        </span>
+                                    </div>
+
+                                    <input class="form-control" type="text" id="searchAsset" placeholder="Search assets..." aria-label="Search">
+
+                                </div></div>
+                            <div class="form-group">
+                                <label for="foundAssets" class="text-body">Found Assets</label>
+                                <select class="form-control" id="foundAssets" name="foundAssets" multiple="">
+                                {% for gb_asset in global_available_assets %}
+                                    <option value="{{ gb_asset.id }}" data-text="{{ gb_asset.name|lower }}">{{ gb_asset.name }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>         
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" type="button" data-dismiss="modal" id="buttonCloseAddAsset">Close</button>
+                            <button class="btn btn-primary" id="buttonAddAsset">ADD</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            <!-- end modal -->
+            
+            <!-- Account page navigation-->
+            <nav class="nav nav-borders">
+                <a class="nav-link" href="{% url 'FileCollector:client_detail' client.id %}">Profile</a>
+                <a class="nav-link " href="{% url 'FileCollector:client_billing' client.id %}">Billing</a>
+                <a class="nav-link" href="{% url 'FileCollector:client_orders' client.id %}">Orders</a>
+                <a class="nav-link active" href="{% url 'FileCollector:client_assets' client.id %}">Assets</a>
+                <a class="nav-link" href="{% url 'FileCollector:client_videos' client.id %}">Videos</a>
+
+            </nav>
+            <hr class="mt-0 mb-4" />
+            <div class="card mb-4">
+                <div class="card-header">Assets of {{ client }}
+                    <div style="float:right">
+                        <button class="btn btn-blue btn-sm" type="button" data-toggle="modal" data-target="#staticBackdropAddAsset">Add Asset</button>
+                        <a href="{% url 'FileCollector:client_create_asset' client.id %}"><button class="btn btn-blue btn-sm">Create Asset</button></a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-header">Exclusively owned assets</div>
+                    <div class="datatable">
+                        {% if client_assets %}
+                            <span class="text-xs">
+                            </span>
+                            {% include "Assets/asset_template.html" with assets=client_assets suffix='e' client_id=client.id company_id=client.company.id %}
+                        {% else %}
+                            <p>No exclusive assets available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="card-header">Client available assets</div>
+                    <div class="datatable">
+                        {% if client_available_assets %}
+                            <span class="text-xs">
+                            </span>
+                            {% include "Assets/asset_template.html" with assets=client_available_assets suffix='c' client_id=client.id company_id=client.company.id  %}
+                        {% else %}
+                            <p>No assets available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- COMPANY ASSETS -->
+                <div class="card-body">
+                    <div class="card-header">Company available assets</div>
+                    <div class="datatable">
+                        {% if company_available_assets %}
+                            <span class="text-xs">
+                            </span>
+                            {% include "Assets/asset_template.html" with assets=company_available_assets suffix='co' client_id=client.id company_id=client.company.id company=client.company %}
+                        {% else %}
+                            <p>No assets available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+<!-- End page content -->
+{% endblock %}
+{% block javascript %} 
+    <script type="text/javascript">
+        $(document).ready(function() {
+            
+            $("#buttonAddAsset").on('click', function(){
+                var asset_ids = $("#foundAssets").val();
+                console.log(asset_ids)
+                if (asset_ids.length > 0){
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:add_client_global_asset' %}",
+                        data: {
+                            "gb_asset_ids": asset_ids,
+                            "client_id": "{{ client.id }}"
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            location.reload();
+                            
+                        }
+                    });
+                }
+            });
+            
+
+            $('#searchAsset').keyup(function(e) {
+                var str = $(this).val();
+                if (str != ''){
+                    $("#foundAssets").children('option').hide();
+                    $("#foundAssets").children("option[data-text*='" + str.toLowerCase() + "']").show();
+                }else{
+                    $("#foundAssets").children('option').show();
+                }
+                
+            });
+        });
+    </script>
+{% endblock %}
+    
+        
+        
+

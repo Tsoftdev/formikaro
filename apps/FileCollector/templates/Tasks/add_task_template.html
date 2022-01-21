@@ -1,0 +1,436 @@
+
+{% load custom_tags %}
+{% load static %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}"/>
+<style>
+
+    .del-asset:hover{
+        color: #FF0000;
+        cursor: pointer;
+    }
+</style>
+
+
+<div class="card mb-4  {% if from_project %} card-header-actions mx-auto collapse collapse-horizontal {% endif %}" {% if from_project %} id="collapseNewTask" {% endif %}>
+    <div class="card-header">
+        {% if edit_mode == True %}
+        Modify task:&nbsp;<i>{{ task.name }}</i>&nbsp;[{{task.id}}]
+        {% else %}
+        Create new task
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div >
+            <form id="create_task_form" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <!-- Form Group (project name)-->
+                <div class="form-group input-group-lg">
+                    <div class="form-row row">
+                        <div class="form-group col-md-8 ">
+                            <label class="small mb-1" for="taskname">Task name</label>
+                            <input type="text" class="form-control" name="taskname" id="taskname" value="{{ task.name }}" aria-label="name of the task" required>
+                            <div class="invalid-feedback">
+                                Please give the task name
+                            </div>
+                        </div>
+                        <div class="form-group col-2 ">
+                            <label class="small mb-1" for="tasktypeSelect">Type</label>
+                            <div class="input-group mb-3">
+                                <select id="tasktypeSelect" class="form-control">
+                                    <option value="0">-----</option>
+                                    {% for tmp in task_types %}
+                                    {% if tmp.id == task.type.id %}
+                                        <option value="{{tmp.id}}" selected>{{tmp.name}}</option>
+                                    {% else %}
+                                    <option value="{{tmp.id}}">{{tmp.name}}</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-2 ">
+                            <label class="small mb-1" for="taskname">Preset</label>
+                            <div class="input-group mb-3">
+                                <select id="presetSelect" class="form-control">
+                                    <option value="0">-----</option>
+                                    {% for tmp in preset_tasks %}
+                                    <option value="{{tmp.id}}">{{tmp.title}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- Form Row-->
+                    <div class="form-row row">
+                        <!-- Form Group (abbreviation)-->
+
+
+
+                        <div class="form-group col-md-4 ">
+                            <label class="small mb-1" for="statusSelect">Priority ({{task.priority}})</label>
+                            <select id="prioritySelect" class="form-control">
+                                {% if task.priority == 0 %}
+                                <option value="0" selected>Low</option>
+                                <option value="5">Medium</option>
+                                <option value="10">High</option>
+                                {% elif task.priority == 5 %}
+                                <option value="0">Low</option>
+                                <option value="5" selected>Medium</option>
+                                <option value="10">High</option>
+                                {% elif task.priority == 10 %}
+                                <option value="0">Low</option>
+                                <option value="5">Medium</option>
+                                <option value="10" selected>High</option>
+                                {% else %}
+                                <option value="0">Low</option>
+                                <option value="5">Medium</option>
+                                <option value="10">High</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 ">
+                            <label class="small mb-1" for="statusSelect">Status ({{ task.status}})</label>
+                            <select id="statusSelect" class="form-control" >
+                                {% if task.status == 'OP' %}
+                                <option value="OP" selected>OPEN</option>
+                                {% else %}
+                                <option value="OP">OPEN</option>
+                                {% endif %}
+                                {% if task.status == 'FD' %}
+                                <option value="FD" selected>FAILED</option>
+                                {% else %}
+                                <option value="FD">FAILED</option>
+                                {% endif %}
+                                 {% if task.status == 'AC' %}
+                                <option value="AC" selected>ACTIVE</option>
+                                  {% else %}
+                                <option value="AC">ACTIVE</option>
+                                {% endif %}
+                                 {% if task.status == 'CM' %}
+                                <option value="CM" selected>COMPLETE</option>
+                                  {% else %}
+                                <option value="CM">COMPLETE</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4 ">
+                            <label class="small mb-1" for="statusSelect">Mode</label>
+                            <select id="modeSelect" class="form-control">
+                                <option value="MAN">Manual</option>
+                                <option value="BOT">Bot</option>
+                            </select>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-row row">
+
+                        <div class="form-group col-md-3 ">
+                            <label class="small mb-1" for="starttime">Start time</label>
+                            <div class="form-group">
+                                <input class="form-control dateTime" id="starttime" type="text" value="{{ task.starttime }}"  placeholder="startime" >
+                                <!--<div class="invalid-feedback">
+                                    Please select starttime
+                                </div>
+                                <div class="valid-feedback">
+                                    Looks good!
+                                </div>-->
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3 ">
+                            <label class="small mb-1" for="deadline">Deadline</label>
+                            <div class="form-group">
+                                <input class="form-control dateTime" id="deadline" type="text" value="{{ task.deadline }}" placeholder="deadline">
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3 ">
+                            <label class="small mb-1" for="userSelect">User <span class="text-xs">(who does it?)</span></label>
+                            <div class="form-group">
+                                <!-- <input class="form-control" id="taskuser" type="text" placeholder="taskuser" > -->
+                                <select id="userSelect" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                        <!-- START PROJECT SELECT just show if not called by project -->
+                        <div class="form-group col-md-3 ">
+                            <label class="small mb-1" for="projectSelect">Project</label>
+                            <select id="projectSelect" class="form-control"  pattern="[a-z]" required>
+                                <option value="">-----</option>
+                                <!--<option value="{{project.id}}">{{project}}</option>-->
+                                {% for tmp in project_list%}
+                                {% if project.id == tmp.id %}
+                                <option value="{{tmp.id}}" selected>{{tmp}}</option>
+                                {% else %}
+                                <option value="{{tmp.id}}">{{tmp}}</option>
+                                {% endif %}
+
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                        <!-- END PROJECT SELECT -->
+                    </div>
+                    <!-- Form Row        -->
+                    <div class="form-row row mt-4">
+                        <div class="form-group col-md-12">
+                            <label class="small mb-1" for="taskdescription">Task description</label>
+                            <textarea class="form-control" id="taskdescription" rows="10">{{ task.description}}</textarea>
+                        </div>
+                    </div>
+                    <div class="form-row row">
+                        <!-- Form Row-->
+                        <div class="form-group col-md-4">
+                        </div>
+                        <div class="form-group col-md-8">
+                            <!-- Save changes button-->
+                            {% if edit_mode %}
+                                <b id="btn_update" class="btn btn-secondary mx-2 mt-2 ml-4"  style="float:right">Update task</b>
+                            {% else %}
+                            <b id="btn_save" class="btn btn-primary mx-2 mt-2 ml-4"  style="float:right">Create task</b>
+                            {% endif %}
+                            <b id="btn_preset_save" class="btn btn-primary mt-2 mx-2"  style="float:right">Create Task Preset</b>
+                            <b id="btn_preset_update" class="btn btn-secondary mt-2 mx-2" style="float:right">Update Task Preset</b>
+
+                            {% if from_project %}
+                            <b class="btn btn-grey"  data-toggle="collapse" data-target="#collapseNewTask" aria-expanded="false" aria-controls="collapseNewTask" style="float:right">Cancel</b>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="{% static '/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script>
+    $('.dateTime').datetimepicker({
+        format: 'DD.MM.YYYY HH:mm',
+        icons: {
+            time: 'fa fa-clock',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+
+    function setPresetSelectStatus() {
+        if($('#presetSelect').val()!= 0) {
+            $('#btn_preset_update').prop('disabled', false);
+            $('#btn_preset_update').removeClass('bg-gray-300');
+            $('#btn_preset_update').addClass('btn-secondary');
+        }else {
+            $('#btn_preset_update').prop('disabled', true);
+            $('#btn_preset_update').addClass('bg-gray-300');
+            $('#btn_preset_update').removeClass('btn-secondary');
+
+        }
+    }
+
+    function getProjectManagers(){
+        if( $('#projectSelect').val() != '') {
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:get-project-managers' %}",
+            data: {
+                "project_id": $('#projectSelect').val()
+            },
+            type: 'POST',
+            success: function (data) {
+                $('#userSelect').html('');
+                for (tmp of data.data){
+                    console.log(tmp)
+                    $("#userSelect").append("<option value=\"" + tmp["id"] +"\">"+ tmp["name"] + "</option>");
+                }
+            }
+        });
+        };
+    }
+
+    setPresetSelectStatus();
+
+    getProjectManagers();
+    $('#projectSelect').on('change', function(){
+        getProjectManagers();
+    });
+    $('#presetSelect').on('change', function(){
+        // if a preset is selected activate update button
+        setPresetSelectStatus();
+
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:get-preset-task' %}",
+            data: {
+                "pre_task_id": $('#presetSelect').val()
+            },
+            type: 'POST',
+            success: function (data) {
+                console.log(data);
+                $('#taskname').val(data.data['name']);
+                $('#statusSelect').val(data.data['status']);
+                $('#modeSelect').val(data.data['mode']);
+                if(data.data['tasktype']) {
+                    $('#tasktypeSelect').val(data.data['tasktype']);
+                }else {
+                    $('#tasktypeSelect').val(0);
+                }
+                if(data.data['starttime']){
+                    pres_starttime = data.data['starttime']
+                } else {
+                    pres_starttime = ''
+                }
+//alert("startime " + pres_starttime);
+                //$('#projectSelect').val('');
+                $('#starttime').val(pres_starttime);
+                $('#deadline').val(data.data['deadline']);
+                $('#prioritySelect').val(data.data['priority']);
+                $('#taskdescription').val(data.data['description']);
+            }
+        });
+    });
+
+    $("#btn_save").on('click', function(){
+        if (!$("#create_task_form")[0].checkValidity()) {
+            $("#create_task_form").addClass('was-validated');
+            return false;
+        }
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:create-task' %}",
+            data: {
+                "project_id": $('#projectSelect').val(),
+                "name": $('#taskname').val(),
+                "user_id": $('#userSelect').val(),
+                "status": $('#statusSelect').val(),
+                "mode": $('#modeSelect').val(),
+                "tasktype_id": $('#tasktypeSelect').val(),
+                "starttime": $('#starttime').val(),
+                "deadline": $('#deadline').val(),
+                "priority": $('#prioritySelect').val(),
+                "description": $('#taskdescription').val(),
+            },
+            type: 'POST',
+            success: function (data) {
+                //location.reload();
+                console.log(data);
+                if(data.status == 'false') {
+
+                     swal({
+                      icon: "success",
+                            title: `There has been an error`,
+                            text: "ERROR: " + data.message,
+                            confirmButtonClass: "btn-danger",
+
+                        });
+                }
+                else {
+
+                window.location.href = "{% if project %}{% url 'FileCollector:project_tasks' project.id %}{% else %}{% url 'FileCollector:mytasks' %}{% endif %}";
+                }
+            },
+
+        });
+    });
+
+    $('#btn_preset_save').click(function() {
+        swal({
+                title: `Please give preset name:`,
+                text: "preset name:",
+                type: "input",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Save",
+                cancelButtonText: "Cancel",
+            },
+            function(inputValue){
+                if (inputValue === null || inputValue === "") return false;
+                if (inputValue){
+                    presetName = inputValue;
+                    if (!$("#create_task_form")[0].checkValidity()) {
+                        $("#create_task_form").addClass('was-validated');
+                        return false;
+                    }
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:create-preset-task' %}",
+                        data: {
+                            "project_id": $('#projectSelect').val(),
+                            "presetName": presetName,
+                            "name": $('#taskname').val(),
+                            "user_id": $('#userSelect').val(),
+                            "status": $('#statusSelect').val(),
+                            "mode": $('#modeSelect').val(),
+                            // "starttime": $('#starttime').val(), // presets don't store begin times
+                            "tasktype_id": $('#tasktypeSelect').val(),
+                            "deadline": $('#deadline').val(),
+                            "priority": $('#prioritySelect').val(),
+                            "description": $('#taskdescription').val(),
+                        },
+                        type: 'POST',
+                        success: function (data) {
+                            location.reload();
+                        }
+                    });
+                }
+
+            });
+    });
+    $("#btn_preset_update").on('click', function(){
+        if($('#btn_preset_update').prop('disabled') == true) {
+            return false;
+        }
+        swal({
+                title: `Change preset name:`,
+                text: "preset name:",
+                type: "input",
+                inputValue: $('#presetSelect option:selected').text(),
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Save",
+                cancelButtonText: "Cancel",
+            },
+            function(inputValue){
+                if (inputValue === null || inputValue === "") return false;
+                if (inputValue){
+                    presetName = inputValue;
+                    if (!$("#create_task_form")[0].checkValidity()) {
+                        $("#create_task_form").addClass('was-validated');
+                        return false;
+                    }
+                    $.ajax({
+                        headers: { "X-CSRFToken": '{{csrf_token}}' },
+                        url: "{% url 'FileCollector:update-preset-task' %}",
+                        data: {
+                            "project_id": $('#projectSelect').val(),
+                            "preset_id" : $('#presetSelect').val(),
+                            "presetName": presetName,
+                            "name": $('#taskname').val(),
+                            "user_id": $('#userSelect').val(),
+                            "status": $('#statusSelect').val(),
+                            "mode": $('#modeSelect').val(),
+                            // "starttime": $('#starttime').val(), // presets don't store begin times
+                            "tasktype_id": $('#tasktypeSelect').val(),
+                            "deadline": $('#deadline').val(),
+                            "priority": $('#prioritySelect').val(),
+                            "description": $('#taskdescription').val(),
+                        },
+                        type: 'POST',
+                        success: function (data) {
+
+                            location.reload();
+                        }
+                    });
+                };
+            });
+    });
+</script>
+

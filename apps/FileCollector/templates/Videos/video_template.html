@@ -1,0 +1,148 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+
+<div class="table-responsive table-billing-history text-sm table-borderless mb-0 datatable">
+    <table class="table table-hover text-xs p-0" id="dataTable" width="100%" cellspacing="0" >
+
+        <thead>
+        <tr class="border-bottom">
+            <th class="border-gray-200" scope="col">Unique fn</th>
+            <th class="border-gray-200" scope="col">EP#</th>
+            <th class="border-gray-200" scope="col">Project video</th>
+            <th class="border-gray-200" scope="col">Version</th>
+            <th class="border-gray-200" scope="col">Status</th>
+            <th class="border-gray-200" scope="col">Time</th>
+            <th class="border-gray-200" scope="col">Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for line in videos %}
+            <tr  class="border-bottom" id="video_line_{{ line.id }}">
+                <td> <a href="{% url 'FileCollector:video_detail' line.id %}" >{{line.unique_fn}}</a>&nbsp;<span class="text-muted">ID: {{ line.id }}</span>
+
+                    <div id="data-copy-{{line.id}}"><span style="display:none">{{ line.unique_fn }}</span><br>
+                        {% if line.url %}URL: <a href="{{ line.url}}" target="_blank">{{ line.url}}</a><br>
+                            Review-URL: <a href="{{ line.url_review }}" target="_blank">{{ line.url_review}}</a><br>
+                            Passwort: {{ line.vimeo_passwd }}{% else %} - {% endif %}</div>
+                </td>
+
+                <td>{% if line.episode %}
+                    {{line.episode}}
+                {% else %}
+                    -
+                {% endif %}
+                </td>
+                <td>
+                    {%  for project_video in line.project_videos.all %}
+                        {{  project_video.name }}
+                        {%  empty %}
+                        -
+                    {%  endfor %}
+                </td>
+                <td>{% if line.version %}{{ line.version }}{% else %}-{% endif %} </td>
+                <td>
+                    <div class="div_proj_status">
+
+                        {% if line.status != 'UPLOADING' %}
+                            <span class="video-status badge {% if line.status == 'COMPLETE' %}
+                                                     bg-teal
+                                                     {% elif line.status == 'PENDING' %}
+                                                     bg-orange
+                                                     {% elif line.status == 'READY' %}
+                                                     bg-info
+                                                     {% elif line.status == 'IDLE' %}
+                                                     bg-yellow
+                                                     {% elif line.status == 'ACTIVE' %}
+                                                     bg-primary
+                                                     {% elif line.status == 'FAILED' %}
+                                                     bg-danger
+                                                     {% elif line.status == 'COMPLETE' %}
+                                                     bg-success
+                                                     {% elif line.status == 'DELIVERED' %}
+                                                     bg-teal
+                                                     {% endif %}" style="cursor:pointer" data-id="{{ line.id }}">{{line.status}}</span>
+                        {% else %}
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                        {% endif %}
+                    </div>
+                </td>
+
+                <td>{{line.created|date:"d-m-y (H:i)"}}</td>
+                <td style="width:60px; ">
+                    <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 js-copy" data-id="{{line.id}}" data-toggle="tooltip" data-placement="bottom"  title="Copy to clipboard">
+                        <i data-feather="clipboard" ></i>
+                    </button>
+                    <button class="btn btn-datatable btn-icon btn-transparent-dark mr-2 btn_delete_video" data-id="{{line.id}}"><i data-feather="trash-2"></i></button>
+                </td>
+
+            </tr>
+            {% empty %}
+            no videos here :/
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+
+{% block javascript %}
+    <script type="text/javascript">
+
+        $(".btn_delete_video").on('click', function(){
+
+            var video_id = $(this).data('id');
+            console.log("test clicked trash" + video_id);
+
+            Swal.fire({
+                title: `Do you really want to delete this video?`,
+                text: "You will not be able to recover this video!",
+                icon: "warning",
+                showCancelButton: true,
+                customClass: {
+                    confirmButton: 'btn btn-danger me-4',
+                    cancelButton: 'btn btn-primary',
+                },
+                buttonsStyling: false,
+                confirmButtonText: "Yes, delete it!",
+                cancelButtonText: "No, cancel plx!",
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+                    console.log("confirmed! id: "+ video_id)
+                    //var video_id = $("#videoID_{{order_number}}").val();
+                    if (video_id != "-1") {
+                        $.ajax({
+                            headers: { "X-CSRFToken": '{{csrf_token}}' },
+                            url: "{% url 'FileCollector:delete-video-ajax' %}",
+                            data: {
+                                "video_id": video_id,
+                            },
+                            type: 'POST',
+                            success: function (data) {
+                                $('#video_line_' + data['video_id']).remove()
+                                $('#lnk-remove-project-video-' + data['video_id']).remove()
+
+                                console.log(data)
+                                Toastify({
+                                    text: data['message'],
+                                    className: "info text-xs",
+                                    duration: 5000,
+                                    style: {
+                                        background: "linear-gradient(to right, #00b09b, #96c93d)",
+                                    }
+                                }).showToast();
+                                //location.reload();
+                                console.log($(this))
+
+                            },
+                        });
+                    }
+                    $("#card_{{order_number}}").remove();
+                };
+            });
+
+
+        });
+    </script>
+{% endblock %}

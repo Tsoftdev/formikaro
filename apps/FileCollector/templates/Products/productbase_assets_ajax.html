@@ -1,0 +1,52 @@
+            
+{% if assets %}
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace()
+    </script>
+    <table class="table table-sm table-borderless table-striped">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">File</th>
+                <th scope="col">Type</th>
+                <th scope="col">&nbsp;</th>
+                <th scope="col">&nbsp;</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+
+            <tr>
+                <th class="align-middle" scope="row">{{ asset.id }}</th>
+                <td class="align-middle">{{asset.name}}</td>
+                <td class="align-middle">{{asset.assettype}} </td>
+                <td class="align-middle">
+                    {% if asset.assettype.name == 'HEX' %}
+                    <i class="text-dark-50" data-feather="hexagon"></i>
+                    {% elif asset.assettype.name == 'MOV' %}
+                    <i class="text-dark-50" data-feather="video"></i>
+                    {% elif asset.assettype.is_file %}
+                    <i class="text-dark-50" data-feather="file"></i>
+                    {% else %}
+                    <i class="text-dark-50" data-feather="database"></i>
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-outline-teal btn-icon js-remove-asset" type="button" 
+                            data-url="{% url 'FileCollector:remove_asset_productbase' %} " id="{{ asset.id }}">
+                        <i data-feather="trash-2"></i>
+                    </button>
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="text-xs text-center ">
+        <br><br><br><br><br>
+        no assets needed (or defined) for this product
+    </div>
+{% endif %}

@@ -1,0 +1,40 @@
+
+<div aria-live="polite" aria-atomic="true" class="position-relative">
+    <div class="toast-container position-absolute top-0 end-0 p-3">
+        {% for message in messages %}
+        <div role="alert" aria-live="assertive" aria-atomic="true" class="toast" data-bs-autohide="false">
+            <div class="toast-header">
+                <i data-feather="bell"></i>
+
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.DEBUG %}
+                <strong class="me-auto ms-2 text-secondary">Debug</strong>
+                {% endif %}
+
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                <strong class="me-auto ms-2 text-danger">Error</strong>
+                {% endif %}
+
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                <strong class="me-auto ms-2 text-primary">Info</strong>
+                {% endif %}
+
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                <strong class="me-auto ms-2 text-success">Success</strong>
+                {% endif %}
+
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                <strong class="me-auto ms-2 text-warning">Warning</strong>
+                {% endif %}
+
+
+
+                <small>11 mins ago</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message | safe }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

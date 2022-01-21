@@ -1,0 +1,303 @@
+{% load custom_tags %}
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="{% static 'css/bootstrap-datetimepicker.min.css' %}"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<form id="create_project_form" class="needs-validation" novalidate>
+    <div class="row">
+        <div class="col-4">
+            <!-- COMPANY/CLIENT START -->
+            <div class="card mb-4">
+                <div class="card-header">Company/Client information</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="companySelect" class="small">Company</label>
+                        <select class="form-control" name="companySelect" id="companySelect" required {% if project and is_editable is False %}disabled{% endif %}>
+                            <option>---</option>
+                            {% for company in companies %}
+                                <option value="{{company.id}}">{{company.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label for="clientSelect" class="small">Client</label>
+                        <select class="form-control" name="clientSelect" id="clientSelect" required {% if project and is_editable is False %}disabled{% endif %}>
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label for="projectmanagerSelect" class="small">Projectmanager</label>
+                        <select class="form-control" name="projectmanagerSelect" id="projectmanagerSelect" required {% if project and is_editable is False %}disabled{% endif %}>
+                            {% for item in project_managers %}
+                                <option value="{{item.id}}">{{item.firstname}} {{item.lastname}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="text-center">
+                            <span class="alert-danger valid_err_msg" style="display:none">Should be selected client or company, not global</span>
+                        </div>
+                    </div>
+                    <div class="product-details">
+
+                    </div>
+
+                </div>
+            </div>
+            <!-- COMPANY/CLIENT END -->
+            <!-- FINANCIAL START -->
+            {% if is_editable %}
+                <div class="card mb-4">
+                    <div class="card-header">Financial</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="budget" class="small">Budget</label>
+
+                            <div class="input-group mb-3">
+                                    <span class="input-group-text">€</span>
+                                <input type="number" step="0.01" class="form-control" name="budget" id="budget" aria-label="Amount (to the nearest Euro)" required {% if project and is_editable is False %}disabled{% endif %} value="{{project.budget}}">
+                                    <span class="input-group-text text-xs">(net)</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paid" class="small">Paid</label>
+                            <div class="input-group mb-3">
+                                    <span class="input-group-text">€</span>
+                                <input type="number" step="0.01" class="form-control" name="paid" id="paid" aria-label="Amount (to the nearest Euro)" required {% if project and is_editable is False %}disabled{% endif %} value="{{project.paid}}">
+                                    <span class="input-group-text text-xs">(net)</span>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% endif %}
+            <!-- FINANCIAL END -->
+        </div>
+        <div class="col-8">
+            <!-- GENERAL START -->
+            <div class="card mb-4">
+                <div class="card-header">General Details</div>
+                <div class="card-body">
+                    <!-- Form Group (project name)-->
+                    <div class="form-group  input-group-lg">
+                        <label class="small mb-1" for="name">Project name (will be used accross the system to identify this project)</label>
+                        <input class="form-control" id="name" type="text" placeholder="My project" required {% if project and is_editable is False %}disabled{% endif %} value="{{project.name}}" />
+                    </div>
+                    <!-- Form Row-->
+                    <div class="form-row row mt-2">
+                        <!-- Form Group (abbreviation)-->
+                        <div class="form-group col-4">
+                            <label class="small" for="abbreviation">Abbreviation</label>
+                            <div class="input-group">
+                                <input class="form-control" id="abbreviation" type="text" aria-label="this will mark all output files of this project" placeholder="Enter the project abbreviation" required {% if project and is_editable is False %}disabled{% endif %} value="{{project.abbreviation}}"/>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-4">
+                            <label for="shootingdays" class="small">Shooting days</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="1" id="shootingdays" name="shootingdays" aria-label="Shooting days of this project" aria-describedby="button-addon2" required {% if project and is_editable is False %}disabled{% endif %} value="{{project.shootingdays}}">
+                                    <button class="btn dropdown-toggle bg-light border" type="button" id="dropdownMenuButton" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Preset</button>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">none</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">0,5</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">1</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">1,5</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">2</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">2,5</a>
+                                            <a class="dropdown-item _shootingDays" href="javascript:void(0);">3</a>
+                                        </div>
+                            </div>
+
+
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label class="small" for="reportrange">Deadline</label>
+                            <input class="form-control dateTime" id="deadline" type="text" placeholder="deadline" required {% if project and is_editable is False %}disabled{% endif %}  value="{{project.deadline|date:"d.m.y H:i"}}">
+                        </div>
+                    </div>
+
+                    <!-- Form Row -->
+                    <div class="form-row row mt-2">
+                        <div class="form-group col-md-12">
+                            <label class="small mb-1" for="description">Project description</label>
+                            <textarea class="form-control" id="description" rows="18">{{ project.change_log }}</textarea>
+                        </div>
+                    </div>
+                    <!-- Form Group (Save button)-->
+                    <div class="row justify-content-end mt-4">
+<div class="col-2">
+                    {% if is_editable %}
+
+                        <button class="btn btn-primary w-10" type="button" id="btn_save_project">{% if project %}Save Project{% else %}Create project{% endif %}</button>
+
+                    {% endif %}
+    </div>
+                    </div>
+                </div>
+            </div>
+            <!-- GENERAL END -->
+        </div>
+    </div>
+</form>
+{% if project %}
+    <div class="row justify-content-end">
+        <div class="col-1 ml-10" >
+        {% if is_editable %}
+            <button id="btn_add_video" class="btn btn-transparent-dark btn-icon mb-4 ml-5 card lift lift-sm" type="button"><i class="feather-icon" data-feather="plus" alt="Add another video"></i></button>
+        {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-4">
+            <div class="card mb-4">
+                <div class="card-header">Info</div>
+                <div class="card-body">
+                    Please create one video entry for each expected product video that is part of this project.
+                </div>
+            </div>
+        </div>
+        <div class="col-8" id="_divVideoList">
+            
+        </div>
+    </div>
+{% endif %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-sweetalert/1.0.1/sweetalert.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="{% static '/js/bootstrap-datetimepicker.min.js' %}"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script type="text/javascript">
+    var selected_products;
+    var client_data;
+    var company_assets = [];
+    var canSaveProducts = {};
+    var currentVideoCount = 0;
+    {% if project %}
+        $('#companySelect').val('{{project.company.id}}');
+        {% for item in project.projectmanager.all%}
+            $('#projectmanagerSelect').val('{{item.id}}');
+        {% endfor %}
+        
+        changeCompany();
+        {% for item in project.project_videos.all %}
+            currentVideoCount ++;    
+            appendVideo('{{ item.id }}', currentVideoCount);
+            
+        {% endfor %}
+        {% if is_editable %}
+            if (currentVideoCount == 0) {
+                currentVideoCount ++;
+                appendVideo(-1, currentVideoCount);
+            }
+        {% endif %}
+    {% endif %}
+    function changeCompany(){
+        $("#clientSelect").html("");
+        client_data = [];
+        $.ajax({
+            type:"GET",
+            dataType: 'json',
+            url: "/selectclients",
+            data:{
+                company_id: companySelect.value
+            },
+            success: function( data ) { 
+                console.log(data)
+                $("#clientSelect").html("");
+                client_data = data["clients"];
+                if (client_data != '')
+                {
+                    client_data.forEach(function(client){
+                        $("#clientSelect").append("<option value=\"" + client["id"] +"\">"+ client["name"] + "</option>");
+                    })
+                    {% if project %}
+                        $('#clientSelect').val('{{project.client.id}}');
+                    {% endif %}
+                    
+                }
+            }
+        })
+    }
+    $('#companySelect').change(function(){
+        changeCompany();
+    });
+    $('.dateTime').datetimepicker({
+        format: 'DD.MM.YYYY HH:mm',
+        icons: {
+            time: 'fa fa-clock',
+            date: 'fa fa-calendar',
+            up: 'fa fa-chevron-up',
+            down: 'fa fa-chevron-down',
+            previous: 'fa fa-chevron-left',
+            next: 'fa fa-chevron-right',
+            today: 'fa fa-check',
+            clear: 'fa fa-trash',
+            close: 'fa fa-times'
+        }
+    });
+    $("#btn_save_project").on('click', function(){
+        if (!$("#create_project_form")[0].checkValidity()) {
+            $("#create_project_form").addClass('was-validated');
+            return false;
+        }
+        $.ajax({
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:save-project-ajax' %}",
+            data: {
+                "project_id": '{% if project %}{{ project.id }}{% else %}-1{% endif %}',
+                "budget": $('#budget').val(),
+                "paid": $('#paid').val(),
+                "name": $('#name').val(),
+                "abbreviation": $('#abbreviation').val(),
+                "description": $('#description').val(),
+                "deadline": $('#deadline').val(),
+                "shootingdays": $('#shootingdays').val(),
+                "client": $('#clientSelect').val(),
+                "company": $('#companySelect').val(),
+                "projectmanager": $('#projectmanagerSelect').val(),
+            },
+            type: 'POST',
+            success: function (data) {
+                if (data.status){
+                    window.location.href = "{% url 'FileCollector:project_detail' 123 %}".replace("123", data.project_id);
+                }else{
+                    swal.fire({
+                        icon: "waring",
+                            title: `There has been an error`,
+                            text: "ERROR: " + data.message,
+                            confirmButtonClass: "btn-danger",
+                        });
+                }
+                
+            },
+
+        });
+    });
+    $('._shootingDays').on('click', function(){
+        $("#shootingdays").val($(this).text() == 'none' ? '' : $(this).text().replace(',', '.'));
+    });
+    $('#btn_add_video').on('click', function(){
+        currentVideoCount ++ ;
+        appendVideo(-1, currentVideoCount);
+    });
+    function appendVideo(video_id, order_number){
+        $.ajax({
+            type:"POST",
+            headers: { "X-CSRFToken": '{{csrf_token}}' },
+            url: "{% url 'FileCollector:get-add-video-template' %}",
+            data:{
+                order_number: order_number,
+                project_id: '{% if project %}{{ project.id }}{% else %}-1{% endif %}',
+                video_id: video_id,
+                is_editable: '{% if is_editable %}1{% else %}0{% endif %}',
+                is_inline: 0
+            },
+            success: function (data) {
+                $("#_divVideoList").prepend(data);
+                feather.replace();
+            }
+        })
+    }
+</script>

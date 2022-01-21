@@ -1,0 +1,32 @@
+{% load static %}
+{% load custom_tags %}
+{% load humanize %}
+{% for asset in line.assets.all %}
+    <div class="row mb-2 div_asset" data-id="{{asset.id}}" data-global="{% if asset.client_owner is None and asset.company_owner is None %}1{% else %}0{% endif %}">
+        <div class="col-sm-3 pt-2 text-xs">
+            <label for="input_{{ asset.id }}">{{ asset.name }}</label>
+        </div>
+        <div class="col-sm-8">
+            <input class="form-control asset_val" id="input_{{ asset.id }}" type="text" placeholder="VALUE" value="{{ asset.value }}" {% if asset.get_maxlength > 0 %}maxlength="{{ asset.get_maxlength }}"{% endif %} {% if asset.client_owner is None and asset.company_owner is None %}readonly{% endif %}>
+            <span class="text-xs">Maxlength: {% if asset.get_maxlength > 0 %}
+                {{ asset.get_maxlength }}
+            {% else %}
+                unlimited
+                {% endif %}
+            </span>
+        </div>
+        <div class="col-sm-1">
+            <button class="btn_delete btn btn-datatable btn-icon btn-transparent-dark mr" data-prod-id="{{ line.id }}" data-asset-id="{{ asset.id }}" data-global="{% if asset.client_owner is None and asset.company_owner is None %}1{% else %}0{% endif %}"><i data-feather="trash-2"></i></button>
+        </div>
+    </div>
+{% endfor %}
+<script>
+    var removeable_assets = [];
+    $(".btn_delete").on('click', function(){
+        var prod_id = $(this).attr('data-prod-id');
+        var asset_id = $(this).attr('data-asset-id');
+        var global = $(this).attr('data-global');
+        $('.div_asset').filter('[data-id="'+ asset_id +'"]').remove();
+        removeable_assets.push({"asset_id": asset_id, "global": global});
+    });
+</script>

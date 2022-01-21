@@ -1,0 +1,95 @@
+{% extends 'Formikaro/base_site.html' %}
+{% load humanize %}
+{% load custom_tags %}
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}FileCollector - Dashboard {% endblock %}</title>
+    </head>
+    <body>
+        {% block content %}
+        <header class="page-header page-header-dark bg-gradient-primary-to-secondary pb-10">
+            <div class="container">
+                <div class="page-header-content pt-4">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mt-4">
+                            <h1 class="page-header-title">
+                                <div class="page-header-icon"><i data-feather="globe"></i></div>
+                                Companies
+                            </h1>
+                            <div class="page-header-subtitle">These are the companies registered in the system</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- Main page content-->
+        <div class="container mt-n10">
+            <!-----------START TABLE------------------->
+            <div class="card mb-4">
+                <div class="card-header">Companies</div>
+                <div class="card-body">
+                    <div class="datatable">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <!--                                    <span>Default ordering is set to column number 4, Created, using zero based counting. -->
+                            <!--                                        To change that or If column count is changed, please supply new index-->
+                            <!--                                        in datatables-demo.js-->
+                            <!--                                    </span>-->
+
+
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                     <th>-</th>
+                                     <th>-</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tfoot>
+                                <tr>
+                                       <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                     <th>-</th>
+                                     <th>-</th>
+                                    <th>Created</th>
+                                </tr>
+                            </tfoot>
+                            <tbody>
+
+
+                                {% if company_list %}
+                                <tr>
+
+                                    {% for company in company_list %}
+                                    <td>{{company.id}}</td>
+                                    <td><a href="{% url 'FileCollector:company_detail' company.id %}">{{ company.name }} </a>
+                                        </td>
+
+                                    <td>{{company.place}}, {{company.country}}</td>
+                                  
+                                    <td>-</td>
+                                    <td>-</td>
+                                    
+                                    <td>{{company.created}}</td>
+                                </tr>
+                                {% endfor %}
+
+                                {% else %}
+                                <p>No company data available.</p>
+                                {% endif %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-----------END TABLE------------------->
+
+        {% endblock %}
+    </body>
+</html>
